@@ -2,6 +2,10 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.6 - 2026-08-15
+
+- Added spacing below the Code Diff notice on the WP Migrate screen.
+
 ## 0.2.5 - 2026-08-15
 
 - Fixed the listener notice removing itself when WP Migrate's active screen did not expose the expected URL hash route.
