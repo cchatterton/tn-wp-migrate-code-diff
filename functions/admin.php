@@ -6,6 +6,25 @@ if (!defined('ABSPATH')) {
 
 function twmcd_register_admin_page()
 {
+    if (is_multisite()) {
+        add_submenu_page(
+            'settings.php',
+            __('Upload Release', 'tn-wp-migrate-code-diff'),
+            __('Upload Release', 'tn-wp-migrate-code-diff'),
+            twmcd_release_install_capability(),
+            TWMCD_UPLOAD_PAGE_SLUG,
+            'twmcd_render_upload_release_page'
+        );
+    } else {
+        add_options_page(
+            __('Upload Release', 'tn-wp-migrate-code-diff'),
+            __('Upload Release', 'tn-wp-migrate-code-diff'),
+            twmcd_release_install_capability(),
+            TWMCD_UPLOAD_PAGE_SLUG,
+            'twmcd_render_upload_release_page'
+        );
+    }
+
     add_submenu_page(
         null,
         __('TN WP Migrate Code Diff', 'tn-wp-migrate-code-diff'),
@@ -23,6 +42,29 @@ function twmcd_register_admin_page()
         TWMCD_DATABASE_PAGE_SLUG,
         'twmcd_render_database_admin_page'
     );
+}
+
+function twmcd_release_install_capability()
+{
+    return 'update_plugins';
+}
+
+function twmcd_upload_release_page_url()
+{
+    return is_multisite()
+        ? network_admin_url('settings.php?page=' . TWMCD_UPLOAD_PAGE_SLUG)
+        : admin_url('options-general.php?page=' . TWMCD_UPLOAD_PAGE_SLUG);
+}
+
+function twmcd_render_upload_release_page()
+{
+    if (!current_user_can(twmcd_release_install_capability())) {
+        wp_die(esc_html__('You do not have permission to install releases.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $result = get_site_transient('twmcd_install_result_' . get_current_user_id());
+    delete_site_transient('twmcd_install_result_' . get_current_user_id());
+    require TWMCD_PLUGIN_DIR . 'templates/upload-release-page.php';
 }
 
 function twmcd_render_database_admin_page()
@@ -51,6 +93,10 @@ function twmcd_render_admin_page()
 
 function twmcd_add_plugin_action_link($links)
 {
+    array_unshift(
+        $links,
+        '<a href="' . esc_url(twmcd_upload_release_page_url()) . '">' . esc_html__('Upload Release', 'tn-wp-migrate-code-diff') . '</a>'
+    );
     array_unshift(
         $links,
         '<a href="' . esc_url(twmcd_migrate_admin_url()) . '">' . esc_html__('Open WP Migrate', 'tn-wp-migrate-code-diff') . '</a>'

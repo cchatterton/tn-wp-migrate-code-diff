@@ -2,6 +2,13 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.5.0 - 2026-08-15
+
+- Integrated Upload Release, archive validation, checksum verification, installation, and rollback into the main plugin.
+- Removed the separate TN Code Release Installer plugin and release asset.
+- Allows the same single plugin installation to create or receive manual code releases in either site role.
+- Excludes this plugin from its own code comparison and manual release payload.
+
 ## 0.4.2 - 2026-08-15
 
 - Synchronized the comparison plugin release with the companion installer ZIP upload compatibility fix.

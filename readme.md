@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.4.2
+Version: 0.5.0
 Status: MVP
 
 ## Purpose
@@ -23,7 +23,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
-- Provides a companion TN Code Release Installer with a destination-side **Upload Release** page.
+- Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
 - Does not automatically delete destination-only packages.
 - Delivers releases through the native WordPress Plugins update interface from public GitHub release assets.
 
@@ -39,7 +39,6 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 
 - Repository: https://github.com/cchatterton/tn-wp-migrate-code-diff
 - Release asset: `tn-wp-migrate-code-diff.zip`
-- Companion installer asset: `tn-code-release-installer.zip`
 - Use “Check for updates” beneath the plugin on the WordPress Plugins screen to bypass stale caches and run WordPress's native update check.
 - When a newer release exists, WordPress displays its standard update notice, “View details,” and “update now” action.
 
@@ -58,5 +57,5 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 ## Future Considerations
 
 - Add optional package content fingerprints if version metadata proves insufficient.
-- Add an optional companion endpoint on the remote site for exact network-vs-subsite activation reporting.
+- Add an optional remote endpoint for exact network-vs-subsite activation reporting.
 - Add GitHub release updates after a public destination repository and release asset name are declared.

@@ -2,6 +2,10 @@
     max-width: 1180px;
 }
 
+.twmcd-admin-wrap.twmcd-upload-wrap {
+    max-width: 860px;
+}
+
 .twmcd-migrate-notice {
     align-items: center;
     background: #fff8e5;

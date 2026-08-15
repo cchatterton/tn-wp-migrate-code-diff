@@ -7,7 +7,7 @@ define('WPMU_PLUGIN_DIR', WP_CONTENT_DIR . '/mu-plugins');
 define('MB_IN_BYTES', 1048576);
 define('GB_IN_BYTES', 1073741824);
 define('FS_CHMOD_DIR', 0755);
-define('TNCRI_PLUGIN_FILE', WP_PLUGIN_DIR . '/tn-code-release-installer/tn-code-release-installer.php');
+define('TWMCD_PLUGIN_FILE', WP_PLUGIN_DIR . '/tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php');
 
 class WP_Error
 {
@@ -51,7 +51,7 @@ function sanitize_file_name($name)
 
 function plugin_basename($path)
 {
-    return 'tn-code-release-installer/tn-code-release-installer.php';
+    return 'tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php';
 }
 
 function trailingslashit($path)
@@ -69,7 +69,7 @@ function current_user_can()
     return true;
 }
 
-class TNCRI_Test_Filesystem
+class TWMCD_Test_Filesystem
 {
     public function exists($path)
     {
@@ -113,7 +113,7 @@ class TNCRI_Test_Filesystem
 }
 
 require dirname(__DIR__) . '/functions/release-package.php';
-require dirname(__DIR__) . '/release-installer/tn-code-release-installer/functions/installer.php';
+require dirname(__DIR__) . '/functions/release-installer.php';
 
 if (!class_exists('ZipArchive')) {
     fwrite(STDERR, "SKIP: ZipArchive is unavailable.\n");
@@ -151,7 +151,7 @@ $zip->close();
 
 $zip = new ZipArchive();
 $zip->open($zip_path);
-$validation = tncri_validate_release_archive($zip);
+$validation = twmcd_validate_release_archive($zip);
 $zip->close();
 if (is_wp_error($validation)) {
     fwrite(STDERR, 'FAIL: ' . $validation->get_error_message() . "\n");
@@ -168,7 +168,7 @@ $zip = new ZipArchive();
 $zip->open($zip_path);
 $zip->extractTo($workspace);
 $zip->close();
-if (is_wp_error(tncri_validate_extracted_files($workspace, $manifest))) {
+if (is_wp_error(twmcd_validate_extracted_files($workspace, $manifest))) {
     fwrite(STDERR, "FAIL: valid extracted checksums were rejected.\n");
     exit(1);
 }
@@ -178,8 +178,8 @@ mkdir(WP_CONTENT_DIR . '/themes', 0777, true);
 mkdir(WPMU_PLUGIN_DIR, 0777, true);
 mkdir(WP_PLUGIN_DIR . '/sample-plugin', 0777, true);
 file_put_contents(WP_PLUGIN_DIR . '/sample-plugin/old.php', "old\n");
-$GLOBALS['wp_filesystem'] = new TNCRI_Test_Filesystem();
-$installed = tncri_install_manifest_packages($workspace, $manifest);
+$GLOBALS['wp_filesystem'] = new TWMCD_Test_Filesystem();
+$installed = twmcd_install_manifest_packages($workspace, $manifest);
 if (is_wp_error($installed)
     || !is_file(WP_PLUGIN_DIR . '/sample-plugin/sample-plugin.php')
     || is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')) {
@@ -194,7 +194,7 @@ $zip->addFromString('manifest.json', '{}');
 $zip->addFromString('../unsafe.php', '<?php');
 $zip->close();
 $zip->open($unsafe_zip_path);
-$unsafe_validation = tncri_validate_release_archive($zip);
+$unsafe_validation = twmcd_validate_release_archive($zip);
 $zip->close();
 if (!is_wp_error($unsafe_validation)) {
     fwrite(STDERR, "FAIL: unsafe archive path was accepted.\n");

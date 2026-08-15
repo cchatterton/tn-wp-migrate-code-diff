@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) {
 
 function twmcd_compare_code_inventories($source_inventory, $destination_inventory)
 {
+    $plugin_file = plugin_basename(TWMCD_PLUGIN_FILE);
+    unset($source_inventory['plugins'][$plugin_file], $destination_inventory['plugins'][$plugin_file]);
+
     return array(
         'plugins'   => twmcd_compare_package_group($source_inventory, $destination_inventory, 'plugins'),
         'themes'    => twmcd_compare_package_group($source_inventory, $destination_inventory, 'themes'),
