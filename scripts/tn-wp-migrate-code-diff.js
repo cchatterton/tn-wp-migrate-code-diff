@@ -116,7 +116,7 @@
 
             markup += '<tr><th scope="row" class="check-column">';
             markup += '<input class="twmcd-package-selection" type="checkbox" aria-label="Select ' + escapeHtml(packageData.name) + '" data-group="' + groupKey + '" data-index="' + packageIndex + '"' + (selectedByDefault ? ' checked' : '') + (selectionDisabled ? ' disabled' : '') + '>';
-            markup += '</th><td><strong>' + escapeHtml(packageData.name) + '</strong><br><code>' + escapeHtml(packageData.key) + '</code></td>';
+            markup += '</th><td><strong>' + escapeHtml(packageData.name) + '</strong></td>';
             markup += '<td><span class="twmcd-status twmcd-status-' + packageData.status + '">' + escapeHtml(statusLabel(packageData.status)) + '</span></td>';
             markup += '<td>' + escapeHtml(packageData.source_version || '—') + '</td>';
             markup += '<td>' + escapeHtml(packageData.destination_version || '—') + '</td>';

@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.7.0
+Version: 0.8.0
 Status: MVP
 
 ## Purpose
@@ -27,6 +27,8 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Records selected destination-only packages as explicit removal operations, allowing a manual release to add, replace, and remove code packages.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
+- Provides **Settings > Release Notes**, backed by a custom network-aware history table, for manual release auditing.
+- Records package creator/source, deployment user/destination, rollback creation, timestamps, and package additions, version transitions, and removals.
 - Provides separate Create Rollback and Install Release actions for a selected release ZIP.
 - Shows an in-progress spinner and busy label while creating a release package, creating a rollback, or installing a release.
 - Requests the WordPress admin memory allowance and an unlimited PHP execution window for long package operations where hosting policy permits.
@@ -63,6 +65,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Forward and rollback removals are restricted to exact, validated plugin, theme, or must-use-plugin destinations; the active release installer cannot remove itself.
 - A rollback created before installation contains the complete destination files for selected removals so those packages can be restored.
 - Manual release checksums detect corruption or modification but do not establish publisher identity. Install only packages obtained from a trusted source.
+- Release history stores WordPress user IDs/display names, site URLs, timestamps, and code package/version metadata; it does not store WP Migrate connection secrets.
 - The WP Migrate secret key is stored only as part of the saved WP Migrate profile, matching WP Migrate's existing profile behaviour.
 
 ## Future Considerations

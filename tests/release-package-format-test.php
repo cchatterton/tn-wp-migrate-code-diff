@@ -95,6 +95,16 @@ function home_url()
     return 'https://destination.example';
 }
 
+function twmcd_current_release_user()
+{
+    return array('id' => 1, 'login' => 'release-user', 'display_name' => 'Release User');
+}
+
+function twmcd_record_release_history()
+{
+    return true;
+}
+
 class TWMCD_Test_Filesystem
 {
     public function exists($path)
@@ -269,8 +279,10 @@ $rollback_zip->close();
 if (is_wp_error($rollback_validation)
     || 'Release-Test-rollback' !== $rollback_validation['manifest']['release_id']
     || 'plugins/new-plugin' !== $rollback_validation['manifest']['remove_packages'][0]['destination']
+    || '1.0.0' !== $rollback_validation['manifest']['remove_packages'][0]['version']
     || !isset($rollback_validation['manifest']['files']['payload/plugins/sample-plugin/old.php'])
-    || !isset($rollback_validation['manifest']['files']['payload/plugins/obsolete-plugin/obsolete-plugin.php'])) {
+    || !isset($rollback_validation['manifest']['files']['payload/plugins/obsolete-plugin/obsolete-plugin.php'])
+    || '' !== $rollback_validation['manifest']['packages'][1]['from_version']) {
     fwrite(STDERR, "FAIL: rollback release did not preserve replacements and record additions.\n");
     exit(1);
 }

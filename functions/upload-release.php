@@ -72,6 +72,8 @@ function twmcd_receive_and_create_rollback()
         );
     }
 
+    twmcd_record_release_history($validation['manifest'], 'rollback_created');
+
     return $rollback_package;
 }
 
@@ -84,6 +86,10 @@ function twmcd_receive_and_install_release($create_rollback = false)
 
     $result = twmcd_install_release_archive($uploaded_file, $create_rollback);
     wp_delete_file($uploaded_file);
+
+    if (!is_wp_error($result) && !empty($result['manifest'])) {
+        twmcd_record_release_history($result['manifest'], 'installed');
+    }
 
     return $result;
 }

@@ -6,6 +6,22 @@
     max-width: 860px;
 }
 
+.twmcd-admin-wrap.twmcd-history-wrap {
+    max-width: 1500px;
+}
+
+.twmcd-history-table td {
+    vertical-align: top;
+}
+
+.twmcd-history-table .twmcd-history-status {
+    color: #646970;
+}
+
+.twmcd-history-table .twmcd-history-change + .twmcd-history-change {
+    margin-top: 5px;
+}
+
 .twmcd-migrate-notice {
     align-items: center;
     background: #fff8e5;

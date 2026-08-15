@@ -77,6 +77,7 @@ function twmcd_install_release_archive($zip_path, $create_rollback = false)
         'message'          => $message,
         'packages'         => $installation,
         'rollback_package' => $rollback_package,
+        'manifest'         => $validation['manifest'],
     );
 }
 
@@ -105,6 +106,7 @@ function twmcd_create_rollback_release_package($manifest)
                 'type'        => $package['type'],
                 'key'         => isset($package['key']) ? $package['key'] : '',
                 'name'        => $package['name'],
+                'version'     => isset($package['version']) ? $package['version'] : '',
                 'destination' => $package['destination'],
             );
         }
@@ -121,6 +123,7 @@ function twmcd_create_rollback_release_package($manifest)
 
         $restore_package = $package;
         $restore_package['archive_path'] = 'payload/' . $package['destination'];
+        $restore_package['_twmcd_restore_removed'] = true;
         $existing_packages[] = array('package' => $restore_package, 'source_path' => $target);
     }
 
@@ -158,11 +161,13 @@ function twmcd_create_rollback_release_package($manifest)
         }
 
         $manifest_files = array_merge($manifest_files, $added_files);
+        $restores_removed_package = !empty($package['_twmcd_restore_removed']);
         $manifest_packages[] = array(
             'type'         => $package['type'],
             'key'          => isset($package['key']) ? $package['key'] : '',
             'name'         => $package['name'],
-            'version'      => '',
+            'from_version' => $restores_removed_package ? '' : (isset($package['version']) ? $package['version'] : ''),
+            'version'      => isset($package['from_version']) ? $package['from_version'] : (isset($package['version']) ? $package['version'] : ''),
             'archive_path' => $package['archive_path'],
             'destination'  => $package['destination'],
         );
@@ -174,6 +179,9 @@ function twmcd_create_rollback_release_package($manifest)
         'release_id'  => $rollback_release_id,
         'created_at'  => gmdate('c'),
         'source_url'  => home_url(),
+        'destination_url' => isset($manifest['source_url']) ? $manifest['source_url'] : '',
+        'created_by'  => twmcd_current_release_user(),
+        'parent_release_id' => $manifest['release_id'],
         'generator'   => array(
             'plugin'  => 'tn-wp-migrate-code-diff',
             'version' => TWMCD_VERSION,

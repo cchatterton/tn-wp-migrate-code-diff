@@ -10,10 +10,11 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     $is_comparison_page = TWMCD_PAGE_SLUG === $page;
     $is_database_page = TWMCD_DATABASE_PAGE_SLUG === $page;
     $is_upload_page = TWMCD_UPLOAD_PAGE_SLUG === $page;
+    $is_history_page = TWMCD_HISTORY_PAGE_SLUG === $page;
     $is_wp_migrate_page = 'wp-migrate-db-pro' === $page
         || false !== strpos((string) $hook_suffix, 'wp-migrate-db-pro');
 
-    if (!$is_comparison_page && !$is_database_page && !$is_upload_page && !$is_wp_migrate_page) {
+    if (!$is_comparison_page && !$is_database_page && !$is_upload_page && !$is_history_page && !$is_wp_migrate_page) {
         return;
     }
 
@@ -32,6 +33,10 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             TWMCD_VERSION,
             true
         );
+        return;
+    }
+
+    if ($is_history_page) {
         return;
     }
 

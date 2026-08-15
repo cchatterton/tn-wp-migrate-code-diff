@@ -102,6 +102,7 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
             'type'         => $package_row['type'],
             'key'          => $package_row['key'],
             'name'         => $package_row['name'],
+            'from_version' => $package_row['destination_version'],
             'version'      => $package_row['version'],
             'archive_path' => $package_row['archive_path'],
             'destination'  => $package_row['destination'],
@@ -113,6 +114,10 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         'release_id'  => $release_name,
         'created_at'  => gmdate('c'),
         'source_url'  => home_url(),
+        'destination_url' => !empty($comparison_state['context']['connection']['url'])
+            ? $comparison_state['context']['connection']['url']
+            : '',
+        'created_by'  => twmcd_current_release_user(),
         'generator'   => array(
             'plugin'  => 'tn-wp-migrate-code-diff',
             'version' => TWMCD_VERSION,
@@ -128,6 +133,7 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         return new WP_Error('twmcd_manifest_write', __('The release manifest could not be written.', 'tn-wp-migrate-code-diff'));
     }
     $zip->close();
+    twmcd_record_release_history($manifest, 'package_created');
 
     return array(
         'path'     => $zip_path,
@@ -180,6 +186,7 @@ function twmcd_selected_release_operations($comparison_state, $selection)
                     'key'     => sanitize_text_field($package['key']),
                     'name'    => sanitize_text_field($package['name']),
                     'version' => sanitize_text_field($package['source_version']),
+                    'destination_version' => sanitize_text_field($package['destination_version']),
                 )
             );
         }

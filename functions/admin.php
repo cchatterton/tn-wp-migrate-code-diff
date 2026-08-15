@@ -15,6 +15,14 @@ function twmcd_register_admin_page()
             TWMCD_UPLOAD_PAGE_SLUG,
             'twmcd_render_upload_release_page'
         );
+        add_submenu_page(
+            'settings.php',
+            __('Release Notes', 'tn-wp-migrate-code-diff'),
+            __('Release Notes', 'tn-wp-migrate-code-diff'),
+            twmcd_release_install_capability(),
+            TWMCD_HISTORY_PAGE_SLUG,
+            'twmcd_render_release_history_page'
+        );
     } else {
         add_options_page(
             __('Upload Release', 'tn-wp-migrate-code-diff'),
@@ -22,6 +30,13 @@ function twmcd_register_admin_page()
             twmcd_release_install_capability(),
             TWMCD_UPLOAD_PAGE_SLUG,
             'twmcd_render_upload_release_page'
+        );
+        add_options_page(
+            __('Release Notes', 'tn-wp-migrate-code-diff'),
+            __('Release Notes', 'tn-wp-migrate-code-diff'),
+            twmcd_release_install_capability(),
+            TWMCD_HISTORY_PAGE_SLUG,
+            'twmcd_render_release_history_page'
         );
     }
 
@@ -42,6 +57,23 @@ function twmcd_register_admin_page()
         TWMCD_DATABASE_PAGE_SLUG,
         'twmcd_render_database_admin_page'
     );
+}
+
+function twmcd_release_history_page_url()
+{
+    return is_multisite()
+        ? network_admin_url('settings.php?page=' . TWMCD_HISTORY_PAGE_SLUG)
+        : admin_url('options-general.php?page=' . TWMCD_HISTORY_PAGE_SLUG);
+}
+
+function twmcd_render_release_history_page()
+{
+    if (!current_user_can(twmcd_release_install_capability())) {
+        wp_die(esc_html__('You do not have permission to view release notes.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $history_rows = twmcd_get_release_history();
+    require TWMCD_PLUGIN_DIR . 'templates/release-history-page.php';
 }
 
 function twmcd_release_install_capability()
@@ -93,6 +125,10 @@ function twmcd_render_admin_page()
 
 function twmcd_add_plugin_action_link($links)
 {
+    array_unshift(
+        $links,
+        '<a href="' . esc_url(twmcd_release_history_page_url()) . '">' . esc_html__('Release Notes', 'tn-wp-migrate-code-diff') . '</a>'
+    );
     array_unshift(
         $links,
         '<a href="' . esc_url(twmcd_upload_release_page_url()) . '">' . esc_html__('Upload Release', 'tn-wp-migrate-code-diff') . '</a>'

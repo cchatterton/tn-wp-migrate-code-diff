@@ -2,6 +2,14 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.0 - 2026-08-15
+
+- Adds a network-aware custom release history table created on activation or upgrade.
+- Adds Settings → Release Notes with package creator/source, deployment user/destination, rollback status, event timestamps, and added/updated/removed package details.
+- Embeds the source package creator, destination site, and before/after versions in new release manifests without storing connection secrets.
+- Records package creation, rollback creation, and successful installation events.
+- Removes internal plugin paths from the visible comparison table while retaining them for package operations.
+
 ## 0.7.0 - 2026-08-15
 
 - Enables destination-only packages as selectable removal operations in manual releases.
