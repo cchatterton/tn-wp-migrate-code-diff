@@ -22,7 +22,7 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
 
     return array(
         '_twmcd' => array(
-            'profile_schema' => 1,
+            'profile_schema' => 2,
         ),
         'current_migration' => array(
             'connected'                 => true,
@@ -57,6 +57,7 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
             'payloadSizeHistory'        => array(),
             'fileTransferStats'          => array(),
             'forceHighPerformanceTransfers' => true,
+            'highPerformanceTransfersStatus' => false,
             'fseDumpFilename'           => null,
         ),
         'connection_info' => array(
@@ -82,14 +83,8 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
                 'retry_over_http'              => false,
             ),
         ),
-        'search_replace' => array(
-            'custom_search_replace'     => array(),
-            'standard_search_visible'   => true,
-            'standard_options_enabled'  => array('domain', 'path'),
-        ),
-        'media_files' => array(
-            'enabled' => false,
-        ),
+        'search_replace' => twmcd_complete_search_replace_profile_state(array()),
+        'media_files' => twmcd_complete_media_profile_state(array('enabled' => false)),
         'theme_plugin_files' => array(
             'available'          => true,
             'is_licensed'        => true,
@@ -138,6 +133,68 @@ function twmcd_complete_multisite_profile_state($multisite_tools)
     );
 }
 
+function twmcd_complete_media_profile_state($media_files)
+{
+    return array_merge(
+        array(
+            'enabled'        => false,
+            'option'         => 'all',
+            'available'      => true,
+            'is_licensed'    => true,
+            'message'        => '',
+            'excludes'       => ".DS_Store\n*.log\n*backup*/\n*cache*/",
+            'last_migration' => '',
+            'date'           => gmdate('Y-m-d\TH:i:s.000\Z'),
+        ),
+        is_array($media_files) ? $media_files : array()
+    );
+}
+
+function twmcd_complete_search_replace_profile_state($search_replace)
+{
+    $search_replace = is_array($search_replace) ? $search_replace : array();
+    $standard_search_replace = isset($search_replace['standard_search_replace'])
+        && is_array($search_replace['standard_search_replace'])
+        ? $search_replace['standard_search_replace']
+        : array();
+    $domain = isset($standard_search_replace['domain']) && is_array($standard_search_replace['domain'])
+        ? $standard_search_replace['domain']
+        : array();
+    $path = isset($standard_search_replace['path']) && is_array($standard_search_replace['path'])
+        ? $standard_search_replace['path']
+        : array();
+    $custom_search_replace = !empty($search_replace['custom_search_replace'])
+        && is_array($search_replace['custom_search_replace'])
+        ? $search_replace['custom_search_replace']
+        : array(
+            array(
+                'replace_old'             => '',
+                'replace_new'             => '',
+                'focus'                   => false,
+                'regex'                   => false,
+                'isValidRegex'            => null,
+                'replace_old_placeholder' => null,
+                'replace_new_placeholder' => null,
+                'id'                      => wp_generate_uuid4(),
+            ),
+        );
+
+    return array(
+        'standard_search_replace' => array(
+            'domain' => array_merge(array('search' => '', 'replace' => '', 'enabled' => true), $domain),
+            'path'   => array_merge(array('search' => '', 'replace' => '', 'enabled' => true), $path),
+        ),
+        'standard_options_enabled'  => isset($search_replace['standard_options_enabled'])
+            ? array_values((array) $search_replace['standard_options_enabled'])
+            : array('domain', 'path'),
+        'standard_search_visible'   => isset($search_replace['standard_search_visible'])
+            ? (bool) $search_replace['standard_search_visible']
+            : true,
+        'custom_search_replace'     => $custom_search_replace,
+        'custom_search_domain_locked' => !empty($search_replace['custom_search_domain_locked']),
+    );
+}
+
 function twmcd_is_legacy_release_profile($name, $profile)
 {
     if (!is_array($profile)
@@ -163,7 +220,7 @@ function twmcd_is_legacy_release_profile($name, $profile)
 
 function twmcd_repair_legacy_release_profiles()
 {
-    if (1 <= (int) get_site_option('twmcd_profile_schema_version', 0)) {
+    if (2 <= (int) get_site_option('twmcd_profile_schema_version', 0)) {
         return;
     }
 
@@ -181,8 +238,15 @@ function twmcd_repair_legacy_release_profiles()
             continue;
         }
 
-        $profile['_twmcd'] = array('profile_schema' => 1);
+        $profile['_twmcd'] = array('profile_schema' => 2);
         $profile['current_migration']['connected'] = true;
+        $profile['current_migration']['highPerformanceTransfersStatus'] = false;
+        $profile['media_files'] = twmcd_complete_media_profile_state(
+            isset($profile['media_files']) ? $profile['media_files'] : array()
+        );
+        $profile['search_replace'] = twmcd_complete_search_replace_profile_state(
+            isset($profile['search_replace']) ? $profile['search_replace'] : array()
+        );
         $profile['multisite_tools'] = twmcd_complete_multisite_profile_state(
             isset($profile['multisite_tools']) ? $profile['multisite_tools'] : array()
         );
@@ -194,7 +258,7 @@ function twmcd_repair_legacy_release_profiles()
         update_site_option('wpmdb_saved_profiles', $profiles);
     }
 
-    update_site_option('twmcd_profile_schema_version', 1);
+    update_site_option('twmcd_profile_schema_version', 2);
 }
 
 function twmcd_sanitize_profile_paths($paths)

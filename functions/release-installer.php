@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-function twmcd_install_release_archive($zip_path)
+function twmcd_install_release_archive($zip_path, $create_rollback = false)
 {
     if (!class_exists('ZipArchive')) {
         return new WP_Error('twmcd_zip_unavailable', __('The PHP Zip extension is required to install a release.', 'tn-wp-migrate-code-diff'));
@@ -49,10 +49,13 @@ function twmcd_install_release_archive($zip_path)
         return $checksum_validation;
     }
 
-    $rollback_package = twmcd_create_rollback_release_package($validation['manifest']);
-    if (is_wp_error($rollback_package)) {
-        twmcd_delete_workspace($workspace);
-        return $rollback_package;
+    $rollback_package = false;
+    if ($create_rollback) {
+        $rollback_package = twmcd_create_rollback_release_package($validation['manifest']);
+        if (is_wp_error($rollback_package)) {
+            twmcd_delete_workspace($workspace);
+            return $rollback_package;
+        }
     }
 
     $installation = twmcd_install_manifest_packages($workspace, $validation['manifest']);
@@ -70,10 +73,6 @@ function twmcd_install_release_archive($zip_path)
         $validation['manifest']['release_id'],
         count($installation)
     );
-    if (is_array($rollback_package)) {
-        $message .= ' ' . __('The rollback release ZIP has been downloaded.', 'tn-wp-migrate-code-diff');
-    }
-
     return array(
         'message'          => $message,
         'packages'         => $installation,

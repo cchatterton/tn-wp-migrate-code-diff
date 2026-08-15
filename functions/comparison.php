@@ -55,6 +55,9 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
         if (in_array($status, array('different', 'source_only'), true) && 'inactive' === $source_activation) {
             $default_selected = false;
         }
+        if ('muplugins' === $group_key) {
+            $default_selected = false;
+        }
         $comparison[] = array(
             'key'                => $package_key,
             'name'               => $display_package['name'],

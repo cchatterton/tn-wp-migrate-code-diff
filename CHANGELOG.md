@@ -2,6 +2,13 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.6.1 - 2026-08-15
+
+- Splits the manual upload workflow into independent Create Rollback and Install Release actions.
+- Repairs incomplete Media and Search & Replace state in previously generated release profiles so WP Migrate can render reopened profiles correctly.
+- Leaves must-use plugins unselected in the initial and Recommended comparison selections while preserving explicit saved-profile selections.
+- Removes explanatory narrative from the code comparison summary and release controls.
+
 ## 0.6.0 - 2026-08-15
 
 - Generates and downloads a reusable `<release-name>-rollback.zip` before installing a normal manual release.

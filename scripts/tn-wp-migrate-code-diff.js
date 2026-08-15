@@ -144,7 +144,7 @@
         });
 
         var scope = comparison.scope_label ? '<br><span>' + escapeHtml(comparison.scope_label) + '</span>' : '';
-        document.getElementById('twmcd-summary').innerHTML = '<strong>' + escapeHtml(comparison.source_url) + '</strong> &rarr; <strong>' + escapeHtml(comparison.destination_url) + '</strong>' + scope + '<br>' + differenceCount + ' ' + escapeHtml(TWMCD_ADMIN.labels.differencesFound) + '<p class="description">' + escapeHtml(comparison.note) + '</p>';
+        document.getElementById('twmcd-summary').innerHTML = '<strong>' + escapeHtml(comparison.source_url) + '</strong> &rarr; <strong>' + escapeHtml(comparison.destination_url) + '</strong>' + scope + '<br>' + differenceCount + ' ' + escapeHtml(TWMCD_ADMIN.labels.differencesFound);
         if (comparison.profile_selection_applied) {
             document.getElementById('twmcd-summary').insertAdjacentHTML(
                 'beforeend',
@@ -155,7 +155,6 @@
         }
         var releaseButton = document.getElementById('twmcd-create-release-package');
         releaseButton.disabled = !comparison.release_package_available;
-        document.getElementById('twmcd-release-package-note').textContent = comparison.release_package_note || '';
         loadingCard.hidden = true;
         resultsElement.hidden = false;
         updateSelectionCounts();

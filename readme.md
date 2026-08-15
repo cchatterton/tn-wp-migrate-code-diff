@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.6.0
+Version: 0.6.1
 Status: MVP
 
 ## Purpose
@@ -18,7 +18,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
-- Selects active source-only packages and active source upgrades by default, while leaving source downgrades and all inactive source packages unselected.
+- Selects active source-only plugins/themes and active source upgrades by default, while leaving must-use plugins, source downgrades, and all inactive source packages unselected.
 - Provides per-section Select All, Deselect All, and Recommended controls.
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
@@ -26,7 +26,8 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Refreshes a comparison in place using the existing WP Migrate connection context.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
-- Before installing a normal release, downloads a valid `<release-name>-rollback.zip` containing complete copies of replaced packages and validated removal instructions for packages newly introduced by the release.
+- Provides separate Create Rollback and Install Release actions for a selected release ZIP.
+- Creates a valid `<release-name>-rollback.zip` containing complete copies of replaced packages and validated removal instructions for packages newly introduced by the release, without changing the site.
 - Installs rollback ZIPs through the same Upload Release page without generating nested rollback packages.
 - Does not automatically delete destination-only packages.
 - Delivers releases through the native WordPress Plugins update interface from public GitHub release assets.
@@ -54,6 +55,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - This is a package/version comparison, not a file-content or line-by-line diff.
 - On a remote multisite, WP Migrate 2.7.8 exposes only a combined active flag, so the report deliberately uses the single label “Active” on both sides.
 - Activation is informational. A generated code-only profile transfers selected files and does not change activation/database options.
+- Create and retain the rollback ZIP before installing a normal release when rollback capability is required.
 - Manual release packages are available only for Push comparisons because the package generator must read the source files locally.
 - Rollback removal instructions are accepted only from a validated release whose manifest name ends in `-rollback`, and they are restricted to the exact safe plugin, theme, or must-use-plugin destinations recorded during installation.
 - Manual release checksums detect corruption or modification but do not establish publisher identity. Install only packages obtained from a trusted source.

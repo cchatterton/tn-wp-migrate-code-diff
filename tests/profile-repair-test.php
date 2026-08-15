@@ -56,6 +56,11 @@ function wp_json_encode($value)
     return json_encode($value);
 }
 
+function wp_generate_uuid4()
+{
+    return '00000000-0000-4000-8000-000000000001';
+}
+
 require dirname(__DIR__) . '/functions/profile.php';
 
 twmcd_repair_legacy_release_profiles();
@@ -68,7 +73,11 @@ if (empty($repaired['current_migration']['connected'])
     || empty($repaired['multisite_tools']['is_licensed'])
     || 7 !== $repaired['multisite_tools']['selected_subsite']
     || !isset($repaired['multisite_tools']['message'])
-    || 1 !== $repaired['_twmcd']['profile_schema']) {
+    || 'all' !== $repaired['media_files']['option']
+    || empty($repaired['media_files']['date'])
+    || !isset($repaired['search_replace']['standard_search_replace']['domain'])
+    || empty($repaired['search_replace']['custom_search_replace'])
+    || 2 !== $repaired['_twmcd']['profile_schema']) {
     fwrite(STDERR, "FAIL: legacy release profile was not repaired.\n");
     exit(1);
 }
@@ -78,7 +87,7 @@ if (isset($untouched['_twmcd'])) {
     exit(1);
 }
 
-if (1 !== $test_options['twmcd_profile_schema_version']) {
+if (2 !== $test_options['twmcd_profile_schema_version']) {
     fwrite(STDERR, "FAIL: profile repair schema version was not recorded.\n");
     exit(1);
 }

@@ -30,7 +30,6 @@ if (!defined('ABSPATH')) {
 
         <section class="twmcd-card" aria-labelledby="twmcd-profile-title">
             <h2 id="twmcd-profile-title"><?php esc_html_e('Create a code-only migration profile', 'tn-wp-migrate-code-diff'); ?></h2>
-            <p><?php esc_html_e('When comparison starts from a saved WP Migrate profile, its code selections are carried in exactly. Otherwise, active source-only packages and active source upgrades are selected by default. Recommended restores the smart version and activation rules. Activation differences remain informational.', 'tn-wp-migrate-code-diff'); ?></p>
             <p id="twmcd-release-selection-count" class="twmcd-release-selection-count" aria-live="polite"></p>
             <label class="twmcd-field-label" for="twmcd-profile-name"><?php esc_html_e('Profile name', 'tn-wp-migrate-code-diff'); ?></label>
             <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>">
@@ -38,7 +37,6 @@ if (!defined('ABSPATH')) {
             <button id="twmcd-open-profile" class="button" type="button" disabled><?php esc_html_e('Open profile', 'tn-wp-migrate-code-diff'); ?></button>
             <button id="twmcd-create-release-package" class="button" type="button"><?php esc_html_e('Create release package', 'tn-wp-migrate-code-diff'); ?></button>
             <div id="twmcd-profile-message" class="twmcd-message" role="status" aria-live="polite"></div>
-            <p id="twmcd-release-package-note" class="description"></p>
             <form id="twmcd-release-package-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" hidden>
                 <input type="hidden" name="action" value="twmcd_create_release_package">
                 <?php wp_nonce_field('twmcd_create_release_package', 'twmcd_release_nonce'); ?>

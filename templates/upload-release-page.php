@@ -21,9 +21,9 @@ if (!defined('ABSPATH')) {
     <?php endif; ?>
 
     <section class="twmcd-card" aria-labelledby="twmcd-upload-title">
-        <h2 id="twmcd-upload-title"><?php esc_html_e('Install a manual code release', 'tn-wp-migrate-code-diff'); ?></h2>
-        <p><?php esc_html_e('Upload a release ZIP created by this plugin on the source site. The installer validates its manifest and file checksums, then replaces only the included plugins, themes, and must-use plugins.', 'tn-wp-migrate-code-diff'); ?></p>
-        <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. Before installation, existing package files are downloaded as a release with “-rollback” added to its name. That rollback restores replaced packages and removes packages introduced by the release. Installing a rollback release does not generate another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
+        <h2 id="twmcd-upload-title"><?php esc_html_e('Manual code release', 'tn-wp-migrate-code-diff'); ?></h2>
+        <p><?php esc_html_e('Choose a release ZIP created by this plugin. Create Rollback validates the release and downloads the destination’s current files without installing it. Install Release validates and installs the selected package.', 'tn-wp-migrate-code-diff'); ?></p>
+        <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. The rollback restores replaced packages and removes packages introduced by the release. A rollback release can be installed, but cannot be used to create another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
 
         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="action" value="twmcd_upload_release">
@@ -31,7 +31,8 @@ if (!defined('ABSPATH')) {
             <label for="twmcd-release-file" class="twmcd-field-label"><?php esc_html_e('Release ZIP', 'tn-wp-migrate-code-diff'); ?></label>
             <input id="twmcd-release-file" name="release_file" type="file" accept=".zip,application/zip" required>
             <p>
-                <button type="submit" class="button button-primary"><?php esc_html_e('Upload and install release', 'tn-wp-migrate-code-diff'); ?></button>
+                <button type="submit" name="release_operation" value="create_rollback" class="button"><?php esc_html_e('Create Rollback', 'tn-wp-migrate-code-diff'); ?></button>
+                <button type="submit" name="release_operation" value="install" class="button button-primary"><?php esc_html_e('Install Release', 'tn-wp-migrate-code-diff'); ?></button>
             </p>
         </form>
     </section>

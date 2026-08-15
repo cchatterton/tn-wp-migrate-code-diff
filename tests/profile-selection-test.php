@@ -42,4 +42,30 @@ if (isset($without_profile['plugins'][0]['initial_selected'])) {
     exit(1);
 }
 
+$source_inventory = array(
+    'muplugins' => array(
+        'example.php' => array(
+            'name' => 'Example MU',
+            'version' => '2.0.0',
+            'activation' => 'always_active',
+            'path' => '/mu-plugins/example.php',
+        ),
+    ),
+);
+$destination_inventory = array(
+    'muplugins' => array(
+        'example.php' => array(
+            'name' => 'Example MU',
+            'version' => '1.0.0',
+            'activation' => 'always_active',
+            'path' => '/mu-plugins/example.php',
+        ),
+    ),
+);
+$mu_comparison = twmcd_compare_package_group($source_inventory, $destination_inventory, 'muplugins');
+if (!empty($mu_comparison[0]['default_selected'])) {
+    fwrite(STDERR, "FAIL: a must-use plugin was recommended by default.\n");
+    exit(1);
+}
+
 echo "PASS: saved profile initial selection.\n";

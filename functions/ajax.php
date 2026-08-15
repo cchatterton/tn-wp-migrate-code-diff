@@ -107,11 +107,7 @@ function twmcd_ajax_compare_code()
             'profile_selection_applied' => !empty($profile_selection['active']),
             'profile_selection_name' => !empty($profile_selection['name']) ? $profile_selection['name'] : '',
             'release_package_available' => 'push' === $intent,
-            'release_package_note' => 'push' === $intent
-                ? __('The selected local source packages can also be downloaded as a release ZIP.', 'tn-wp-migrate-code-diff')
-                : __('Release ZIPs can only be created when this site is the source. Change WP Migrate to Push and compare again.', 'tn-wp-migrate-code-diff'),
             'scope_label'      => isset($context['migration']['scope_label']) ? $context['migration']['scope_label'] : '',
-            'note'             => __('This is a package-level comparison. Activation is informational and a code-only profile does not change activation or database options.', 'tn-wp-migrate-code-diff'),
         )
     );
 }
