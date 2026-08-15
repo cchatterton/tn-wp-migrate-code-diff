@@ -42,6 +42,10 @@
     function multisiteFromDom() {
         var source = document.querySelector('#wpmdb-source-multisite-selector');
         var destination = document.querySelector('#wpmdb-destination-multisite-selector');
+        var selectors = document.querySelectorAll ? document.querySelectorAll('.subsites-selects select') : [];
+
+        source = source || selectors[0] || null;
+        destination = destination || selectors[1] || null;
 
         return {
             source_present: Boolean(source),
@@ -276,11 +280,14 @@
     }
 
     window.addEventListener('hashchange', initialise);
-    document.addEventListener('input', function (event) {
-        if (event.target && event.target.matches && event.target.matches('#connect textarea, #wpmdb-source-multisite-selector, #wpmdb-destination-multisite-selector')) {
+    function migrationControlChanged(event) {
+        if (event.target && event.target.matches && event.target.matches('#connect textarea, #wpmdb-source-multisite-selector, #wpmdb-destination-multisite-selector, .subsites-selects select')) {
             renderNotice();
         }
-    });
+    }
+
+    document.addEventListener('input', migrationControlChanged);
+    document.addEventListener('change', migrationControlChanged);
     document.addEventListener('click', function () {
         window.setTimeout(renderNotice, 0);
     });

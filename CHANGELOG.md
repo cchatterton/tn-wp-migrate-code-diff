@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.8 - 2026-08-15
+
+- Fixed Compare Now appearing before a required multisite subsite was selected.
+- Detects WP Migrate's rendered multisite selects by structure as well as by ID.
+- Re-checks comparison readiness when a multisite select changes.
+
 ## 0.2.7 - 2026-08-15
 
 - Added WP Migrate 2.7.8 DOM fallbacks for detecting the active connection string and Push/Pull direction.
