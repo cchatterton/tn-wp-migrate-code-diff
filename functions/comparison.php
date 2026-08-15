@@ -54,7 +54,7 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
         $display_package = $source_package ? $source_package : $destination_package;
         $default_selected = 'source_only' === $status
             || 'source_newer' === $status
-            || ('destination_only' === $status && 'inactive' === $destination_activation);
+            || ('plugins' === $group_key && 'destination_only' === $status && 'inactive' === $destination_activation);
         if (in_array($status, array('source_newer', 'source_older', 'source_only'), true) && 'inactive' === $source_activation) {
             $default_selected = false;
         }

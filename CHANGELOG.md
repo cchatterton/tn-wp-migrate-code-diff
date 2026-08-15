@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.1 - 2026-08-15
+
+- Limits default destination-only inactive removal selections to plugins.
+- Keeps destination-only themes and must-use plugins available for manual selection but unselected by default.
+
 ## 0.8.0 - 2026-08-15
 
 - Adds a network-aware custom release history table created on activation or upgrade.

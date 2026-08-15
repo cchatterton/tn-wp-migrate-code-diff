@@ -118,4 +118,19 @@ if ('destination_only' !== $destination_only_comparison[0]['status']
     exit(1);
 }
 
+$destination_only_theme = twmcd_compare_package_group(
+    array('themes' => array()),
+    array(
+        'themes' => array(
+            'inactive-theme' => array('name' => 'Inactive Theme', 'version' => '1.0.0', 'activation' => 'inactive'),
+        ),
+    ),
+    'themes'
+);
+if (!empty($destination_only_theme[0]['default_selected'])
+    || 'remove' !== $destination_only_theme[0]['selection_operation']) {
+    fwrite(STDERR, "FAIL: a destination-only inactive theme was recommended for removal.\n");
+    exit(1);
+}
+
 echo "PASS: saved profile initial selection.\n";
