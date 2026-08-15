@@ -26,6 +26,31 @@
         return boolValue(details.is_multisite);
     }
 
+    function connectionFromDom() {
+        var field = document.querySelector('#connect textarea');
+
+        return field && typeof field.value === 'string' ? field.value.trim() : '';
+    }
+
+    function intentFromDom() {
+        var summary = document.querySelector('#panel-summary-action_buttons .panel-summary');
+        var value = summary && summary.textContent ? summary.textContent.trim().toLowerCase() : '';
+
+        return value === 'push' || value === 'pull' ? value : '';
+    }
+
+    function multisiteFromDom() {
+        var source = document.querySelector('#wpmdb-source-multisite-selector');
+        var destination = document.querySelector('#wpmdb-destination-multisite-selector');
+
+        return {
+            source_present: Boolean(source),
+            destination_present: Boolean(destination),
+            selected_subsite: source ? parseInt(source.value, 10) || 0 : 0,
+            destination_subsite: destination ? parseInt(destination.value, 10) || 0 : 0
+        };
+    }
+
     function getSnapshot() {
         var store = getStore();
         if (!store) {
@@ -38,30 +63,44 @@
         var connectionContainer = migrations.connection_info || {};
         var connectionState = connectionContainer.connection_state || {};
         var multisite = state.multisite_tools || {};
-        var intent = current.intent;
+        var storeHasIntent = current.intent === 'push' || current.intent === 'pull';
+        var intent = storeHasIntent ? current.intent : intentFromDom();
         var localSite = migrations.local_site || {};
         var remoteSite = migrations.remote_site || {};
         var remoteDetails = remoteSite.site_details || {};
         var localIsMultisite = siteIsMultisite(localSite);
         var remoteIsMultisite = siteIsMultisite(remoteSite);
-        var localSource = typeof current.localSource === 'boolean'
+        var domMultisite = multisiteFromDom();
+        var localSource = storeHasIntent && typeof current.localSource === 'boolean'
             ? current.localSource
             : intent === 'push';
+        if (!remoteIsMultisite && (domMultisite.destination_present || (!localIsMultisite && domMultisite.source_present))) {
+            remoteIsMultisite = true;
+        }
         var sourceIsMultisite = localSource ? localIsMultisite : remoteIsMultisite;
         var destinationIsMultisite = localSource ? remoteIsMultisite : localIsMultisite;
-        var multisiteEnabled = boolValue(multisite.enabled);
-        var sourceSubsiteRequired = multisiteEnabled && (sourceIsMultisite || destinationIsMultisite)
-            && !parseInt(multisite.selected_subsite, 10);
-        var destinationSubsiteRequired = multisiteEnabled && boolValue(current.twoMultisites)
-            && destinationIsMultisite && !parseInt(multisite.destination_subsite, 10);
+        var selectedSubsite = parseInt(multisite.selected_subsite, 10) || domMultisite.selected_subsite;
+        var destinationSubsite = parseInt(multisite.destination_subsite, 10) || domMultisite.destination_subsite;
+        var twoMultisites = boolValue(current.twoMultisites) || domMultisite.destination_present;
+        var multisiteEnabled = boolValue(multisite.enabled) || domMultisite.source_present || domMultisite.destination_present;
+        var sourceSubsiteRequired = domMultisite.source_present
+            ? !selectedSubsite
+            : multisiteEnabled && (sourceIsMultisite || destinationIsMultisite) && !selectedSubsite;
+        var destinationSubsiteRequired = domMultisite.destination_present
+            ? !destinationSubsite
+            : multisiteEnabled && twoMultisites && destinationIsMultisite && !destinationSubsite;
 
-        var connection = connectionState.value || '';
+        var connection = typeof connectionState.value === 'string' ? connectionState.value.trim() : '';
         if (!connection && connectionState.url && connectionState.key) {
             connection = connectionState.url + '\n' + connectionState.key;
         }
+        if (!connection) {
+            connection = connectionFromDom();
+        }
         var connected = boolValue(current.connected)
             || Boolean(remoteDetails.home_url || remoteDetails.site_url)
-            || Boolean(connectionState.url && connectionState.key);
+            || Boolean(connectionState.url && connectionState.key)
+            || Boolean(connection);
 
         return {
             has_direction: intent === 'push' || intent === 'pull',
@@ -72,16 +111,16 @@
             context: {
                 multisite_tools: {
                     enabled: multisiteEnabled,
-                    selected_subsite: parseInt(multisite.selected_subsite, 10) || 0,
-                    destination_subsite: parseInt(multisite.destination_subsite, 10) || 0,
+                    selected_subsite: selectedSubsite,
+                    destination_subsite: destinationSubsite,
                     new_prefix: multisite.new_prefix || ''
                 },
                 migration: {
                     local_source: localSource,
-                    two_multisites: boolValue(current.twoMultisites),
+                    two_multisites: twoMultisites,
                     local_is_multisite: localIsMultisite,
                     remote_is_multisite: remoteIsMultisite,
-                    scope_label: scopeLabel(sourceIsMultisite, destinationIsMultisite, multisiteEnabled, boolValue(current.twoMultisites))
+                    scope_label: scopeLabel(sourceIsMultisite, destinationIsMultisite, multisiteEnabled, twoMultisites)
                 }
             }
         };
@@ -237,6 +276,14 @@
     }
 
     window.addEventListener('hashchange', initialise);
+    document.addEventListener('input', function (event) {
+        if (event.target && event.target.matches && event.target.matches('#connect textarea, #wpmdb-source-multisite-selector, #wpmdb-destination-multisite-selector')) {
+            renderNotice();
+        }
+    });
+    document.addEventListener('click', function () {
+        window.setTimeout(renderNotice, 0);
+    });
     initialise();
     pollTimer = window.setInterval(pollForStore, 250);
 }());

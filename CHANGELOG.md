@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.7 - 2026-08-15
+
+- Added WP Migrate 2.7.8 DOM fallbacks for detecting the active connection string and Push/Pull direction.
+- Detects selected source and destination subsites when the lightweight Redux store omits Multisite Tools state.
+- Re-renders the listener notice when connection and migration controls change.
+
 ## 0.2.6 - 2026-08-15
 
 - Added spacing below the Code Diff notice on the WP Migrate screen.
