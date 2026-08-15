@@ -127,15 +127,11 @@ function twmcd_add_plugin_action_link($links)
 {
     array_unshift(
         $links,
-        '<a href="' . esc_url(twmcd_release_history_page_url()) . '">' . esc_html__('Release Notes', 'tn-wp-migrate-code-diff') . '</a>'
-    );
-    array_unshift(
-        $links,
         '<a href="' . esc_url(twmcd_upload_release_page_url()) . '">' . esc_html__('Upload Release', 'tn-wp-migrate-code-diff') . '</a>'
     );
     array_unshift(
         $links,
-        '<a href="' . esc_url(twmcd_migrate_admin_url()) . '">' . esc_html__('Open WP Migrate', 'tn-wp-migrate-code-diff') . '</a>'
+        '<a href="' . esc_url(twmcd_migrate_admin_url()) . '">' . esc_html__('WP Migrate', 'tn-wp-migrate-code-diff') . '</a>'
     );
 
     return $links;

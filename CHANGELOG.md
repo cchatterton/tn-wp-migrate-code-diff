@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.3 - 2026-08-15
+
+- Simplifies the plugin-row actions to WP Migrate and Upload Release alongside WordPress native actions.
+- Keeps Release Notes available from Settings without duplicating it in the plugin row.
+
 ## 0.8.2 - 2026-08-15
 
 - Writes release history only on the receiving site through Upload Release.
