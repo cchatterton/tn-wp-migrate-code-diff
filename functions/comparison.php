@@ -40,7 +40,9 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
         } else {
             $status = (string) $source_package['version'] === (string) $destination_package['version']
                 ? 'same'
-                : 'different';
+                : (twmcd_source_version_is_older($source_package['version'], $destination_package['version'])
+                    ? 'source_older'
+                    : 'source_newer');
         }
 
         $source_activation = $source_package && isset($source_package['activation'])
@@ -51,8 +53,8 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
             : 'not_installed';
         $display_package = $source_package ? $source_package : $destination_package;
         $default_selected = 'source_only' === $status
-            || ('different' === $status && !twmcd_source_version_is_older($source_package['version'], $destination_package['version']));
-        if (in_array($status, array('different', 'source_only'), true) && 'inactive' === $source_activation) {
+            || 'source_newer' === $status;
+        if (in_array($status, array('source_newer', 'source_older', 'source_only'), true) && 'inactive' === $source_activation) {
             $default_selected = false;
         }
         if ('muplugins' === $group_key) {

@@ -68,4 +68,35 @@ if (!empty($mu_comparison[0]['default_selected'])) {
     exit(1);
 }
 
+$version_source = array(
+    'plugins' => array(
+        'newer/plugin.php' => array(
+            'name' => 'Newer Source',
+            'version' => '2.0.0',
+            'activation' => 'site_active',
+            'path' => '/plugins/newer',
+        ),
+        'older/plugin.php' => array(
+            'name' => 'Older Source',
+            'version' => '1.0.0',
+            'activation' => 'site_active',
+            'path' => '/plugins/older',
+        ),
+    ),
+);
+$version_destination = array(
+    'plugins' => array(
+        'newer/plugin.php' => array('name' => 'Newer Source', 'version' => '1.0.0', 'activation' => 'site_active'),
+        'older/plugin.php' => array('name' => 'Older Source', 'version' => '2.0.0', 'activation' => 'site_active'),
+    ),
+);
+$version_comparison = twmcd_compare_package_group($version_source, $version_destination, 'plugins');
+if ('source_newer' !== $version_comparison[0]['status']
+    || empty($version_comparison[0]['default_selected'])
+    || 'source_older' !== $version_comparison[1]['status']
+    || !empty($version_comparison[1]['default_selected'])) {
+    fwrite(STDERR, "FAIL: source version direction or recommendation was incorrect.\n");
+    exit(1);
+}
+
 echo "PASS: saved profile initial selection.\n";

@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.6.2 - 2026-08-15
+
+- Splits Different version into amber Source is Newer and red Source is Older statuses.
+- Keeps active source upgrades recommended and source downgrades unselected.
+
 ## 0.6.1 - 2026-08-15
 
 - Splits the manual upload workflow into independent Create Rollback and Install Release actions.

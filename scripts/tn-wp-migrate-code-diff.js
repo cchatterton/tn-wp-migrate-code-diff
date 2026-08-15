@@ -44,7 +44,8 @@
     function statusLabel(status) {
         var labels = {
             same: TWMCD_ADMIN.labels.same,
-            different: TWMCD_ADMIN.labels.different,
+            source_newer: TWMCD_ADMIN.labels.sourceNewer,
+            source_older: TWMCD_ADMIN.labels.sourceOlder,
             source_only: TWMCD_ADMIN.labels.sourceOnly,
             destination_only: TWMCD_ADMIN.labels.destinationOnly
         };

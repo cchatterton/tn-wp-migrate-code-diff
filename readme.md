@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.6.1
+Version: 0.6.2
 Status: MVP
 
 ## Purpose
@@ -12,7 +12,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 
 - Compares plugins, themes, and must-use plugins.
 - Keeps the experimental Database / Images implementation installed but hidden behind a disabled feature flag while code deployment is validated.
-- Reports same version, different version, absent on destination, and absent from source.
+- Reports same version, source newer, source older, absent on destination, and absent from source.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
 - Shows only Compare Code in the WP Migrate interface while the separate Database/Images implementation is disabled.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.

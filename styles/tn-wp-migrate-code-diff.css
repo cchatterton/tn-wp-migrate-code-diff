@@ -134,9 +134,14 @@
     color: #116329;
 }
 
-.twmcd-admin-wrap .twmcd-status-different {
+.twmcd-admin-wrap .twmcd-status-source_newer {
     background: #fff3cd;
     color: #6b4f00;
+}
+
+.twmcd-admin-wrap .twmcd-status-source_older {
+    background: #fce8e8;
+    color: #8a2424;
 }
 
 .twmcd-admin-wrap .twmcd-status-source_only {
