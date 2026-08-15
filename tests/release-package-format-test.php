@@ -340,6 +340,10 @@ if (is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
     fwrite(STDERR, "FAIL: a valid forward removal-only release was rejected.\n");
     exit(1);
 }
+if (!twmcd_is_safe_destination('plugins', 'plugins/Help Guides')) {
+    fwrite(STDERR, "FAIL: a valid plugin directory containing spaces was rejected.\n");
+    exit(1);
+}
 $remove_only_manifest['remove_packages'][0]['destination'] = 'plugins/../unsafe';
 if (!is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
     fwrite(STDERR, "FAIL: an unsafe package removal destination was accepted.\n");

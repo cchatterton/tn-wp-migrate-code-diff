@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.7 - 2026-08-15
+
+- Accepts valid WordPress package directory names containing spaces.
+- Keeps traversal, absolute-path, separator, and control-character protections without rewriting package destinations.
+
 ## 0.8.6 - 2026-08-15
 
 - Separates release-package preparation from the browser download.

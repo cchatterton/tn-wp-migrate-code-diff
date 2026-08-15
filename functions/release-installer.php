@@ -406,7 +406,7 @@ function twmcd_is_safe_destination($type, $destination)
     }
 
     foreach (array_slice($segments, 1) as $segment) {
-        if ($segment !== sanitize_file_name($segment)) {
+        if (preg_match('/[\x00-\x1F\x7F]/', $segment)) {
             return false;
         }
     }
