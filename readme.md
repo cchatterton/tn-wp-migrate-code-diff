@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.5.0
+Version: 0.5.1
 Status: MVP
 
 ## Purpose
@@ -11,10 +11,10 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 ## Key Features
 
 - Compares plugins, themes, and must-use plugins.
-- Provides a separate Database / Images report for table presence, estimated row counts, table sizes, uploads locations, and Media migration readiness.
-- Reports same version, different version, new on source, and absent from source.
+- Keeps the experimental Database / Images comparison visible but temporarily disabled while code deployment is validated.
+- Reports same version, different version, absent on destination, and absent from source.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
-- Offers separate Compare Code and Compare Database/Images actions and report routes.
+- Offers Compare Code and a clearly disabled Database/Images action so the two modes remain distinct.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
@@ -22,6 +22,8 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Provides per-section Select All, Deselect All, and Recommended controls.
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
+- Separates Save release profile, Open profile, and Create release package into independent actions.
+- Refreshes a comparison in place using the existing WP Migrate connection context.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
 - Does not automatically delete destination-only packages.
@@ -56,6 +58,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 
 ## Future Considerations
 
+- Re-enable the separate Database / Images comparison after its migration-scope model is validated.
 - Add optional package content fingerprints if version metadata proves insufficient.
 - Add an optional remote endpoint for exact network-vs-subsite activation reporting.
 - Add GitHub release updates after a public destination repository and release asset name are declared.

@@ -21,6 +21,9 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
     $default_exclusions = ".DS_Store\n.git\nnode_modules";
 
     return array(
+        '_twmcd' => array(
+            'profile_schema' => 1,
+        ),
         'current_migration' => array(
             'connected'                 => true,
             'intent'                    => $intent,
@@ -115,19 +118,83 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
             'core_excludes'      => $default_exclusions,
             'state'              => array('status' => ''),
         ),
-        'multisite_tools' => array_merge(
-            array(
-                'enabled'             => false,
-                'available'           => true,
-                'is_licensed'         => true,
-                'selected_subsite'    => 0,
-                'destination_subsite' => 0,
-                'new_prefix'          => '',
-                'message'             => '',
-            ),
-            $multisite_tools
-        ),
+        'multisite_tools' => twmcd_complete_multisite_profile_state($multisite_tools),
     );
+}
+
+function twmcd_complete_multisite_profile_state($multisite_tools)
+{
+    return array_merge(
+        array(
+            'enabled'             => false,
+            'available'           => true,
+            'is_licensed'         => true,
+            'selected_subsite'    => 0,
+            'destination_subsite' => 0,
+            'new_prefix'          => '',
+            'message'             => '',
+        ),
+        is_array($multisite_tools) ? $multisite_tools : array()
+    );
+}
+
+function twmcd_is_legacy_release_profile($name, $profile)
+{
+    if (!is_array($profile)
+        || !preg_match('/^Release-\d{8}-\d{2}:?\d{2}$/', (string) $name)
+        || empty($profile['current_migration'])
+        || empty($profile['connection_info']['connection_state'])
+        || empty($profile['theme_plugin_files'])) {
+        return false;
+    }
+
+    $migration = $profile['current_migration'];
+    $media_files = isset($profile['media_files']) && is_array($profile['media_files'])
+        ? $profile['media_files']
+        : array();
+
+    return isset($migration['databaseEnabled'])
+        && false === $migration['databaseEnabled']
+        && isset($media_files['enabled'])
+        && false === $media_files['enabled']
+        && isset($profile['theme_plugin_files']['plugins_option'])
+        && 'selected' === $profile['theme_plugin_files']['plugins_option'];
+}
+
+function twmcd_repair_legacy_release_profiles()
+{
+    if (1 <= (int) get_site_option('twmcd_profile_schema_version', 0)) {
+        return;
+    }
+
+    $profiles = get_site_option('wpmdb_saved_profiles');
+    $profiles = is_array($profiles) ? $profiles : array();
+    $changed = false;
+
+    foreach ($profiles as $profile_id => $stored_profile) {
+        $profile = isset($stored_profile['value'])
+            ? json_decode($stored_profile['value'], true)
+            : null;
+        $name = isset($stored_profile['name']) ? $stored_profile['name'] : '';
+
+        if (!twmcd_is_legacy_release_profile($name, $profile)) {
+            continue;
+        }
+
+        $profile['_twmcd'] = array('profile_schema' => 1);
+        $profile['current_migration']['connected'] = true;
+        $profile['multisite_tools'] = twmcd_complete_multisite_profile_state(
+            isset($profile['multisite_tools']) ? $profile['multisite_tools'] : array()
+        );
+        $profiles[$profile_id]['value'] = wp_json_encode($profile);
+        $changed = true;
+    }
+
+    if ($changed) {
+        update_site_option('wpmdb_saved_profiles', $profiles);
+    }
+
+    update_site_option('twmcd_profile_schema_version', 1);
 }
 
 function twmcd_sanitize_profile_paths($paths)

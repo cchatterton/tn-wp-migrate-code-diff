@@ -2,6 +2,14 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.5.1 - 2026-08-15
+
+- Split Save release profile, Open profile, and Create release package into three independent comparison-page actions.
+- Added an in-place Refresh comparison action.
+- Preserves the comparison context after saving or refreshing so the other release actions remain available.
+- Repairs the complete WP Migrate Multisite Tools state on legacy generated `Release-YYYYMMDD-HHMM` profiles.
+- Temporarily disabled Database/Images comparison in both the UI and AJAX handlers.
+
 ## 0.5.0 - 2026-08-15
 
 - Integrated Upload Release, archive validation, checksum verification, installation, and rollback into the main plugin.

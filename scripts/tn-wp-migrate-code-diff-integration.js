@@ -274,7 +274,7 @@
         placeNotice(notice);
 
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
-        var databaseButtonLabel = preparing === 'database' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.databaseButton;
+        var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseDisabledButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
 
@@ -296,7 +296,7 @@
             + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>'
             + '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
             + '<button type="button" class="button-link twmcd-compare-database" data-mode="database"'
-            + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>' : '');
+            + ' disabled aria-disabled="true">' + escapeHtml(databaseButtonLabel) + '</button>' : '');
 
         if (notice.innerHTML === markup) {
             return;
@@ -304,15 +304,9 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
-        var databaseButton = notice.querySelector('.twmcd-compare-database');
         if (button && actionAvailable) {
             button.addEventListener('click', function () {
                 prepareComparison('code');
-            });
-        }
-        if (databaseButton && actionAvailable) {
-            databaseButton.addEventListener('click', function () {
-                prepareComparison('database');
             });
         }
     }

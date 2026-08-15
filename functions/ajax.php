@@ -22,6 +22,14 @@ function twmcd_ajax_prepare_comparison()
 
     $intent = isset($_POST['intent']) && 'pull' === sanitize_key(wp_unslash($_POST['intent'])) ? 'pull' : 'push';
     $mode = isset($_POST['mode']) && 'database' === sanitize_key(wp_unslash($_POST['mode'])) ? 'database' : 'code';
+
+    if ('database' === $mode) {
+        wp_send_json_error(
+            array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
+
     $connection_info = isset($_POST['connection']) ? sanitize_textarea_field(wp_unslash($_POST['connection'])) : '';
     $connection = twmcd_parse_connection_info($connection_info);
 
@@ -82,8 +90,6 @@ function twmcd_ajax_compare_code()
     $profile_selection = isset($context['profile_selection']) ? $context['profile_selection'] : array('active' => false);
     $comparison_groups = twmcd_apply_loaded_profile_selection($comparison_groups, $profile_selection);
     $comparison_token = twmcd_create_comparison_token($context, $comparison_groups);
-    delete_site_transient(twmcd_context_transient_key($context_token));
-
     wp_send_json_success(
         array(
             'intent'           => $intent,
@@ -106,6 +112,11 @@ function twmcd_ajax_compare_code()
 function twmcd_ajax_compare_database_images()
 {
     twmcd_verify_ajax_request();
+
+    wp_send_json_error(
+        array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
+        400
+    );
 
     $context_token = isset($_POST['context_token']) ? sanitize_key(wp_unslash($_POST['context_token'])) : '';
     $context = twmcd_get_comparison_context($context_token);
@@ -186,7 +197,6 @@ function twmcd_ajax_save_profile()
     }
 
     $profile_id = twmcd_store_migration_profile($profile_name, $profile);
-    delete_site_transient(twmcd_comparison_transient_key($comparison_token));
     $redirect_url = add_query_arg(
         array(
             'redirect_profile' => $profile_id,
@@ -198,6 +208,7 @@ function twmcd_ajax_save_profile()
     wp_send_json_success(
         array(
             'message'      => __('The code-only migration profile was saved.', 'tn-wp-migrate-code-diff'),
+            'profile_id'   => $profile_id,
             'redirect_url' => $redirect_url,
         )
     );

@@ -47,6 +47,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                     'message'           => __('Site comparison is ready.', 'tn-wp-migrate-code-diff'),
                     'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
                     'databaseButton'    => __('Compare Database/Images', 'tn-wp-migrate-code-diff'),
+                    'databaseDisabledButton' => __('Compare Database/Images (temporarily disabled)', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
                     'waitingStore'      => __('Site comparison is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
@@ -107,6 +108,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             'labels'  => array(
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
+                'profileSaved'     => __('Release profile saved. You can now open it in WP Migrate.', 'tn-wp-migrate-code-diff'),
                 'releasePackageEmpty' => __('Select at least one source package before creating the release package.', 'tn-wp-migrate-code-diff'),
                 'profileSelectionApplied' => __('Initial selection loaded from saved profile: %s', 'tn-wp-migrate-code-diff'),
                 'savedProfile'       => __('Saved profile', 'tn-wp-migrate-code-diff'),

@@ -1,11 +1,14 @@
 (function () {
     'use strict';
 
-    var state = { comparison: null };
+    var state = { comparison: null, savedProfileUrl: '' };
     var resultsElement = document.getElementById('twmcd-results');
     var groupsElement = document.getElementById('twmcd-groups');
     var messageElement = document.getElementById('twmcd-message');
     var loadingCard = document.getElementById('twmcd-loading-card');
+    var profileMessageElement = document.getElementById('twmcd-profile-message');
+    var openProfileButton = document.getElementById('twmcd-open-profile');
+    var refreshButton = document.getElementById('twmcd-refresh-comparison');
     var groupLabels = {
         plugins: 'Plugins',
         themes: 'Themes',
@@ -63,6 +66,17 @@
 
     function showError(errorMessage) {
         messageElement.innerHTML = '<div class="notice notice-error inline"><p>' + escapeHtml(errorMessage) + '</p></div>';
+    }
+
+    function showProfileMessage(message, isError) {
+        profileMessageElement.innerHTML = '<div class="notice notice-' + (isError ? 'error' : 'success')
+            + ' inline"><p>' + escapeHtml(message) + '</p></div>';
+    }
+
+    function invalidateSavedProfile() {
+        state.savedProfileUrl = '';
+        openProfileButton.disabled = true;
+        profileMessageElement.innerHTML = '';
     }
 
     function renderGroup(groupKey, packages) {
@@ -197,11 +211,13 @@
             checkbox.checked = selectionMode === 'all'
                 || (selectionMode === 'recommended' && packageData && packageData.default_selected);
         });
+        invalidateSavedProfile();
         updateSelectionCounts();
     });
 
     groupsElement.addEventListener('change', function (event) {
         if (event.target && event.target.classList.contains('twmcd-package-selection')) {
+            invalidateSavedProfile();
             updateSelectionCounts();
         }
     });
@@ -217,12 +233,23 @@
             if (!response.success) {
                 throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.saveFailed);
             }
-            window.location.href = response.data.redirect_url;
+            state.savedProfileUrl = response.data.redirect_url;
+            openProfileButton.disabled = false;
+            showProfileMessage(response.data.message || TWMCD_ADMIN.labels.profileSaved, false);
+            saveButton.disabled = false;
         }).catch(function (error) {
-            showError(error.message);
+            showProfileMessage(error.message, true);
             saveButton.disabled = false;
         });
     });
+
+    openProfileButton.addEventListener('click', function () {
+        if (state.savedProfileUrl) {
+            window.location.href = state.savedProfileUrl;
+        }
+    });
+
+    document.getElementById('twmcd-profile-name').addEventListener('input', invalidateSavedProfile);
 
     document.getElementById('twmcd-create-release-package').addEventListener('click', function () {
         var form = document.getElementById('twmcd-release-package-form');
@@ -230,7 +257,7 @@
         var selectedCount = selection.plugins.length + selection.themes.length + selection.muplugins.length;
 
         if (!state.comparison || !state.comparison.release_package_available || !selectedCount) {
-            showError(TWMCD_ADMIN.labels.releasePackageEmpty);
+            showProfileMessage(TWMCD_ADMIN.labels.releasePackageEmpty, true);
             return;
         }
 
@@ -240,18 +267,33 @@
         form.submit();
     });
 
+    function loadComparison() {
+        refreshButton.disabled = true;
+        invalidateSavedProfile();
+        resultsElement.hidden = true;
+        loadingCard.hidden = false;
+        document.getElementById('twmcd-loading').classList.add('is-active');
+        messageElement.innerHTML = '';
+
+        request('twmcd_compare_code', { context_token: TWMCD_ADMIN.contextToken }).then(function (response) {
+            if (!response.success) {
+                throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.comparisonFailed);
+            }
+            renderComparison(response.data);
+            refreshButton.disabled = false;
+        }).catch(function (error) {
+            showError(error.message);
+            document.getElementById('twmcd-loading').classList.remove('is-active');
+            refreshButton.disabled = false;
+        });
+    }
+
+    refreshButton.addEventListener('click', loadComparison);
+
     if (!TWMCD_ADMIN.contextToken) {
         showError('No live WP Migrate context was supplied. Return to Migrate and choose Compare Code.');
         return;
     }
 
-    request('twmcd_compare_code', { context_token: TWMCD_ADMIN.contextToken }).then(function (response) {
-        if (!response.success) {
-            throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.comparisonFailed);
-        }
-        renderComparison(response.data);
-    }).catch(function (error) {
-        showError(error.message);
-        document.getElementById('twmcd-loading').classList.remove('is-active');
-    });
+    loadComparison();
 }());
