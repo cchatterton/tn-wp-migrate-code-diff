@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.5 - 2026-08-15
+
+- Fixed the listener notice removing itself when WP Migrate's active screen did not expose the expected URL hash route.
+- Uses the WP Migrate-only PHP mount and live migration intent instead of browser hash routing.
+- Positions the visible notice immediately after WP Migrate's own update notice instead of above the application header.
+
 ## 0.2.4 - 2026-08-15
 
 - Fixed WP Migrate's loading screen hanging when Code Diff was active.

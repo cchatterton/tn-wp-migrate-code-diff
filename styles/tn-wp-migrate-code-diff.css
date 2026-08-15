@@ -15,12 +15,11 @@
 }
 
 .twmcd-integration-notice-mount {
-    margin: 16px 30px;
-    max-width: 1280px;
+    display: none;
 }
 
-.twmcd-integration-notice-mount .twmcd-migrate-notice {
-    margin: 0;
+#root .twmcd-migrate-notice {
+    margin: 16px 0 0;
 }
 
 .twmcd-migrate-notice .twmcd-notice-icon {

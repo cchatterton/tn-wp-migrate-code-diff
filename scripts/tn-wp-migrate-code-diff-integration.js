@@ -107,9 +107,16 @@
         return document.getElementById('twmcd-integration-notice-mount');
     }
 
-    function isMigrateRoute() {
-        var route = window.location && window.location.hash ? window.location.hash : '';
-        return !route || route.indexOf('/migrate') !== -1 || route.indexOf('/unsaved') !== -1;
+    function placeNotice(notice) {
+        var wpMigrateNotice = document.querySelector('#root .migrate-notice.warning');
+
+        if (!wpMigrateNotice || !wpMigrateNotice.parentNode) {
+            return;
+        }
+
+        if (notice.parentNode !== wpMigrateNotice.parentNode || notice.previousSibling !== wpMigrateNotice) {
+            wpMigrateNotice.parentNode.insertBefore(notice, wpMigrateNotice.nextSibling);
+        }
     }
 
     function removeNotice() {
@@ -123,7 +130,7 @@
         var snapshot = getSnapshot();
         var container = noticeContainer();
 
-        if (!container || !isMigrateRoute()) {
+        if (!container) {
             removeNotice();
             return;
         }
@@ -136,6 +143,8 @@
             notice.setAttribute('role', 'status');
             container.insertBefore(notice, container.firstChild);
         }
+
+        placeNotice(notice);
 
         var buttonLabel = preparing ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
