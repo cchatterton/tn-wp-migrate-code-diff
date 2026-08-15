@@ -4,6 +4,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+function twmcd_prepare_long_running_operation()
+{
+    ignore_user_abort(true);
+    if (function_exists('set_time_limit')) {
+        @set_time_limit(0);
+    }
+    if (function_exists('wp_raise_memory_limit')) {
+        wp_raise_memory_limit('admin');
+    }
+}
+
 function twmcd_admin_capability()
 {
     return is_multisite() ? 'manage_network_options' : 'export';

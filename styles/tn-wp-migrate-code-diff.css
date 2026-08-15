@@ -116,6 +116,20 @@
     margin-top: 14px;
 }
 
+.twmcd-admin-wrap .twmcd-release-button-spinner.spinner {
+    float: none;
+    margin: 0 5px 0 0;
+    vertical-align: middle;
+}
+
+.twmcd-admin-wrap .button:not(.is-busy) .twmcd-release-button-spinner {
+    display: none;
+}
+
+.twmcd-admin-wrap .button.is-busy {
+    cursor: wait;
+}
+
 .twmcd-admin-wrap .twmcd-summary {
     border-left: 4px solid #2271b1;
 }

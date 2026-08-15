@@ -12,6 +12,8 @@ function twmcd_handle_create_release_package()
         wp_die(esc_html__('You do not have permission to create release packages.', 'tn-wp-migrate-code-diff'), 403);
     }
 
+    twmcd_prepare_long_running_operation();
+
     $release_name = isset($_POST['release_name'])
         ? sanitize_text_field(wp_unslash($_POST['release_name']))
         : twmcd_default_profile_name();

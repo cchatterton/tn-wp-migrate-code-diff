@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.6.3 - 2026-08-15
+
+- Adds in-progress spinners and busy labels to Create release package, Create Rollback, and Install Release.
+- Uses managed downloads so release and rollback buttons recover correctly after completion or failure.
+- Raises the WordPress admin memory limit and removes the PHP execution deadline for package operations where the host permits it.
+
 ## 0.6.2 - 2026-08-15
 
 - Splits Different version into amber Source is Newer and red Source is Older statuses.

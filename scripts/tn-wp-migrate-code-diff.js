@@ -9,6 +9,7 @@
     var profileMessageElement = document.getElementById('twmcd-profile-message');
     var openProfileButton = document.getElementById('twmcd-open-profile');
     var refreshButton = document.getElementById('twmcd-refresh-comparison');
+    var releasePackageButton = document.getElementById('twmcd-create-release-package');
     var groupLabels = {
         plugins: 'Plugins',
         themes: 'Themes',
@@ -154,8 +155,7 @@
                 ) + '</strong></p>'
             );
         }
-        var releaseButton = document.getElementById('twmcd-create-release-package');
-        releaseButton.disabled = !comparison.release_package_available;
+        releasePackageButton.disabled = !comparison.release_package_available;
         loadingCard.hidden = true;
         resultsElement.hidden = false;
         updateSelectionCounts();
@@ -256,7 +256,36 @@
 
     document.getElementById('twmcd-profile-name').addEventListener('input', invalidateSavedProfile);
 
-    document.getElementById('twmcd-create-release-package').addEventListener('click', function () {
+    function releaseFilename(response, fallbackName) {
+        var disposition = response.headers.get('Content-Disposition') || '';
+        var match = disposition.match(/filename="?([^";]+)"?/i);
+        return match && match[1] ? match[1] : fallbackName + '.zip';
+    }
+
+    function releaseError(response) {
+        return response.text().then(function (responseText) {
+            var errorDocument = new DOMParser().parseFromString(responseText, 'text/html');
+            var errorHeading = errorDocument.querySelector('h1');
+            var errorMessage = errorDocument.querySelector('.wp-die-message, p');
+            throw new Error(
+                (errorMessage && errorMessage.textContent.trim())
+                || (errorHeading && errorHeading.textContent.trim())
+                || TWMCD_ADMIN.labels.releasePackageFailed
+            );
+        });
+    }
+
+    function setReleasePackageBusy(isBusy) {
+        var label = releasePackageButton.querySelector('.twmcd-release-button-label');
+        var spinner = releasePackageButton.querySelector('.twmcd-release-button-spinner');
+        releasePackageButton.disabled = isBusy || !state.comparison || !state.comparison.release_package_available;
+        releasePackageButton.classList.toggle('is-busy', isBusy);
+        releasePackageButton.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+        spinner.classList.toggle('is-active', isBusy);
+        label.textContent = isBusy ? TWMCD_ADMIN.labels.releasePackageCreating : TWMCD_ADMIN.labels.releasePackageButton;
+    }
+
+    releasePackageButton.addEventListener('click', function () {
         var form = document.getElementById('twmcd-release-package-form');
         var selection = selectedPackages();
         var selectedCount = selection.plugins.length + selection.themes.length + selection.muplugins.length;
@@ -269,7 +298,35 @@
         form.elements.release_name.value = document.getElementById('twmcd-profile-name').value;
         form.elements.comparison_token.value = state.comparison.comparison_token;
         form.elements.selection.value = JSON.stringify(selection);
-        form.submit();
+        setReleasePackageBusy(true);
+        profileMessageElement.innerHTML = '';
+
+        fetch(form.action, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: new FormData(form)
+        }).then(function (response) {
+            if (!response.ok || (response.headers.get('Content-Type') || '').indexOf('application/zip') === -1) {
+                return releaseError(response);
+            }
+            var filename = releaseFilename(response, form.elements.release_name.value);
+            return response.blob().then(function (releaseBlob) {
+                var downloadUrl = URL.createObjectURL(releaseBlob);
+                var downloadLink = document.createElement('a');
+                downloadLink.href = downloadUrl;
+                downloadLink.download = filename;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                window.setTimeout(function () {
+                    URL.revokeObjectURL(downloadUrl);
+                }, 1000);
+            });
+        }).catch(function (error) {
+            showProfileMessage(error.message || TWMCD_ADMIN.labels.releasePackageFailed, true);
+        }).then(function () {
+            setReleasePackageBusy(false);
+        });
     });
 
     function loadComparison() {

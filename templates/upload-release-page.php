@@ -25,15 +25,22 @@ if (!defined('ABSPATH')) {
         <p><?php esc_html_e('Choose a release ZIP created by this plugin. Create Rollback validates the release and downloads the destination’s current files without installing it. Install Release validates and installs the selected package.', 'tn-wp-migrate-code-diff'); ?></p>
         <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. The rollback restores replaced packages and removes packages introduced by the release. A rollback release can be installed, but cannot be used to create another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
 
-        <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" enctype="multipart/form-data">
+        <form id="twmcd-upload-release-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="action" value="twmcd_upload_release">
             <?php wp_nonce_field('twmcd_upload_release', 'twmcd_upload_nonce'); ?>
             <label for="twmcd-release-file" class="twmcd-field-label"><?php esc_html_e('Release ZIP', 'tn-wp-migrate-code-diff'); ?></label>
             <input id="twmcd-release-file" name="release_file" type="file" accept=".zip,application/zip" required>
             <p>
-                <button type="submit" name="release_operation" value="create_rollback" class="button"><?php esc_html_e('Create Rollback', 'tn-wp-migrate-code-diff'); ?></button>
-                <button type="submit" name="release_operation" value="install" class="button button-primary"><?php esc_html_e('Install Release', 'tn-wp-migrate-code-diff'); ?></button>
+                <button id="twmcd-create-rollback" type="submit" name="release_operation" value="create_rollback" class="button" data-busy-label="<?php esc_attr_e('Creating rollback…', 'tn-wp-migrate-code-diff'); ?>">
+                    <span class="twmcd-release-button-spinner spinner" aria-hidden="true"></span>
+                    <span class="twmcd-release-button-label"><?php esc_html_e('Create Rollback', 'tn-wp-migrate-code-diff'); ?></span>
+                </button>
+                <button id="twmcd-install-release" type="submit" name="release_operation" value="install" class="button button-primary" data-busy-label="<?php esc_attr_e('Installing release…', 'tn-wp-migrate-code-diff'); ?>">
+                    <span class="twmcd-release-button-spinner spinner" aria-hidden="true"></span>
+                    <span class="twmcd-release-button-label"><?php esc_html_e('Install Release', 'tn-wp-migrate-code-diff'); ?></span>
+                </button>
             </p>
+            <div id="twmcd-upload-release-message" class="twmcd-message" role="status" aria-live="polite"></div>
         </form>
     </section>
 </div>

@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.6.2
+Version: 0.6.3
 Status: MVP
 
 ## Purpose
@@ -27,6 +27,8 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
 - Provides separate Create Rollback and Install Release actions for a selected release ZIP.
+- Shows an in-progress spinner and busy label while creating a release package, creating a rollback, or installing a release.
+- Requests the WordPress admin memory allowance and an unlimited PHP execution window for long package operations where hosting policy permits.
 - Creates a valid `<release-name>-rollback.zip` containing complete copies of replaced packages and validated removal instructions for packages newly introduced by the release, without changing the site.
 - Installs rollback ZIPs through the same Upload Release page without generating nested rollback packages.
 - Does not automatically delete destination-only packages.

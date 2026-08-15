@@ -25,6 +25,13 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     );
 
     if ($is_upload_page) {
+        wp_enqueue_script(
+            'twmcd_upload_release',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-upload-release.js',
+            array(),
+            TWMCD_VERSION,
+            true
+        );
         return;
     }
 
@@ -111,6 +118,9 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
                 'profileSaved'     => __('Release profile saved. You can now open it in WP Migrate.', 'tn-wp-migrate-code-diff'),
                 'releasePackageEmpty' => __('Select at least one source package before creating the release package.', 'tn-wp-migrate-code-diff'),
+                'releasePackageCreating' => __('Creating release package…', 'tn-wp-migrate-code-diff'),
+                'releasePackageFailed' => __('The release package could not be created.', 'tn-wp-migrate-code-diff'),
+                'releasePackageButton' => __('Create release package', 'tn-wp-migrate-code-diff'),
                 'profileSelectionApplied' => __('Initial selection loaded from saved profile: %s', 'tn-wp-migrate-code-diff'),
                 'savedProfile'       => __('Saved profile', 'tn-wp-migrate-code-diff'),
                 'same'             => __('Same version', 'tn-wp-migrate-code-diff'),

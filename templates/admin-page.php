@@ -35,7 +35,10 @@ if (!defined('ABSPATH')) {
             <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>">
             <button id="twmcd-save-profile" class="button button-primary" type="button"><?php esc_html_e('Save release profile', 'tn-wp-migrate-code-diff'); ?></button>
             <button id="twmcd-open-profile" class="button" type="button" disabled><?php esc_html_e('Open profile', 'tn-wp-migrate-code-diff'); ?></button>
-            <button id="twmcd-create-release-package" class="button" type="button"><?php esc_html_e('Create release package', 'tn-wp-migrate-code-diff'); ?></button>
+            <button id="twmcd-create-release-package" class="button" type="button">
+                <span class="twmcd-release-button-spinner spinner" aria-hidden="true"></span>
+                <span class="twmcd-release-button-label"><?php esc_html_e('Create release package', 'tn-wp-migrate-code-diff'); ?></span>
+            </button>
             <div id="twmcd-profile-message" class="twmcd-message" role="status" aria-live="polite"></div>
             <form id="twmcd-release-package-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" hidden>
                 <input type="hidden" name="action" value="twmcd_create_release_package">

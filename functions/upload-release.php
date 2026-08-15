@@ -12,6 +12,8 @@ function twmcd_handle_release_upload()
         wp_die(esc_html__('You do not have permission to install releases.', 'tn-wp-migrate-code-diff'), 403);
     }
 
+    twmcd_prepare_long_running_operation();
+
     $operation = isset($_POST['release_operation'])
         ? sanitize_key(wp_unslash($_POST['release_operation']))
         : 'install';
