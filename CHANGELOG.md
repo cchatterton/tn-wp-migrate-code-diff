@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.5 - 2026-08-15
+
+- Loads the WordPress file API before creating release or rollback temporary ZIP files.
+- Fixes the fatal `wp_tempnam()` error on `admin-post.php` package requests.
+
 ## 0.8.4 - 2026-08-15
 
 - Removes the global release-history schema check from `admin_init`.

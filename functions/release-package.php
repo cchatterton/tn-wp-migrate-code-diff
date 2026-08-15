@@ -72,7 +72,7 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         );
     }
 
-    $zip_path = wp_tempnam('twmcd-release.zip');
+    $zip_path = twmcd_release_tempnam('twmcd-release.zip');
     if (!$zip_path) {
         return new WP_Error('twmcd_temp_file', __('WordPress could not create a temporary release file.', 'tn-wp-migrate-code-diff'));
     }
@@ -138,6 +138,18 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         'path'     => $zip_path,
         'filename' => sanitize_file_name($release_name) . '.zip',
     );
+}
+
+function twmcd_release_tempnam($filename)
+{
+    if (!function_exists('wp_tempnam')) {
+        $wordpress_file_api = ABSPATH . 'wp-admin/includes/file.php';
+        if (is_readable($wordpress_file_api)) {
+            require_once $wordpress_file_api;
+        }
+    }
+
+    return function_exists('wp_tempnam') ? wp_tempnam($filename) : false;
 }
 
 function twmcd_selected_release_operations($comparison_state, $selection)

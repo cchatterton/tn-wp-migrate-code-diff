@@ -131,7 +131,7 @@ function twmcd_create_rollback_release_package($manifest)
         return false;
     }
 
-    $zip_path = wp_tempnam('twmcd-rollback.zip');
+    $zip_path = twmcd_release_tempnam('twmcd-rollback.zip');
     if (!$zip_path) {
         return new WP_Error('twmcd_rollback_temp_file', __('WordPress could not create a temporary rollback release file.', 'tn-wp-migrate-code-diff'));
     }
