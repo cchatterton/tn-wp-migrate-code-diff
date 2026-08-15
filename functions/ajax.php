@@ -23,7 +23,7 @@ function twmcd_ajax_prepare_comparison()
     $intent = isset($_POST['intent']) && 'pull' === sanitize_key(wp_unslash($_POST['intent'])) ? 'pull' : 'push';
     $mode = isset($_POST['mode']) && 'database' === sanitize_key(wp_unslash($_POST['mode'])) ? 'database' : 'code';
 
-    if ('database' === $mode) {
+    if ('database' === $mode && !TWMCD_DATABASE_COMPARISON_ENABLED) {
         wp_send_json_error(
             array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
             400
@@ -113,10 +113,12 @@ function twmcd_ajax_compare_database_images()
 {
     twmcd_verify_ajax_request();
 
-    wp_send_json_error(
-        array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
-        400
-    );
+    if (!TWMCD_DATABASE_COMPARISON_ENABLED) {
+        wp_send_json_error(
+            array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
 
     $context_token = isset($_POST['context_token']) ? sanitize_key(wp_unslash($_POST['context_token'])) : '';
     $context = twmcd_get_comparison_context($context_token);

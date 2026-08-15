@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.5.2 - 2026-08-15
+
+- Completely hides Database/Images comparison from the WP Migrate interface.
+- Retains its scripts, report, routes, and backend implementation behind the `TWMCD_DATABASE_COMPARISON_ENABLED` feature flag for future reactivation.
+
 ## 0.5.1 - 2026-08-15
 
 - Split Save release profile, Open profile, and Create release package into three independent comparison-page actions.

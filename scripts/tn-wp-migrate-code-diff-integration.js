@@ -274,9 +274,10 @@
         placeNotice(notice);
 
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
-        var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseDisabledButton;
+        var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
+        var actions = '';
 
         if (snapshot) {
             if (!snapshot.has_direction || !snapshot.connection_ready) {
@@ -290,13 +291,19 @@
                 actionAvailable = true;
             }
         }
+        if (actionAvailable) {
+            actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
+                + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
+
+            if (TWMCD_INTEGRATION.databaseComparisonEnabled) {
+                actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+                    + '<button type="button" class="button-link twmcd-compare-database" data-mode="database"'
+                    + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>';
+            }
+        }
+
         var markup = '<span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>'
-            + '<strong>' + escapeHtml(message) + '</strong> '
-            + (actionAvailable ? '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
-            + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>'
-            + '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-            + '<button type="button" class="button-link twmcd-compare-database" data-mode="database"'
-            + ' disabled aria-disabled="true">' + escapeHtml(databaseButtonLabel) + '</button>' : '');
+            + '<strong>' + escapeHtml(message) + '</strong> ' + actions;
 
         if (notice.innerHTML === markup) {
             return;
@@ -304,9 +311,15 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
+        var databaseButton = notice.querySelector('.twmcd-compare-database');
         if (button && actionAvailable) {
             button.addEventListener('click', function () {
                 prepareComparison('code');
+            });
+        }
+        if (databaseButton && actionAvailable) {
+            databaseButton.addEventListener('click', function () {
+                prepareComparison('database');
             });
         }
     }
