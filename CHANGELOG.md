@@ -2,6 +2,10 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.3.1 - 2026-08-15
+
+- Leaves different-version packages inactive on the source unselected in the initial and Recommended selections.
+
 ## 0.3.0 - 2026-08-15
 
 - Added active Compare Code and Compare Database/Images choices with separate report pages.

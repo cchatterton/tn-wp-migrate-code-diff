@@ -40,21 +40,26 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
                 : 'different';
         }
 
+        $source_activation = $source_package && isset($source_package['activation'])
+            ? $source_package['activation']
+            : 'not_installed';
+        $destination_activation = $destination_package && isset($destination_package['activation'])
+            ? $destination_package['activation']
+            : 'not_installed';
         $display_package = $source_package ? $source_package : $destination_package;
         $default_selected = 'source_only' === $status
             || ('different' === $status && !twmcd_source_version_is_older($source_package['version'], $destination_package['version']));
+        if ('different' === $status && 'inactive' === $source_activation) {
+            $default_selected = false;
+        }
         $comparison[] = array(
             'key'                => $package_key,
             'name'               => $display_package['name'],
             'status'             => $status,
             'source_version'     => $source_package ? $source_package['version'] : '',
             'destination_version' => $destination_package ? $destination_package['version'] : '',
-            'source_activation' => $source_package && isset($source_package['activation'])
-                ? $source_package['activation']
-                : 'not_installed',
-            'destination_activation' => $destination_package && isset($destination_package['activation'])
-                ? $destination_package['activation']
-                : 'not_installed',
+            'source_activation' => $source_activation,
+            'destination_activation' => $destination_activation,
             'selection'          => $source_package ? $source_package['path'] : '',
             'default_selected'   => $default_selected,
         );
