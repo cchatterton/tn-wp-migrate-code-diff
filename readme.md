@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.6.3
+Version: 0.7.0
 Status: MVP
 
 ## Purpose
@@ -18,20 +18,21 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
-- Selects active source-only plugins/themes and active source upgrades by default, while leaving must-use plugins, source downgrades, and all inactive source packages unselected.
+- Selects active source-only plugins/themes, active source upgrades, and inactive destination-only packages by default, while leaving must-use plugins, source downgrades, inactive source packages, and active destination-only packages unselected.
 - Provides per-section Select All, Deselect All, and Recommended controls.
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Separates Save release profile, Open profile, and Create release package into independent actions.
 - Refreshes a comparison in place using the existing WP Migrate connection context.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
+- Records selected destination-only packages as explicit removal operations, allowing a manual release to add, replace, and remove code packages.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
 - Provides separate Create Rollback and Install Release actions for a selected release ZIP.
 - Shows an in-progress spinner and busy label while creating a release package, creating a rollback, or installing a release.
 - Requests the WordPress admin memory allowance and an unlimited PHP execution window for long package operations where hosting policy permits.
-- Creates a valid `<release-name>-rollback.zip` containing complete copies of replaced packages and validated removal instructions for packages newly introduced by the release, without changing the site.
+- Creates a valid `<release-name>-rollback.zip` containing complete copies of replaced or removed destination packages and validated removal instructions for packages newly introduced by the release, without changing the site.
 - Installs rollback ZIPs through the same Upload Release page without generating nested rollback packages.
-- Does not automatically delete destination-only packages.
+- Never selects active destination-only packages for removal unless the operator chooses them explicitly.
 - Delivers releases through the native WordPress Plugins update interface from public GitHub release assets.
 
 ## Folder Structure
@@ -59,7 +60,8 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Activation is informational. A generated code-only profile transfers selected files and does not change activation/database options.
 - Create and retain the rollback ZIP before installing a normal release when rollback capability is required.
 - Manual release packages are available only for Push comparisons because the package generator must read the source files locally.
-- Rollback removal instructions are accepted only from a validated release whose manifest name ends in `-rollback`, and they are restricted to the exact safe plugin, theme, or must-use-plugin destinations recorded during installation.
+- Forward and rollback removals are restricted to exact, validated plugin, theme, or must-use-plugin destinations; the active release installer cannot remove itself.
+- A rollback created before installation contains the complete destination files for selected removals so those packages can be restored.
 - Manual release checksums detect corruption or modification but do not establish publisher identity. Install only packages obtained from a trusted source.
 - The WP Migrate secret key is stored only as part of the saved WP Migrate profile, matching WP Migrate's existing profile behaviour.
 

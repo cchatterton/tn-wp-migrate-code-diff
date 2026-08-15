@@ -56,12 +56,23 @@ function wp_json_encode($value)
     return json_encode($value);
 }
 
+function sanitize_text_field($value)
+{
+    return trim((string) $value);
+}
+
 function wp_generate_uuid4()
 {
     return '00000000-0000-4000-8000-000000000001';
 }
 
 require dirname(__DIR__) . '/functions/profile.php';
+
+$profile_paths = twmcd_sanitize_profile_paths(array('/plugins/keep', 'twmcd-remove:plugins:obsolete%2Fplugin.php'));
+if (array('/plugins/keep') !== $profile_paths) {
+    fwrite(STDERR, "FAIL: manual release removals leaked into a WP Migrate profile.\n");
+    exit(1);
+}
 
 twmcd_repair_legacy_release_profiles();
 

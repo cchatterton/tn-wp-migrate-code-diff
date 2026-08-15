@@ -99,4 +99,23 @@ if ('source_newer' !== $version_comparison[0]['status']
     exit(1);
 }
 
+$destination_only_comparison = twmcd_compare_package_group(
+    array('plugins' => array()),
+    array(
+        'plugins' => array(
+            'active/plugin.php' => array('name' => 'Active Destination', 'version' => '1.0.0', 'activation' => 'site_active'),
+            'inactive/plugin.php' => array('name' => 'Inactive Destination', 'version' => '1.0.0', 'activation' => 'inactive'),
+        ),
+    ),
+    'plugins'
+);
+if ('destination_only' !== $destination_only_comparison[0]['status']
+    || empty($destination_only_comparison[0]['selection'])
+    || !empty($destination_only_comparison[0]['default_selected'])
+    || 'remove' !== $destination_only_comparison[0]['selection_operation']
+    || empty($destination_only_comparison[1]['default_selected'])) {
+    fwrite(STDERR, "FAIL: destination-only removal defaults were incorrect.\n");
+    exit(1);
+}
+
 echo "PASS: saved profile initial selection.\n";

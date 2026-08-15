@@ -61,14 +61,14 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         );
     }
 
-    $package_rows = twmcd_selected_release_rows($comparison_state, $selection);
-    if (is_wp_error($package_rows)) {
-        return $package_rows;
+    $release_operations = twmcd_selected_release_operations($comparison_state, $selection);
+    if (is_wp_error($release_operations)) {
+        return $release_operations;
     }
-    if (!$package_rows) {
+    if (!$release_operations['packages'] && !$release_operations['remove_packages']) {
         return new WP_Error(
             'twmcd_empty_release',
-            __('Select at least one local source package before creating the release package.', 'tn-wp-migrate-code-diff')
+            __('Select at least one package operation before creating the release package.', 'tn-wp-migrate-code-diff')
         );
     }
 
@@ -85,7 +85,7 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
 
     $manifest_packages = array();
     $manifest_files = array();
-    foreach ($package_rows as $package_row) {
+    foreach ($release_operations['packages'] as $package_row) {
         $added_files = twmcd_add_release_path_to_zip(
             $zip,
             $package_row['source_path'],
@@ -118,6 +118,7 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
             'version' => TWMCD_VERSION,
         ),
         'packages'    => $manifest_packages,
+        'remove_packages' => $release_operations['remove_packages'],
         'files'       => $manifest_files,
     );
 
@@ -134,12 +135,13 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
     );
 }
 
-function twmcd_selected_release_rows($comparison_state, $selection)
+function twmcd_selected_release_operations($comparison_state, $selection)
 {
     $comparison_groups = isset($comparison_state['packages']) && is_array($comparison_state['packages'])
         ? $comparison_state['packages']
         : array();
     $selected_rows = array();
+    $remove_packages = array();
     $seen_paths = array();
 
     foreach (array('plugins', 'themes', 'muplugins') as $group_key) {
@@ -149,15 +151,28 @@ function twmcd_selected_release_rows($comparison_state, $selection)
                 continue;
             }
 
+            if ('remove' === (isset($package['selection_operation']) ? $package['selection_operation'] : '')) {
+                $removal = twmcd_release_removal_operation($group_key, $package);
+                if (is_wp_error($removal)) {
+                    return $removal;
+                }
+                if (isset($seen_paths[$removal['destination']])) {
+                    continue;
+                }
+                $seen_paths[$removal['destination']] = true;
+                $remove_packages[] = $removal;
+                continue;
+            }
+
             $release_path = twmcd_release_source_and_destination($group_key, $package);
             if (is_wp_error($release_path)) {
                 return $release_path;
             }
-            if (isset($seen_paths[$release_path['archive_path']])) {
+            if (isset($seen_paths[$release_path['destination']])) {
                 continue;
             }
 
-            $seen_paths[$release_path['archive_path']] = true;
+            $seen_paths[$release_path['destination']] = true;
             $selected_rows[] = array_merge(
                 $release_path,
                 array(
@@ -170,7 +185,38 @@ function twmcd_selected_release_rows($comparison_state, $selection)
         }
     }
 
-    return $selected_rows;
+    return array(
+        'packages'        => $selected_rows,
+        'remove_packages' => $remove_packages,
+    );
+}
+
+function twmcd_release_removal_operation($group_key, $package)
+{
+    $package_key = trim(str_replace('\\', '/', (string) $package['key']), '/');
+    $segments = explode('/', $package_key);
+    if ('' === $package_key || array_intersect($segments, array('', '.', '..'))) {
+        return new WP_Error('twmcd_invalid_remove_target', __('A selected removal has an invalid destination.', 'tn-wp-migrate-code-diff'));
+    }
+
+    if ('plugins' === $group_key || 'muplugins' === $group_key) {
+        $package_directory = dirname($package_key);
+        $relative_path = '.' === $package_directory ? $package_key : $package_directory;
+        $root = 'plugins' === $group_key ? 'plugins' : 'mu-plugins';
+    } elseif ('themes' === $group_key) {
+        $relative_path = $package_key;
+        $root = 'themes';
+    } else {
+        return new WP_Error('twmcd_invalid_remove_type', __('A selected removal has an invalid package type.', 'tn-wp-migrate-code-diff'));
+    }
+
+    return array(
+        'type'        => $group_key,
+        'key'         => sanitize_text_field((string) $package['key']),
+        'name'        => sanitize_text_field((string) $package['name']),
+        'version'     => sanitize_text_field((string) $package['destination_version']),
+        'destination' => $root . '/' . $relative_path,
+    );
 }
 
 function twmcd_release_source_and_destination($group_key, $package)

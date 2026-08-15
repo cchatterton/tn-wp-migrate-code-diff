@@ -53,7 +53,8 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
             : 'not_installed';
         $display_package = $source_package ? $source_package : $destination_package;
         $default_selected = 'source_only' === $status
-            || 'source_newer' === $status;
+            || 'source_newer' === $status
+            || ('destination_only' === $status && 'inactive' === $destination_activation);
         if (in_array($status, array('source_newer', 'source_older', 'source_only'), true) && 'inactive' === $source_activation) {
             $default_selected = false;
         }
@@ -68,12 +69,20 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
             'destination_version' => $destination_package ? $destination_package['version'] : '',
             'source_activation' => $source_activation,
             'destination_activation' => $destination_activation,
-            'selection'          => $source_package ? $source_package['path'] : '',
+            'selection'          => $source_package
+                ? $source_package['path']
+                : twmcd_removal_selection_value($group_key, $package_key),
+            'selection_operation' => $source_package ? 'install' : 'remove',
             'default_selected'   => $default_selected,
         );
     }
 
     return $comparison;
+}
+
+function twmcd_removal_selection_value($group_key, $package_key)
+{
+    return 'twmcd-remove:' . $group_key . ':' . rawurlencode((string) $package_key);
 }
 
 function twmcd_source_version_is_older($source_version, $destination_version)

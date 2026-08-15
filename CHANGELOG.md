@@ -2,6 +2,14 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.7.0 - 2026-08-15
+
+- Enables destination-only packages as selectable removal operations in manual releases.
+- Selects inactive destination-only packages by default while leaving active destination-only packages unselected.
+- Adds validated forward removal instructions to the release manifest.
+- Includes complete destination files for selected removals in the rollback package so rollback restores them.
+- Keeps all removal destinations constrained to safe WordPress code paths and prevents self-removal.
+
 ## 0.6.3 - 2026-08-15
 
 - Adds in-progress spinners and busy labels to Create release package, Create Rollback, and Install Release.

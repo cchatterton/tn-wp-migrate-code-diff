@@ -85,7 +85,7 @@
         var markup = '<section class="twmcd-card" aria-labelledby="twmcd-' + groupKey + '-title">';
         var contentId = 'twmcd-' + groupKey + '-content';
         var selectablePackages = packages.filter(function (packageData) {
-            return packageData.status !== 'destination_only' && packageData.selection;
+            return packageData.selection;
         });
         markup += '<div class="twmcd-group-heading"><h2 id="twmcd-' + groupKey + '-title">';
         markup += '<button type="button" class="button-link twmcd-accordion-toggle" aria-expanded="true" aria-controls="' + contentId + '">';
@@ -112,7 +112,7 @@
                     ? packageData.initial_selected
                     : packageData.default_selected) && packageData.selection
             );
-            var selectionDisabled = packageData.status === 'destination_only' || !packageData.selection;
+            var selectionDisabled = !packageData.selection;
 
             markup += '<tr><th scope="row" class="check-column">';
             markup += '<input class="twmcd-package-selection" type="checkbox" aria-label="Select ' + escapeHtml(packageData.name) + '" data-group="' + groupKey + '" data-index="' + packageIndex + '"' + (selectedByDefault ? ' checked' : '') + (selectionDisabled ? ' disabled' : '') + '>';

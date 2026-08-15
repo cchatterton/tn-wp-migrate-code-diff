@@ -50,6 +50,11 @@ function sanitize_file_name($name)
     return preg_replace('/[^A-Za-z0-9._-]/', '', $name);
 }
 
+function sanitize_text_field($value)
+{
+    return trim((string) $value);
+}
+
 function plugin_basename($path)
 {
     return 'tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php';
@@ -141,6 +146,32 @@ if (!class_exists('ZipArchive')) {
     exit(0);
 }
 
+$selected_operations = twmcd_selected_release_operations(
+    array(
+        'packages' => array(
+            'plugins' => array(
+                array(
+                    'key' => 'obsolete-plugin/obsolete-plugin.php',
+                    'name' => 'Obsolete',
+                    'destination_version' => '1.0.0',
+                    'selection' => 'twmcd-remove:plugins:obsolete-plugin%2Fobsolete-plugin.php',
+                    'selection_operation' => 'remove',
+                ),
+            ),
+        ),
+    ),
+    array(
+        'plugins' => array('twmcd-remove:plugins:obsolete-plugin%2Fobsolete-plugin.php'),
+        'themes' => array(),
+        'muplugins' => array(),
+    )
+);
+if (is_wp_error($selected_operations)
+    || 'plugins/obsolete-plugin' !== $selected_operations['remove_packages'][0]['destination']) {
+    fwrite(STDERR, "FAIL: selected destination-only package was not converted to a removal operation.\n");
+    exit(1);
+}
+
 $temporary_directory = sys_get_temp_dir() . '/tncri-test-' . uniqid('', true);
 $plugin_directory = $temporary_directory . '/sample-plugin';
 mkdir($plugin_directory . '/assets', 0777, true);
@@ -179,6 +210,15 @@ $manifest = array(
             'destination'  => 'plugins/new-plugin',
         ),
     ),
+    'remove_packages' => array(
+        array(
+            'type'        => 'plugins',
+            'key'         => 'obsolete-plugin/obsolete-plugin.php',
+            'name'        => 'Obsolete',
+            'version'     => '1.0.0',
+            'destination' => 'plugins/obsolete-plugin',
+        ),
+    ),
     'files' => $files,
 );
 $zip->addFromString('manifest.json', json_encode($manifest));
@@ -213,6 +253,8 @@ mkdir(WP_CONTENT_DIR . '/themes', 0777, true);
 mkdir(WPMU_PLUGIN_DIR, 0777, true);
 mkdir(WP_PLUGIN_DIR . '/sample-plugin', 0777, true);
 file_put_contents(WP_PLUGIN_DIR . '/sample-plugin/old.php', "old\n");
+mkdir(WP_PLUGIN_DIR . '/obsolete-plugin', 0777, true);
+file_put_contents(WP_PLUGIN_DIR . '/obsolete-plugin/obsolete-plugin.php', "obsolete\n");
 $GLOBALS['wp_filesystem'] = new TWMCD_Test_Filesystem();
 
 $rollback_package = twmcd_create_rollback_release_package($manifest);
@@ -227,7 +269,8 @@ $rollback_zip->close();
 if (is_wp_error($rollback_validation)
     || 'Release-Test-rollback' !== $rollback_validation['manifest']['release_id']
     || 'plugins/new-plugin' !== $rollback_validation['manifest']['remove_packages'][0]['destination']
-    || !isset($rollback_validation['manifest']['files']['payload/plugins/sample-plugin/old.php'])) {
+    || !isset($rollback_validation['manifest']['files']['payload/plugins/sample-plugin/old.php'])
+    || !isset($rollback_validation['manifest']['files']['payload/plugins/obsolete-plugin/obsolete-plugin.php'])) {
     fwrite(STDERR, "FAIL: rollback release did not preserve replacements and record additions.\n");
     exit(1);
 }
@@ -236,7 +279,8 @@ $installed = twmcd_install_manifest_packages($workspace, $manifest);
 if (is_wp_error($installed)
     || !is_file(WP_PLUGIN_DIR . '/sample-plugin/sample-plugin.php')
     || is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')
-    || !is_file(WP_PLUGIN_DIR . '/new-plugin/new-plugin.php')) {
+    || !is_file(WP_PLUGIN_DIR . '/new-plugin/new-plugin.php')
+    || file_exists(WP_PLUGIN_DIR . '/obsolete-plugin')) {
     fwrite(STDERR, "FAIL: validated package was not installed over the existing plugin.\n");
     exit(1);
 }
@@ -250,7 +294,8 @@ $rolled_back = twmcd_install_manifest_packages($rollback_workspace, $rollback_va
 if (is_wp_error($rolled_back)
     || !is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')
     || is_file(WP_PLUGIN_DIR . '/sample-plugin/sample-plugin.php')
-    || file_exists(WP_PLUGIN_DIR . '/new-plugin')) {
+    || file_exists(WP_PLUGIN_DIR . '/new-plugin')
+    || !is_file(WP_PLUGIN_DIR . '/obsolete-plugin/obsolete-plugin.php')) {
     fwrite(STDERR, "FAIL: rollback release did not restore replacements and remove additions.\n");
     exit(1);
 }
@@ -279,14 +324,13 @@ if (is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
     exit(1);
 }
 $remove_only_manifest['release_id'] = 'Release-Remove';
-if (!is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
-    fwrite(STDERR, "FAIL: removal instructions were accepted outside a rollback release.\n");
+if (is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
+    fwrite(STDERR, "FAIL: a valid forward removal-only release was rejected.\n");
     exit(1);
 }
-$remove_only_manifest['release_id'] = 'Release-Remove-rollback';
 $remove_only_manifest['remove_packages'][0]['destination'] = 'plugins/../unsafe';
 if (!is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
-    fwrite(STDERR, "FAIL: an unsafe rollback removal destination was accepted.\n");
+    fwrite(STDERR, "FAIL: an unsafe package removal destination was accepted.\n");
     exit(1);
 }
 

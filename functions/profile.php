@@ -267,7 +267,14 @@ function twmcd_sanitize_profile_paths($paths)
         return array();
     }
 
-    return array_values(array_filter(array_map('sanitize_text_field', $paths), 'strlen'));
+    return array_values(
+        array_filter(
+            array_map('sanitize_text_field', $paths),
+            function ($path) {
+                return '' !== $path && 0 !== strpos($path, 'twmcd-remove:');
+            }
+        )
+    );
 }
 
 function twmcd_create_comparison_token($context, $comparison_groups)

@@ -117,7 +117,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
                 'profileSaved'     => __('Release profile saved. You can now open it in WP Migrate.', 'tn-wp-migrate-code-diff'),
-                'releasePackageEmpty' => __('Select at least one source package before creating the release package.', 'tn-wp-migrate-code-diff'),
+                'releasePackageEmpty' => __('Select at least one package operation before creating the release package.', 'tn-wp-migrate-code-diff'),
                 'releasePackageCreating' => __('Creating release package…', 'tn-wp-migrate-code-diff'),
                 'releasePackageFailed' => __('The release package could not be created.', 'tn-wp-migrate-code-diff'),
                 'releasePackageButton' => __('Create release package', 'tn-wp-migrate-code-diff'),
