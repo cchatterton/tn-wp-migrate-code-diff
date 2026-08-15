@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.4.1 - 2026-08-15
+
+- Uses the exact code package selections from the active saved WP Migrate profile as the initial comparison selection.
+- Keeps Recommended available as an explicit reset to the smart version and activation rules after the comparison opens.
+
 ## 0.4.0 - 2026-08-15
 
 - Added a source-only “Create release package” action to the Code Comparison page.

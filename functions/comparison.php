@@ -80,6 +80,25 @@ function twmcd_source_version_is_older($source_version, $destination_version)
     return version_compare($source_version, $destination_version, '<');
 }
 
+function twmcd_apply_loaded_profile_selection($comparison_groups, $profile_selection)
+{
+    if (empty($profile_selection['active']) || empty($profile_selection['groups'])) {
+        return $comparison_groups;
+    }
+
+    foreach (array('plugins', 'themes', 'muplugins') as $group_key) {
+        $selected_paths = isset($profile_selection['groups'][$group_key])
+            ? (array) $profile_selection['groups'][$group_key]
+            : array();
+        foreach ($comparison_groups[$group_key] as $index => $package) {
+            $comparison_groups[$group_key][$index]['initial_selected'] = !empty($package['selection'])
+                && in_array($package['selection'], $selected_paths, true);
+        }
+    }
+
+    return $comparison_groups;
+}
+
 function twmcd_local_database_images_inventory($context)
 {
     global $wpdb;

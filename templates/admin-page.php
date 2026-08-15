@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
 
         <section class="twmcd-card" aria-labelledby="twmcd-profile-title">
             <h2 id="twmcd-profile-title"><?php esc_html_e('Create a code-only migration profile', 'tn-wp-migrate-code-diff'); ?></h2>
-            <p><?php esc_html_e('Active source-only packages and active source upgrades are selected by default. Source downgrades and packages inactive on the source remain unselected. Activation differences are informational: this profile migrates files only and preserves the selected multisite operation.', 'tn-wp-migrate-code-diff'); ?></p>
+            <p><?php esc_html_e('When comparison starts from a saved WP Migrate profile, its code selections are carried in exactly. Otherwise, active source-only packages and active source upgrades are selected by default. Recommended restores the smart version and activation rules. Activation differences remain informational.', 'tn-wp-migrate-code-diff'); ?></p>
             <p id="twmcd-release-selection-count" class="twmcd-release-selection-count" aria-live="polite"></p>
             <label class="twmcd-field-label" for="twmcd-profile-name"><?php esc_html_e('Profile name', 'tn-wp-migrate-code-diff'); ?></label>
             <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>">

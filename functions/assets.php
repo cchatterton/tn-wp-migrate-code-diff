@@ -47,6 +47,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                     'waitingStore'      => __('Site comparison is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
                     'waitingConnection' => __('Site comparison is listening — waiting for a WP Migrate connection.', 'tn-wp-migrate-code-diff'),
                     'selectSubsite'     => __('Site comparison is listening — connection detected; waiting on subsite selection.', 'tn-wp-migrate-code-diff'),
+                    'waitingProfile'    => __('Site comparison is listening — waiting for the saved profile selections.', 'tn-wp-migrate-code-diff'),
                 ),
             )
         );
@@ -102,6 +103,8 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
                 'releasePackageEmpty' => __('Select at least one source package before creating the release package.', 'tn-wp-migrate-code-diff'),
+                'profileSelectionApplied' => __('Initial selection loaded from saved profile: %s', 'tn-wp-migrate-code-diff'),
+                'savedProfile'       => __('Saved profile', 'tn-wp-migrate-code-diff'),
                 'same'             => __('Same version', 'tn-wp-migrate-code-diff'),
                 'different'        => __('Different version', 'tn-wp-migrate-code-diff'),
                 'sourceOnly'       => __('Absent on Destination', 'tn-wp-migrate-code-diff'),

@@ -79,6 +79,8 @@ function twmcd_ajax_compare_code()
     $source_inventory = 'push' === $intent ? $local_inventory : $remote_inventory;
     $destination_inventory = 'push' === $intent ? $remote_inventory : $local_inventory;
     $comparison_groups = twmcd_compare_code_inventories($source_inventory, $destination_inventory);
+    $profile_selection = isset($context['profile_selection']) ? $context['profile_selection'] : array('active' => false);
+    $comparison_groups = twmcd_apply_loaded_profile_selection($comparison_groups, $profile_selection);
     $comparison_token = twmcd_create_comparison_token($context, $comparison_groups);
     delete_site_transient(twmcd_context_transient_key($context_token));
 
@@ -89,6 +91,8 @@ function twmcd_ajax_compare_code()
             'destination_url'  => $destination_inventory['url'],
             'groups'           => $comparison_groups,
             'comparison_token' => $comparison_token,
+            'profile_selection_applied' => !empty($profile_selection['active']),
+            'profile_selection_name' => !empty($profile_selection['name']) ? $profile_selection['name'] : '',
             'release_package_available' => 'push' === $intent,
             'release_package_note' => 'push' === $intent
                 ? __('The selected local source packages can also be downloaded as a release ZIP.', 'tn-wp-migrate-code-diff')

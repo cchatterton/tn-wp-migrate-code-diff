@@ -2,6 +2,10 @@
 
 All notable changes to TN Code Release Installer are recorded here.
 
+## 0.4.1 - 2026-08-15
+
+- Synchronized the companion installer release with TN WP Migrate Code Diff 0.4.1.
+
 ## 0.4.0 - 2026-08-15
 
 - Added the Upload Release admin page.

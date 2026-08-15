@@ -120,6 +120,12 @@ function twmcd_sanitize_migration_context($raw_context)
     $raw_migration = isset($raw_context['migration']) && is_array($raw_context['migration'])
         ? $raw_context['migration']
         : array();
+    $raw_profile_selection = isset($raw_context['profile_selection']) && is_array($raw_context['profile_selection'])
+        ? $raw_context['profile_selection']
+        : array();
+    $raw_profile_groups = isset($raw_profile_selection['groups']) && is_array($raw_profile_selection['groups'])
+        ? $raw_profile_selection['groups']
+        : array();
 
     return array(
         'multisite_tools' => array(
@@ -134,6 +140,15 @@ function twmcd_sanitize_migration_context($raw_context)
             'local_is_multisite'  => twmcd_sanitize_boolean(isset($raw_migration['local_is_multisite']) ? $raw_migration['local_is_multisite'] : false),
             'remote_is_multisite' => twmcd_sanitize_boolean(isset($raw_migration['remote_is_multisite']) ? $raw_migration['remote_is_multisite'] : false),
             'scope_label'         => isset($raw_migration['scope_label']) ? sanitize_text_field($raw_migration['scope_label']) : '',
+        ),
+        'profile_selection' => array(
+            'active' => twmcd_sanitize_boolean(isset($raw_profile_selection['active']) ? $raw_profile_selection['active'] : false),
+            'name'   => isset($raw_profile_selection['name']) ? sanitize_text_field($raw_profile_selection['name']) : '',
+            'groups' => array(
+                'plugins'   => twmcd_sanitize_profile_paths(isset($raw_profile_groups['plugins']) ? array_slice((array) $raw_profile_groups['plugins'], 0, 5000) : array()),
+                'themes'    => twmcd_sanitize_profile_paths(isset($raw_profile_groups['themes']) ? array_slice((array) $raw_profile_groups['themes'], 0, 5000) : array()),
+                'muplugins' => twmcd_sanitize_profile_paths(isset($raw_profile_groups['muplugins']) ? array_slice((array) $raw_profile_groups['muplugins'], 0, 5000) : array()),
+            ),
         ),
     );
 }

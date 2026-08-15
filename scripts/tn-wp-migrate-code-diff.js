@@ -91,7 +91,11 @@
         markup += '<thead><tr><td class="check-column"></td><th scope="col">Package</th><th scope="col">Version status</th><th scope="col">Source</th><th scope="col">Destination</th><th scope="col">Source activation</th><th scope="col">Destination activation</th></tr></thead><tbody>';
 
         packages.forEach(function (packageData, packageIndex) {
-            var selectedByDefault = Boolean(packageData.default_selected && packageData.selection);
+            var selectedByDefault = Boolean(
+                (typeof packageData.initial_selected === 'boolean'
+                    ? packageData.initial_selected
+                    : packageData.default_selected) && packageData.selection
+            );
             var selectionDisabled = packageData.status === 'destination_only' || !packageData.selection;
 
             markup += '<tr><th scope="row" class="check-column">';
@@ -122,6 +126,14 @@
 
         var scope = comparison.scope_label ? '<br><span>' + escapeHtml(comparison.scope_label) + '</span>' : '';
         document.getElementById('twmcd-summary').innerHTML = '<strong>' + escapeHtml(comparison.source_url) + '</strong> &rarr; <strong>' + escapeHtml(comparison.destination_url) + '</strong>' + scope + '<br>' + differenceCount + ' ' + escapeHtml(TWMCD_ADMIN.labels.differencesFound) + '<p class="description">' + escapeHtml(comparison.note) + '</p>';
+        if (comparison.profile_selection_applied) {
+            document.getElementById('twmcd-summary').insertAdjacentHTML(
+                'beforeend',
+                '<p class="description"><strong>' + escapeHtml(
+                    TWMCD_ADMIN.labels.profileSelectionApplied.replace('%s', comparison.profile_selection_name || TWMCD_ADMIN.labels.savedProfile)
+                ) + '</strong></p>'
+            );
+        }
         var releaseButton = document.getElementById('twmcd-create-release-package');
         releaseButton.disabled = !comparison.release_package_available;
         document.getElementById('twmcd-release-package-note').textContent = comparison.release_package_note || '';

@@ -55,6 +55,87 @@
         };
     }
 
+    function profileIsLoaded(currentMigration) {
+        var profileId = currentMigration.selected_existing_profile;
+
+        return profileId !== null && typeof profileId !== 'undefined' && profileId !== '' && profileId !== false;
+    }
+
+    function sourcePackageRows(sourceSite, groupKey) {
+        var siteDetails = sourceSite && sourceSite.site_details ? sourceSite.site_details : {};
+        var packageInventory = siteDetails[groupKey] || {};
+        var rows = [];
+
+        Object.keys(packageInventory).forEach(function (packageKey) {
+            var packageRows = packageInventory[packageKey];
+            var packageData = Array.isArray(packageRows) ? packageRows[0] : packageRows;
+            if (packageData && packageData.path) {
+                rows.push({ path: String(packageData.path), active: boolValue(packageData.active) });
+            }
+        });
+
+        return rows;
+    }
+
+    function selectedProfilePaths(themePluginFiles, sourceSite, groupKey) {
+        var panelKeys = {
+            plugins: 'plugin_files',
+            themes: 'theme_files',
+            muplugins: 'muplugin_files'
+        };
+        var panelState = themePluginFiles[panelKeys[groupKey]] || {};
+        var option = themePluginFiles[groupKey + '_option'] || 'selected';
+        var selected = Array.isArray(themePluginFiles[groupKey + '_selected'])
+            ? themePluginFiles[groupKey + '_selected'].map(String)
+            : [];
+        var excluded = Array.isArray(themePluginFiles[groupKey + '_excluded'])
+            ? themePluginFiles[groupKey + '_excluded'].map(String)
+            : [];
+        var available = sourcePackageRows(sourceSite, groupKey);
+
+        if (!boolValue(panelState.enabled)) {
+            return [];
+        }
+        if (option === 'all') {
+            return available.map(function (packageData) { return packageData.path; });
+        }
+        if (option === 'active') {
+            return available.filter(function (packageData) {
+                return packageData.active;
+            }).map(function (packageData) {
+                return packageData.path;
+            });
+        }
+        if (option === 'except') {
+            return available.filter(function (packageData) {
+                return excluded.indexOf(packageData.path) === -1;
+            }).map(function (packageData) {
+                return packageData.path;
+            });
+        }
+
+        return selected;
+    }
+
+    function loadedProfileSelection(state, currentMigration, sourceSite) {
+        var themePluginFiles = state.theme_plugin_files || {};
+
+        if (!profileIsLoaded(currentMigration)) {
+            return { active: false, ready: true, name: '', groups: { plugins: [], themes: [], muplugins: [] } };
+        }
+
+        return {
+            active: true,
+            ready: Object.keys(themePluginFiles).length > 0,
+            name: currentMigration.profile_name || '',
+            groups: {
+                plugins: selectedProfilePaths(themePluginFiles, sourceSite, 'plugins'),
+                themes: selectedProfilePaths(themePluginFiles, sourceSite, 'themes'),
+                muplugins: selectedProfilePaths(themePluginFiles, sourceSite, 'muplugins')
+            }
+        };
+    }
+
     function getSnapshot() {
         var store = getStore();
         if (!store) {
@@ -92,6 +173,8 @@
         var destinationSubsiteRequired = domMultisite.destination_present
             ? !destinationSubsite
             : multisiteEnabled && twoMultisites && destinationIsMultisite && !destinationSubsite;
+        var sourceSite = localSource ? localSite : remoteSite;
+        var profileSelection = loadedProfileSelection(state, current, sourceSite);
 
         var connection = typeof connectionState.value === 'string' ? connectionState.value.trim() : '';
         if (!connection && connectionState.url && connectionState.key) {
@@ -108,7 +191,8 @@
         return {
             has_direction: intent === 'push' || intent === 'pull',
             connection_ready: connected && Boolean(connection),
-            ready: !sourceSubsiteRequired && !destinationSubsiteRequired,
+            ready: !sourceSubsiteRequired && !destinationSubsiteRequired && profileSelection.ready,
+            profile_selection_ready: profileSelection.ready,
             intent: intent,
             connection: connection,
             context: {
@@ -124,7 +208,8 @@
                     local_is_multisite: localIsMultisite,
                     remote_is_multisite: remoteIsMultisite,
                     scope_label: scopeLabel(sourceIsMultisite, destinationIsMultisite, multisiteEnabled, twoMultisites)
-                }
+                },
+                profile_selection: profileSelection
             }
         };
     }
@@ -197,7 +282,9 @@
             if (!snapshot.has_direction || !snapshot.connection_ready) {
                 message = TWMCD_INTEGRATION.labels.waitingConnection;
             } else if (!snapshot.ready) {
-                message = TWMCD_INTEGRATION.labels.selectSubsite;
+                message = !snapshot.profile_selection_ready
+                    ? TWMCD_INTEGRATION.labels.waitingProfile
+                    : TWMCD_INTEGRATION.labels.selectSubsite;
             } else {
                 message = TWMCD_INTEGRATION.labels.message;
                 actionAvailable = true;
