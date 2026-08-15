@@ -64,6 +64,40 @@
     justify-content: space-between;
 }
 
+.twmcd-admin-wrap .twmcd-group-heading h2 {
+    margin-bottom: 0;
+}
+
+.twmcd-admin-wrap .twmcd-accordion-toggle {
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.twmcd-admin-wrap .twmcd-accordion-toggle:hover,
+.twmcd-admin-wrap .twmcd-accordion-toggle:focus {
+    color: #2271b1;
+}
+
+.twmcd-admin-wrap .twmcd-accordion-toggle[aria-expanded="false"] .twmcd-accordion-icon {
+    display: inline-block;
+    transform: rotate(-90deg);
+}
+
+.twmcd-admin-wrap .twmcd-selected-count {
+    color: #646970;
+    font-weight: 400;
+}
+
+.twmcd-admin-wrap .twmcd-accordion-content {
+    margin-top: 16px;
+}
+
+.twmcd-admin-wrap .twmcd-release-selection-count {
+    font-weight: 600;
+}
+
 .twmcd-admin-wrap .twmcd-group-toggles {
     white-space: nowrap;
 }
@@ -80,7 +114,6 @@
 
 .twmcd-admin-wrap .twmcd-summary {
     border-left: 4px solid #2271b1;
-    font-size: 15px;
 }
 
 .twmcd-admin-wrap .twmcd-status {
@@ -117,12 +150,24 @@
 }
 
 .twmcd-admin-wrap table code {
-    font-size: 11px;
+    font-size: inherit;
+}
+
+.twmcd-admin-wrap .twmcd-group-toggles .button-link {
+    font: inherit;
 }
 
 .twmcd-admin-wrap #twmcd-save-profile {
     display: block;
     margin-top: 12px;
+}
+
+.twmcd-admin-wrap #twmcd-profile-name,
+.twmcd-admin-wrap #twmcd-save-profile {
+    box-sizing: border-box;
+    height: 40px;
+    min-height: 40px;
+    vertical-align: middle;
 }
 
 .twmcd-admin-wrap a:focus,

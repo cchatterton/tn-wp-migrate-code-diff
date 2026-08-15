@@ -21,6 +21,7 @@ function twmcd_ajax_prepare_comparison()
     twmcd_verify_ajax_request();
 
     $intent = isset($_POST['intent']) && 'pull' === sanitize_key(wp_unslash($_POST['intent'])) ? 'pull' : 'push';
+    $mode = isset($_POST['mode']) && 'database' === sanitize_key(wp_unslash($_POST['mode'])) ? 'database' : 'code';
     $connection_info = isset($_POST['connection']) ? sanitize_textarea_field(wp_unslash($_POST['connection'])) : '';
     $connection = twmcd_parse_connection_info($connection_info);
 
@@ -44,7 +45,11 @@ function twmcd_ajax_prepare_comparison()
 
     wp_send_json_success(
         array(
-            'redirect_url' => add_query_arg('twmcd_context', $token, twmcd_admin_page_url()),
+            'redirect_url' => add_query_arg(
+                'twmcd_context',
+                $token,
+                'database' === $mode ? twmcd_database_admin_page_url() : twmcd_admin_page_url()
+            ),
         )
     );
 }
@@ -86,6 +91,47 @@ function twmcd_ajax_compare_code()
             'comparison_token' => $comparison_token,
             'scope_label'      => isset($context['migration']['scope_label']) ? $context['migration']['scope_label'] : '',
             'note'             => __('This is a package-level comparison. Activation is informational and a code-only profile does not change activation or database options.', 'tn-wp-migrate-code-diff'),
+        )
+    );
+}
+
+function twmcd_ajax_compare_database_images()
+{
+    twmcd_verify_ajax_request();
+
+    $context_token = isset($_POST['context_token']) ? sanitize_key(wp_unslash($_POST['context_token'])) : '';
+    $context = twmcd_get_comparison_context($context_token);
+
+    if (!is_array($context)) {
+        wp_send_json_error(
+            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare Database/Images again.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
+
+    $intent = $context['intent'];
+    $connection = $context['connection'];
+    $remote_data = twmcd_request_remote_site_data($connection['url'], $connection['key'], $intent);
+    if (is_wp_error($remote_data)) {
+        wp_send_json_error(array('message' => $remote_data->get_error_message()), 400);
+    }
+
+    $remote_inventory = twmcd_normalize_database_images_inventory($remote_data, $context, false);
+    $local_inventory = twmcd_local_database_images_inventory($context);
+    $source_inventory = 'push' === $intent ? $local_inventory : $remote_inventory;
+    $destination_inventory = 'push' === $intent ? $remote_inventory : $local_inventory;
+    $comparison = twmcd_compare_database_images_inventories($source_inventory, $destination_inventory);
+    delete_site_transient(twmcd_context_transient_key($context_token));
+
+    wp_send_json_success(
+        array(
+            'intent'          => $intent,
+            'source_url'      => $source_inventory['url'],
+            'destination_url' => $destination_inventory['url'],
+            'tables'          => $comparison['tables'],
+            'images'          => $comparison['images'],
+            'scope_label'     => isset($context['migration']['scope_label']) ? $context['migration']['scope_label'] : '',
+            'note'            => __('Database differences use table presence, estimated row counts, and table size. Images reports WP Migrate Media capability and upload locations; the connection handshake does not expose a per-file image inventory.', 'tn-wp-migrate-code-diff'),
         )
     );
 }

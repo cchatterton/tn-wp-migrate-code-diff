@@ -2,6 +2,16 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.3.0 - 2026-08-15
+
+- Added active Compare Code and Compare Database/Images choices with separate report pages.
+- Added a Database / Images report comparing table presence, estimated rows, sizes, upload locations, and Media migration readiness.
+- Preserves selected multisite scope and Push/Pull direction in both comparison modes.
+- Renamed “New on source” to “Absent on Destination”.
+- Simplified all active plugin and theme states to “Active” because remote multisite activation scope is not exact.
+- Added a Recommended section toggle that restores the smart initial code selections.
+- Made each code section collapsible and added live per-section and total release selection counts.
+
 ## 0.2.9 - 2026-08-15
 
 - Leaves source package downgrades unselected by default while continuing to select upgrades and source-only packages.

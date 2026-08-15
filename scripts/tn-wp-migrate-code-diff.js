@@ -67,18 +67,24 @@
 
     function renderGroup(groupKey, packages) {
         var markup = '<section class="twmcd-card" aria-labelledby="twmcd-' + groupKey + '-title">';
+        var contentId = 'twmcd-' + groupKey + '-content';
         var selectablePackages = packages.filter(function (packageData) {
             return packageData.status !== 'destination_only' && packageData.selection;
         });
-        markup += '<div class="twmcd-group-heading"><h2 id="twmcd-' + groupKey + '-title">' + escapeHtml(groupLabels[groupKey]) + '</h2>';
+        markup += '<div class="twmcd-group-heading"><h2 id="twmcd-' + groupKey + '-title">';
+        markup += '<button type="button" class="button-link twmcd-accordion-toggle" aria-expanded="true" aria-controls="' + contentId + '">';
+        markup += '<span class="twmcd-accordion-icon" aria-hidden="true">&#9662;</span> ' + escapeHtml(groupLabels[groupKey]);
+        markup += ' <span id="twmcd-' + groupKey + '-selected-count" class="twmcd-selected-count"></span></button></h2>';
         markup += '<div class="twmcd-group-toggles">';
-        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selected="1"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.selectAll) + '</button>';
+        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selection-mode="all"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.selectAll) + '</button>';
         markup += '<span aria-hidden="true"> / </span>';
-        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selected="0"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.deselectAll) + '</button>';
-        markup += '</div></div>';
+        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selection-mode="none"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.deselectAll) + '</button>';
+        markup += '<span aria-hidden="true"> / </span>';
+        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selection-mode="recommended"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.recommended) + '</button>';
+        markup += '</div></div><div id="' + contentId + '" class="twmcd-accordion-content">';
 
         if (!packages.length) {
-            return markup + '<p>' + escapeHtml(TWMCD_ADMIN.labels.noInventory) + '</p></section>';
+            return markup + '<p>' + escapeHtml(TWMCD_ADMIN.labels.noInventory) + '</p></div></section>';
         }
 
         markup += '<div class="twmcd-table-scroll"><table class="widefat striped">';
@@ -98,7 +104,7 @@
             markup += '<td>' + escapeHtml(activationLabel(packageData.destination_activation)) + '</td></tr>';
         });
 
-        return markup + '</tbody></table></div></section>';
+        return markup + '</tbody></table></div></div></section>';
     }
 
     function renderComparison(comparison) {
@@ -118,6 +124,7 @@
         document.getElementById('twmcd-summary').innerHTML = '<strong>' + escapeHtml(comparison.source_url) + '</strong> &rarr; <strong>' + escapeHtml(comparison.destination_url) + '</strong>' + scope + '<br>' + differenceCount + ' ' + escapeHtml(TWMCD_ADMIN.labels.differencesFound) + '<p class="description">' + escapeHtml(comparison.note) + '</p>';
         loadingCard.hidden = true;
         resultsElement.hidden = false;
+        updateSelectionCounts();
     }
 
     function selectedPackages() {
@@ -133,17 +140,55 @@
         return selection;
     }
 
+    function updateSelectionCounts() {
+        var total = 0;
+        Object.keys(groupLabels).forEach(function (groupKey) {
+            var count = document.querySelectorAll('.twmcd-package-selection[data-group="' + groupKey + '"]:checked').length;
+            var countElement = document.getElementById('twmcd-' + groupKey + '-selected-count');
+            total += count;
+            if (countElement) {
+                countElement.textContent = '(' + TWMCD_ADMIN.labels.selectedCount.replace('%d', count) + ')';
+            }
+        });
+
+        var totalElement = document.getElementById('twmcd-release-selection-count');
+        if (totalElement) {
+            totalElement.textContent = TWMCD_ADMIN.labels.selectedForRelease.replace('%d', total);
+        }
+    }
+
     groupsElement.addEventListener('click', function (event) {
+        var accordionToggle = event.target.closest ? event.target.closest('.twmcd-accordion-toggle') : null;
+        if (accordionToggle) {
+            var content = document.getElementById(accordionToggle.getAttribute('aria-controls'));
+            var expanded = accordionToggle.getAttribute('aria-expanded') === 'true';
+            accordionToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (content) {
+                content.hidden = expanded;
+            }
+            return;
+        }
+
         var toggle = event.target.closest ? event.target.closest('.twmcd-group-toggle') : null;
         if (!toggle || toggle.disabled) {
             return;
         }
 
         var groupKey = toggle.getAttribute('data-group');
-        var selected = toggle.getAttribute('data-selected') === '1';
+        var selectionMode = toggle.getAttribute('data-selection-mode');
         document.querySelectorAll('.twmcd-package-selection[data-group="' + groupKey + '"]:not(:disabled)').forEach(function (checkbox) {
-            checkbox.checked = selected;
+            var packageIndex = parseInt(checkbox.getAttribute('data-index'), 10);
+            var packageData = state.comparison.groups[groupKey][packageIndex];
+            checkbox.checked = selectionMode === 'all'
+                || (selectionMode === 'recommended' && packageData && packageData.default_selected);
         });
+        updateSelectionCounts();
+    });
+
+    groupsElement.addEventListener('change', function (event) {
+        if (event.target && event.target.classList.contains('twmcd-package-selection')) {
+            updateSelectionCounts();
+        }
     });
 
     document.getElementById('twmcd-save-profile').addEventListener('click', function () {

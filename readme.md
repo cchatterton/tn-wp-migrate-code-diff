@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.2.9
+Version: 0.3.0
 Status: MVP
 
 ## Purpose
@@ -11,12 +11,14 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 ## Key Features
 
 - Compares plugins, themes, and must-use plugins.
+- Provides a separate Database / Images report for table presence, estimated row counts, table sizes, uploads locations, and Media migration readiness.
 - Reports same version, different version, new on source, and absent from source.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
+- Offers separate Compare Code and Compare Database/Images actions and report routes.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
-- Reports local, selected-site, network-wide, aggregate remote-network, and must-use activation states where WP Migrate exposes them.
+- Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
 - Selects source-only packages and source upgrades by default, while leaving source downgrades unselected.
-- Provides per-section Select all and Deselect all controls.
+- Provides per-section Select All, Deselect All, and Recommended controls.
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Does not automatically delete destination-only packages.
@@ -43,7 +45,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Both sites must run a mutually compatible WP Migrate Pro version, as required by WP Migrate's own signed connection handshake.
 - WP Migrate's Themes & Plugins capability must return package inventory.
 - This is a package/version comparison, not a file-content or line-by-line diff.
-- On a remote multisite, WP Migrate 2.7.8 exposes only a combined active flag, so the UI says “active somewhere in network.” Exact selected-site and network-active states are available for the local multisite.
+- On a remote multisite, WP Migrate 2.7.8 exposes only a combined active flag, so the report deliberately uses the single label “Active” on both sides.
 - Activation is informational. A generated code-only profile transfers selected files and does not change activation/database options.
 - The WP Migrate secret key is stored only as part of the saved WP Migrate profile, matching WP Migrate's existing profile behaviour.
 

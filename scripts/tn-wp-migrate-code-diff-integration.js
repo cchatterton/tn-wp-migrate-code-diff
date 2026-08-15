@@ -3,7 +3,7 @@
 
     var noticeId = 'twmcd-integration-notice';
     var subscribedStore = null;
-    var preparing = false;
+    var preparing = '';
     var pollAttempts = 0;
     var pollTimer = null;
 
@@ -188,7 +188,8 @@
 
         placeNotice(notice);
 
-        var buttonLabel = preparing ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
+        var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
+        var databaseButtonLabel = preparing === 'database' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.databaseButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
 
@@ -204,12 +205,11 @@
         }
         var markup = '<span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>'
             + '<strong>' + escapeHtml(message) + '</strong> '
-            + (actionAvailable ? '<button type="button" class="button-link twmcd-compare-now"'
-            + (preparing ? ' disabled' : '') + '>' + escapeHtml(buttonLabel) + '</button>'
+            + (actionAvailable ? '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
+            + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>'
             + '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-            + '<button type="button" class="button-link twmcd-compare-database" disabled aria-disabled="true" title="'
-            + escapeHtml(TWMCD_INTEGRATION.labels.databaseUnavailable) + '">'
-            + escapeHtml(TWMCD_INTEGRATION.labels.databaseButton) + '</button>' : '');
+            + '<button type="button" class="button-link twmcd-compare-database" data-mode="database"'
+            + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>' : '');
 
         if (notice.innerHTML === markup) {
             return;
@@ -217,8 +217,16 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
+        var databaseButton = notice.querySelector('.twmcd-compare-database');
         if (button && actionAvailable) {
-            button.addEventListener('click', prepareComparison);
+            button.addEventListener('click', function () {
+                prepareComparison('code');
+            });
+        }
+        if (databaseButton && actionAvailable) {
+            databaseButton.addEventListener('click', function () {
+                prepareComparison('database');
+            });
         }
     }
 
@@ -228,17 +236,18 @@
         return element.innerHTML;
     }
 
-    function prepareComparison() {
+    function prepareComparison(mode) {
         var snapshot = getSnapshot();
         if (!snapshot || !snapshot.connection_ready || !snapshot.ready || preparing) {
             return;
         }
 
-        preparing = true;
+        preparing = mode;
         renderNotice();
         var body = new URLSearchParams({
             action: 'twmcd_prepare_comparison',
             nonce: TWMCD_INTEGRATION.nonce,
+            mode: mode,
             intent: snapshot.intent,
             connection: snapshot.connection,
             context: JSON.stringify(snapshot.context)
@@ -257,7 +266,7 @@
             }
             window.location.href = response.data.redirect_url;
         }).catch(function (error) {
-            preparing = false;
+            preparing = '';
             renderNotice();
             window.alert(error.message);
         });

@@ -16,6 +16,13 @@ function twmcd_admin_page_url()
         : admin_url('admin.php?page=' . TWMCD_PAGE_SLUG);
 }
 
+function twmcd_database_admin_page_url()
+{
+    return is_multisite()
+        ? network_admin_url('admin.php?page=' . TWMCD_DATABASE_PAGE_SLUG)
+        : admin_url('admin.php?page=' . TWMCD_DATABASE_PAGE_SLUG);
+}
+
 function twmcd_migrate_admin_url()
 {
     return is_multisite()
@@ -144,14 +151,14 @@ function twmcd_validate_multisite_context($context)
         && 1 > $multisite['selected_subsite']) {
         return new WP_Error(
             'twmcd_subsite_required',
-            __('Select the required subsite in WP Migrate before comparing code.', 'tn-wp-migrate-code-diff')
+            __('Select the required subsite in WP Migrate before comparing sites.', 'tn-wp-migrate-code-diff')
         );
     }
 
     if ($migration['two_multisites'] && 1 > $multisite['destination_subsite']) {
         return new WP_Error(
             'twmcd_destination_subsite_required',
-            __('Select the destination subsite in WP Migrate before comparing code.', 'tn-wp-migrate-code-diff')
+            __('Select the destination subsite in WP Migrate before comparing sites.', 'tn-wp-migrate-code-diff')
         );
     }
 
@@ -207,14 +214,14 @@ function twmcd_unscramble_response($response_body)
     return str_rot13($response_body);
 }
 
-function twmcd_request_remote_inventory($remote_url, $secret_key, $intent)
+function twmcd_request_remote_site_data($remote_url, $secret_key, $intent)
 {
     $version = twmcd_wp_migrate_version();
 
     if (false === $version) {
         return new WP_Error(
             'twmcd_wp_migrate_missing',
-            __('WP Migrate Pro must be installed and active before a code comparison can run.', 'tn-wp-migrate-code-diff')
+            __('WP Migrate Pro must be installed and active before a site comparison can run.', 'tn-wp-migrate-code-diff')
         );
     }
 
@@ -277,6 +284,16 @@ function twmcd_request_remote_inventory($remote_url, $secret_key, $intent)
             'twmcd_remote_error',
             __('The remote WP Migrate connection returned an error.', 'tn-wp-migrate-code-diff')
         );
+    }
+
+    return $decoded;
+}
+
+function twmcd_request_remote_inventory($remote_url, $secret_key, $intent)
+{
+    $decoded = twmcd_request_remote_site_data($remote_url, $secret_key, $intent);
+    if (is_wp_error($decoded)) {
+        return $decoded;
     }
 
     $site_details = isset($decoded['site_details']) && is_array($decoded['site_details'])

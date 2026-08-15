@@ -9,6 +9,7 @@ function twmcd_register_hooks()
     add_action(is_multisite() ? 'network_admin_menu' : 'admin_menu', 'twmcd_register_admin_page');
     add_action('admin_enqueue_scripts', 'twmcd_enqueue_admin_assets');
     add_action('wp_ajax_twmcd_compare_code', 'twmcd_ajax_compare_code');
+    add_action('wp_ajax_twmcd_compare_database_images', 'twmcd_ajax_compare_database_images');
     add_action('wp_ajax_twmcd_prepare_comparison', 'twmcd_ajax_prepare_comparison');
     add_action('wp_ajax_twmcd_save_profile', 'twmcd_ajax_save_profile');
     add_filter('plugin_action_links_' . plugin_basename(TWMCD_PLUGIN_FILE), 'twmcd_add_plugin_action_link');
