@@ -2,6 +2,14 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.9 - 2026-08-15
+
+- Leaves source package downgrades unselected by default while continuing to select upgrades and source-only packages.
+- Added Select all and Deselect all controls to each code package section.
+- Defaults profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
+- Shows distinct Compare Code and unavailable Compare Database choices without mixing the two modes.
+- Fixed generated profiles retaining stale direction and incomplete connection and Multisite Tools state.
+
 ## 0.2.8 - 2026-08-15
 
 - Fixed Compare Now appearing before a required multisite subsite was selected.

@@ -39,7 +39,9 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'nonce'   => wp_create_nonce('twmcd_admin'),
                 'labels'  => array(
                     'message'           => __('Code Diff is listening — ready to compare.', 'tn-wp-migrate-code-diff'),
-                    'button'            => __('Compare now', 'tn-wp-migrate-code-diff'),
+                    'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
+                    'databaseButton'    => __('Compare Database', 'tn-wp-migrate-code-diff'),
+                    'databaseUnavailable' => __('Database comparison is a separate capability and is not available in this code-only release.', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
                     'waitingStore'      => __('Code Diff is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
@@ -85,6 +87,8 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'alwaysActive'     => __('Always active', 'tn-wp-migrate-code-diff'),
                 'notInstalled'     => __('Not installed', 'tn-wp-migrate-code-diff'),
                 'unknown'          => __('Unknown', 'tn-wp-migrate-code-diff'),
+                'selectAll'        => __('Select all', 'tn-wp-migrate-code-diff'),
+                'deselectAll'      => __('Deselect all', 'tn-wp-migrate-code-diff'),
             ),
         )
     );

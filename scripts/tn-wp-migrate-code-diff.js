@@ -67,7 +67,15 @@
 
     function renderGroup(groupKey, packages) {
         var markup = '<section class="twmcd-card" aria-labelledby="twmcd-' + groupKey + '-title">';
-        markup += '<h2 id="twmcd-' + groupKey + '-title">' + escapeHtml(groupLabels[groupKey]) + '</h2>';
+        var selectablePackages = packages.filter(function (packageData) {
+            return packageData.status !== 'destination_only' && packageData.selection;
+        });
+        markup += '<div class="twmcd-group-heading"><h2 id="twmcd-' + groupKey + '-title">' + escapeHtml(groupLabels[groupKey]) + '</h2>';
+        markup += '<div class="twmcd-group-toggles">';
+        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selected="1"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.selectAll) + '</button>';
+        markup += '<span aria-hidden="true"> / </span>';
+        markup += '<button type="button" class="button-link twmcd-group-toggle" data-group="' + groupKey + '" data-selected="0"' + (!selectablePackages.length ? ' disabled' : '') + '>' + escapeHtml(TWMCD_ADMIN.labels.deselectAll) + '</button>';
+        markup += '</div></div>';
 
         if (!packages.length) {
             return markup + '<p>' + escapeHtml(TWMCD_ADMIN.labels.noInventory) + '</p></section>';
@@ -77,7 +85,7 @@
         markup += '<thead><tr><td class="check-column"></td><th scope="col">Package</th><th scope="col">Version status</th><th scope="col">Source</th><th scope="col">Destination</th><th scope="col">Source activation</th><th scope="col">Destination activation</th></tr></thead><tbody>';
 
         packages.forEach(function (packageData, packageIndex) {
-            var selectedByDefault = (packageData.status === 'different' || packageData.status === 'source_only') && packageData.selection;
+            var selectedByDefault = Boolean(packageData.default_selected && packageData.selection);
             var selectionDisabled = packageData.status === 'destination_only' || !packageData.selection;
 
             markup += '<tr><th scope="row" class="check-column">';
@@ -125,6 +133,19 @@
         return selection;
     }
 
+    groupsElement.addEventListener('click', function (event) {
+        var toggle = event.target.closest ? event.target.closest('.twmcd-group-toggle') : null;
+        if (!toggle || toggle.disabled) {
+            return;
+        }
+
+        var groupKey = toggle.getAttribute('data-group');
+        var selected = toggle.getAttribute('data-selected') === '1';
+        document.querySelectorAll('.twmcd-package-selection[data-group="' + groupKey + '"]:not(:disabled)').forEach(function (checkbox) {
+            checkbox.checked = selected;
+        });
+    });
+
     document.getElementById('twmcd-save-profile').addEventListener('click', function () {
         var saveButton = this;
         saveButton.disabled = true;
@@ -144,7 +165,7 @@
     });
 
     if (!TWMCD_ADMIN.contextToken) {
-        showError('No live WP Migrate context was supplied. Return to Migrate and choose Compare now.');
+        showError('No live WP Migrate context was supplied. Return to Migrate and choose Compare Code.');
         return;
     }
 

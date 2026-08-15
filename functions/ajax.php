@@ -58,7 +58,7 @@ function twmcd_ajax_compare_code()
 
     if (!is_array($context)) {
         wp_send_json_error(
-            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare now again.', 'tn-wp-migrate-code-diff')),
+            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare Code again.', 'tn-wp-migrate-code-diff')),
             400
         );
     }
@@ -96,7 +96,7 @@ function twmcd_ajax_save_profile()
 
     $profile_name = isset($_POST['profile_name'])
         ? sanitize_text_field(wp_unslash($_POST['profile_name']))
-        : __('Code diff deployment', 'tn-wp-migrate-code-diff');
+        : twmcd_default_profile_name();
     $selection_json = isset($_POST['selection']) ? wp_unslash($_POST['selection']) : '';
     $selection = json_decode($selection_json, true);
     $comparison_token = isset($_POST['comparison_token'])

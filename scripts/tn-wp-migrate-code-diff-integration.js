@@ -68,16 +68,15 @@
         var connectionState = connectionContainer.connection_state || {};
         var multisite = state.multisite_tools || {};
         var storeHasIntent = current.intent === 'push' || current.intent === 'pull';
-        var intent = storeHasIntent ? current.intent : intentFromDom();
+        var domIntent = intentFromDom();
+        var intent = domIntent || (storeHasIntent ? current.intent : '');
         var localSite = migrations.local_site || {};
         var remoteSite = migrations.remote_site || {};
         var remoteDetails = remoteSite.site_details || {};
         var localIsMultisite = siteIsMultisite(localSite);
         var remoteIsMultisite = siteIsMultisite(remoteSite);
         var domMultisite = multisiteFromDom();
-        var localSource = storeHasIntent && typeof current.localSource === 'boolean'
-            ? current.localSource
-            : intent === 'push';
+        var localSource = intent === 'push';
         if (!remoteIsMultisite && (domMultisite.destination_present || (!localIsMultisite && domMultisite.source_present))) {
             remoteIsMultisite = true;
         }
@@ -206,7 +205,11 @@
         var markup = '<span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>'
             + '<strong>' + escapeHtml(message) + '</strong> '
             + (actionAvailable ? '<button type="button" class="button-link twmcd-compare-now"'
-            + (preparing ? ' disabled' : '') + '>' + escapeHtml(buttonLabel) + '</button>' : '');
+            + (preparing ? ' disabled' : '') + '>' + escapeHtml(buttonLabel) + '</button>'
+            + '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+            + '<button type="button" class="button-link twmcd-compare-database" disabled aria-disabled="true" title="'
+            + escapeHtml(TWMCD_INTEGRATION.labels.databaseUnavailable) + '">'
+            + escapeHtml(TWMCD_INTEGRATION.labels.databaseButton) + '</button>' : '');
 
         if (notice.innerHTML === markup) {
             return;

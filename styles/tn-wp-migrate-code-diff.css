@@ -33,7 +33,13 @@
     font-weight: 600;
 }
 
-.twmcd-migrate-notice .twmcd-compare-now:disabled {
+.twmcd-migrate-notice .twmcd-mode-separator {
+    color: #a66f00;
+    margin: 0 2px;
+}
+
+.twmcd-migrate-notice .twmcd-compare-now:disabled,
+.twmcd-migrate-notice .twmcd-compare-database:disabled {
     color: #787c82;
     cursor: not-allowed;
 }
@@ -49,6 +55,17 @@
 
 .twmcd-admin-wrap .twmcd-card h2 {
     margin-top: 0;
+}
+
+.twmcd-admin-wrap .twmcd-group-heading {
+    align-items: baseline;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.twmcd-admin-wrap .twmcd-group-toggles {
+    white-space: nowrap;
 }
 
 .twmcd-admin-wrap .twmcd-field-label {

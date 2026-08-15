@@ -23,6 +23,11 @@ function twmcd_migrate_admin_url()
         : admin_url('tools.php?page=wp-migrate-db-pro');
 }
 
+function twmcd_default_profile_name()
+{
+    return 'Release-' . date_i18n('Ymd-Hi');
+}
+
 function twmcd_is_wp_migrate_available()
 {
     return false !== twmcd_wp_migrate_version();

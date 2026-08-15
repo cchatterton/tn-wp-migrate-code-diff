@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.2.8
+Version: 0.2.9
 Status: MVP
 
 ## Purpose
@@ -12,10 +12,12 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 
 - Compares plugins, themes, and must-use plugins.
 - Reports same version, different version, new on source, and absent from source.
-- Adds a live “Compare now” notice to WP Migrate after its direction and connection are configured.
+- Adds a live mode notice to WP Migrate after its direction and connection are configured.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Reports local, selected-site, network-wide, aggregate remote-network, and must-use activation states where WP Migrate exposes them.
-- Selects different-version and source-only packages by default.
+- Selects source-only packages and source upgrades by default, while leaving source downgrades unselected.
+- Provides per-section Select all and Deselect all controls.
+- Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Does not automatically delete destination-only packages.
 - Delivers releases through the native WordPress Plugins update interface from public GitHub release assets.

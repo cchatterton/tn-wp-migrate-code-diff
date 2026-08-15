@@ -22,7 +22,7 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
 
     return array(
         'current_migration' => array(
-            'connected'                 => false,
+            'connected'                 => true,
             'intent'                    => $intent,
             'tables_option'             => 'all',
             'tables_selected'           => array(),
@@ -32,16 +32,51 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
             'post_types_selected'       => array(),
             'advanced_options_selected' => array(),
             'profile_name'              => $profile_name,
+            'selected_existing_profile' => null,
+            'profile_type'              => null,
+            'status'                    => array('disabled' => false),
+            'stages'                    => array(),
+            'current_stage'             => '',
+            'stages_complete'            => array(),
+            'running'                   => false,
             'migration_enabled'         => false,
+            'migration_id'              => wp_generate_uuid4(),
+            'source_prefix'             => '',
+            'destination_prefix'        => '',
+            'preview'                   => false,
+            'selectedComboOption'       => 'preview',
             'databaseEnabled'           => false,
             'localSource'               => !empty($migration_context['local_source']),
             'twoMultisites'             => !empty($migration_context['two_multisites']),
+            'currentPayloadSize'        => 0,
+            'currentMaxPayloadSize'     => null,
+            'fileTransferRequests'      => 0,
+            'payloadSizeHistory'        => array(),
+            'fileTransferStats'          => array(),
+            'forceHighPerformanceTransfers' => true,
+            'fseDumpFilename'           => null,
         ),
         'connection_info' => array(
             'connection_state' => array(
                 'value' => $connection_info,
                 'url'   => $connection['url'],
                 'key'   => $connection['key'],
+            ),
+            'status' => array(
+                'auth_form'                    => array('username' => '', 'password' => ''),
+                'show_auth_form'               => false,
+                'connecting'                   => false,
+                'error'                        => false,
+                'error_msg'                    => '',
+                'button_status'                => 'disabled',
+                'ssl_notice'                   => false,
+                'pasted'                       => false,
+                'copy_to_remote'               => false,
+                'prefix_mismatch'              => false,
+                'mixed_case_table_name_warning' => false,
+                'show_mst_warning'             => false,
+                'update_plugin_on_remote'      => false,
+                'retry_over_http'              => false,
             ),
         ),
         'search_replace' => array(
@@ -54,6 +89,8 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
         ),
         'theme_plugin_files' => array(
             'available'          => true,
+            'is_licensed'        => true,
+            'message'            => '',
             'theme_files'        => array('enabled' => !empty($themes)),
             'themes_option'      => 'selected',
             'themes_selected'    => $themes,
@@ -76,8 +113,20 @@ function twmcd_create_code_only_profile($profile_name, $context, $selection)
             'core_option'        => 'all',
             'core_selected'      => array(),
             'core_excludes'      => $default_exclusions,
+            'state'              => array('status' => ''),
         ),
-        'multisite_tools' => $multisite_tools,
+        'multisite_tools' => array_merge(
+            array(
+                'enabled'             => false,
+                'available'           => true,
+                'is_licensed'         => true,
+                'selected_subsite'    => 0,
+                'destination_subsite' => 0,
+                'new_prefix'          => '',
+                'message'             => '',
+            ),
+            $multisite_tools
+        ),
     );
 }
 
