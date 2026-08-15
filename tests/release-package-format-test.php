@@ -8,6 +8,7 @@ define('MB_IN_BYTES', 1048576);
 define('GB_IN_BYTES', 1073741824);
 define('FS_CHMOD_DIR', 0755);
 define('TWMCD_PLUGIN_FILE', WP_PLUGIN_DIR . '/tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php');
+define('TWMCD_VERSION', 'test');
 
 class WP_Error
 {
@@ -69,6 +70,26 @@ function current_user_can()
     return true;
 }
 
+function wp_tempnam($filename)
+{
+    return tempnam(sys_get_temp_dir(), 'twmcd-');
+}
+
+function wp_delete_file($path)
+{
+    return !file_exists($path) || unlink($path);
+}
+
+function wp_json_encode($value, $flags = 0)
+{
+    return json_encode($value, $flags);
+}
+
+function home_url()
+{
+    return 'https://destination.example';
+}
+
 class TWMCD_Test_Filesystem
 {
     public function exists($path)
@@ -127,11 +148,18 @@ mkdir($plugin_directory . '/node_modules', 0777, true);
 file_put_contents($plugin_directory . '/sample-plugin.php', "<?php\n/* Plugin Name: Sample */\n");
 file_put_contents($plugin_directory . '/assets/example.js', "console.log('sample');\n");
 file_put_contents($plugin_directory . '/node_modules/excluded.js', "excluded\n");
+$new_plugin_directory = $temporary_directory . '/new-plugin';
+mkdir($new_plugin_directory, 0777, true);
+file_put_contents($new_plugin_directory . '/new-plugin.php', "<?php\n/* Plugin Name: New */\n");
 
 $zip_path = $temporary_directory . '/release.zip';
 $zip = new ZipArchive();
 $zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 $files = twmcd_add_release_path_to_zip($zip, $plugin_directory, 'payload/plugins/sample-plugin');
+$files = array_merge(
+    $files,
+    twmcd_add_release_path_to_zip($zip, $new_plugin_directory, 'payload/plugins/new-plugin')
+);
 $manifest = array(
     'format'     => 'tn-code-release/v1',
     'release_id' => 'Release-Test',
@@ -142,6 +170,13 @@ $manifest = array(
             'version'      => '1.0.0',
             'archive_path' => 'payload/plugins/sample-plugin',
             'destination'  => 'plugins/sample-plugin',
+        ),
+        array(
+            'type'         => 'plugins',
+            'name'         => 'New',
+            'version'      => '1.0.0',
+            'archive_path' => 'payload/plugins/new-plugin',
+            'destination'  => 'plugins/new-plugin',
         ),
     ),
     'files' => $files,
@@ -179,11 +214,79 @@ mkdir(WPMU_PLUGIN_DIR, 0777, true);
 mkdir(WP_PLUGIN_DIR . '/sample-plugin', 0777, true);
 file_put_contents(WP_PLUGIN_DIR . '/sample-plugin/old.php', "old\n");
 $GLOBALS['wp_filesystem'] = new TWMCD_Test_Filesystem();
+
+$rollback_package = twmcd_create_rollback_release_package($manifest);
+if (is_wp_error($rollback_package) || !is_array($rollback_package)) {
+    fwrite(STDERR, "FAIL: rollback release package was not created.\n");
+    exit(1);
+}
+$rollback_zip = new ZipArchive();
+$rollback_zip->open($rollback_package['path']);
+$rollback_validation = twmcd_validate_release_archive($rollback_zip);
+$rollback_zip->close();
+if (is_wp_error($rollback_validation)
+    || 'Release-Test-rollback' !== $rollback_validation['manifest']['release_id']
+    || 'plugins/new-plugin' !== $rollback_validation['manifest']['remove_packages'][0]['destination']
+    || !isset($rollback_validation['manifest']['files']['payload/plugins/sample-plugin/old.php'])) {
+    fwrite(STDERR, "FAIL: rollback release did not preserve replacements and record additions.\n");
+    exit(1);
+}
+
 $installed = twmcd_install_manifest_packages($workspace, $manifest);
 if (is_wp_error($installed)
     || !is_file(WP_PLUGIN_DIR . '/sample-plugin/sample-plugin.php')
-    || is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')) {
+    || is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')
+    || !is_file(WP_PLUGIN_DIR . '/new-plugin/new-plugin.php')) {
     fwrite(STDERR, "FAIL: validated package was not installed over the existing plugin.\n");
+    exit(1);
+}
+
+$rollback_workspace = $temporary_directory . '/rollback-workspace';
+mkdir($rollback_workspace, 0777, true);
+$rollback_zip->open($rollback_package['path']);
+$rollback_zip->extractTo($rollback_workspace);
+$rollback_zip->close();
+$rolled_back = twmcd_install_manifest_packages($rollback_workspace, $rollback_validation['manifest']);
+if (is_wp_error($rolled_back)
+    || !is_file(WP_PLUGIN_DIR . '/sample-plugin/old.php')
+    || is_file(WP_PLUGIN_DIR . '/sample-plugin/sample-plugin.php')
+    || file_exists(WP_PLUGIN_DIR . '/new-plugin')) {
+    fwrite(STDERR, "FAIL: rollback release did not restore replacements and remove additions.\n");
+    exit(1);
+}
+wp_delete_file($rollback_package['path']);
+
+if (false !== twmcd_create_rollback_release_package($rollback_validation['manifest'])) {
+    fwrite(STDERR, "FAIL: a rollback release attempted to create another rollback.\n");
+    exit(1);
+}
+
+$remove_only_manifest = array(
+    'format' => 'tn-code-release/v1',
+    'release_id' => 'Release-Remove-rollback',
+    'packages' => array(),
+    'remove_packages' => array(
+        array(
+            'type' => 'plugins',
+            'name' => 'New',
+            'destination' => 'plugins/new-plugin',
+        ),
+    ),
+    'files' => array(),
+);
+if (is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
+    fwrite(STDERR, "FAIL: a valid removal-only rollback release was rejected.\n");
+    exit(1);
+}
+$remove_only_manifest['release_id'] = 'Release-Remove';
+if (!is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
+    fwrite(STDERR, "FAIL: removal instructions were accepted outside a rollback release.\n");
+    exit(1);
+}
+$remove_only_manifest['release_id'] = 'Release-Remove-rollback';
+$remove_only_manifest['remove_packages'][0]['destination'] = 'plugins/../unsafe';
+if (!is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
+    fwrite(STDERR, "FAIL: an unsafe rollback removal destination was accepted.\n");
     exit(1);
 }
 

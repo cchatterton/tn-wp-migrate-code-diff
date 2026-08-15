@@ -67,7 +67,14 @@ function twmcd_ajax_compare_code()
     twmcd_verify_ajax_request();
 
     $context_token = isset($_POST['context_token']) ? sanitize_key(wp_unslash($_POST['context_token'])) : '';
+    $comparison_token = isset($_POST['comparison_token']) ? sanitize_key(wp_unslash($_POST['comparison_token'])) : '';
     $context = twmcd_get_comparison_context($context_token);
+    if (!is_array($context) && $comparison_token) {
+        $previous_comparison = twmcd_get_comparison_state($comparison_token);
+        $context = is_array($previous_comparison) && !empty($previous_comparison['context'])
+            ? $previous_comparison['context']
+            : false;
+    }
 
     if (!is_array($context)) {
         wp_send_json_error(

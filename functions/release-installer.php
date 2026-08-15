@@ -49,20 +49,149 @@ function twmcd_install_release_archive($zip_path)
         return $checksum_validation;
     }
 
+    $rollback_package = twmcd_create_rollback_release_package($validation['manifest']);
+    if (is_wp_error($rollback_package)) {
+        twmcd_delete_workspace($workspace);
+        return $rollback_package;
+    }
+
     $installation = twmcd_install_manifest_packages($workspace, $validation['manifest']);
     twmcd_delete_workspace($workspace);
 
     if (is_wp_error($installation)) {
+        if (is_array($rollback_package) && !empty($rollback_package['path'])) {
+            wp_delete_file($rollback_package['path']);
+        }
         return $installation;
     }
 
+    $message = sprintf(
+        __('Release “%1$s” installed successfully. %2$d code package operations completed.', 'tn-wp-migrate-code-diff'),
+        $validation['manifest']['release_id'],
+        count($installation)
+    );
+    if (is_array($rollback_package)) {
+        $message .= ' ' . __('The rollback release ZIP has been downloaded.', 'tn-wp-migrate-code-diff');
+    }
+
     return array(
-        'message'  => sprintf(
-            __('Release “%1$s” installed successfully. %2$d code packages were updated.', 'tn-wp-migrate-code-diff'),
-            $validation['manifest']['release_id'],
-            count($installation)
+        'message'          => $message,
+        'packages'         => $installation,
+        'rollback_package' => $rollback_package,
+    );
+}
+
+function twmcd_release_is_rollback($release_id)
+{
+    return 1 === preg_match('/-rollback$/i', trim((string) $release_id));
+}
+
+function twmcd_create_rollback_release_package($manifest)
+{
+    if (empty($manifest['release_id']) || twmcd_release_is_rollback($manifest['release_id'])) {
+        return false;
+    }
+
+    $existing_packages = array();
+    $remove_packages = array();
+    foreach ($manifest['packages'] as $package) {
+        $target = twmcd_package_destination_path($package['type'], $package['destination']);
+        if (is_wp_error($target)) {
+            return $target;
+        }
+        if (file_exists($target)) {
+            $existing_packages[] = array('package' => $package, 'source_path' => $target);
+        } else {
+            $remove_packages[] = array(
+                'type'        => $package['type'],
+                'key'         => isset($package['key']) ? $package['key'] : '',
+                'name'        => $package['name'],
+                'destination' => $package['destination'],
+            );
+        }
+    }
+
+    if (!$existing_packages && !$remove_packages) {
+        return false;
+    }
+
+    $zip_path = wp_tempnam('twmcd-rollback.zip');
+    if (!$zip_path) {
+        return new WP_Error('twmcd_rollback_temp_file', __('WordPress could not create a temporary rollback release file.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $zip = new ZipArchive();
+    if (true !== $zip->open($zip_path, ZipArchive::CREATE | ZipArchive::OVERWRITE)) {
+        wp_delete_file($zip_path);
+        return new WP_Error('twmcd_rollback_zip_open', __('The rollback release ZIP could not be opened for writing.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $manifest_packages = array();
+    $manifest_files = array();
+    foreach ($existing_packages as $existing_package) {
+        $package = $existing_package['package'];
+        $added_files = twmcd_add_release_path_to_zip(
+            $zip,
+            $existing_package['source_path'],
+            $package['archive_path'],
+            false
+        );
+        if (is_wp_error($added_files) || !$added_files) {
+            $zip->close();
+            wp_delete_file($zip_path);
+            return is_wp_error($added_files)
+                ? $added_files
+                : new WP_Error('twmcd_empty_rollback_package', __('An existing package did not contain any files to preserve for rollback.', 'tn-wp-migrate-code-diff'));
+        }
+
+        $manifest_files = array_merge($manifest_files, $added_files);
+        $manifest_packages[] = array(
+            'type'         => $package['type'],
+            'key'          => isset($package['key']) ? $package['key'] : '',
+            'name'         => $package['name'],
+            'version'      => '',
+            'archive_path' => $package['archive_path'],
+            'destination'  => $package['destination'],
+        );
+    }
+
+    $rollback_release_id = $manifest['release_id'] . '-rollback';
+    $rollback_manifest = array(
+        'format'      => 'tn-code-release/v1',
+        'release_id'  => $rollback_release_id,
+        'created_at'  => gmdate('c'),
+        'source_url'  => home_url(),
+        'generator'   => array(
+            'plugin'  => 'tn-wp-migrate-code-diff',
+            'version' => TWMCD_VERSION,
         ),
-        'packages' => $installation,
+        'packages'        => $manifest_packages,
+        'remove_packages' => $remove_packages,
+        'files'           => $manifest_files,
+    );
+
+    if (!$zip->addFromString('manifest.json', wp_json_encode($rollback_manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES))) {
+        $zip->close();
+        wp_delete_file($zip_path);
+        return new WP_Error('twmcd_rollback_manifest_write', __('The rollback release manifest could not be written.', 'tn-wp-migrate-code-diff'));
+    }
+    $zip->close();
+
+    $validation_archive = new ZipArchive();
+    if (true !== $validation_archive->open($zip_path)) {
+        wp_delete_file($zip_path);
+        return new WP_Error('twmcd_rollback_zip_invalid', __('The generated rollback release ZIP could not be reopened for validation.', 'tn-wp-migrate-code-diff'));
+    }
+    $validation = twmcd_validate_release_archive($validation_archive);
+    $validation_archive->close();
+    if (is_wp_error($validation)) {
+        wp_delete_file($zip_path);
+        return new WP_Error('twmcd_rollback_validation_failed', $validation->get_error_message());
+    }
+
+    return array(
+        'path'     => $zip_path,
+        'filename' => sanitize_file_name($rollback_release_id) . '.zip',
     );
 }
 
@@ -73,7 +202,7 @@ function twmcd_validate_release_archive($archive)
     $uncompressed_size = 0;
     $payload_files = array();
 
-    if ($archive->numFiles < 2 || $archive->numFiles > $maximum_entries) {
+    if ($archive->numFiles < 1 || $archive->numFiles > $maximum_entries) {
         return new WP_Error('twmcd_archive_entries', __('The release contains an invalid number of files.', 'tn-wp-migrate-code-diff'));
     }
 
@@ -116,11 +245,24 @@ function twmcd_validate_manifest($manifest, $payload_files)
         || empty($manifest['format'])
         || 'tn-code-release/v1' !== $manifest['format']
         || empty($manifest['release_id'])
-        || empty($manifest['packages'])
+        || !isset($manifest['packages'])
         || !is_array($manifest['packages'])
-        || empty($manifest['files'])
+        || !isset($manifest['files'])
+        || (isset($manifest['remove_packages']) && !is_array($manifest['remove_packages']))
         || !is_array($manifest['files'])) {
         return new WP_Error('twmcd_manifest_invalid', __('The release manifest is missing or invalid.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $remove_packages = isset($manifest['remove_packages']) && is_array($manifest['remove_packages'])
+        ? $manifest['remove_packages']
+        : array();
+    if (!$manifest['packages'] && !$remove_packages) {
+        return new WP_Error('twmcd_manifest_empty', __('The release manifest does not contain any package operations.', 'tn-wp-migrate-code-diff'));
+    }
+    if (($remove_packages && !twmcd_release_is_rollback($manifest['release_id']))
+        || ($manifest['packages'] && !$manifest['files'])
+        || (!$manifest['packages'] && $manifest['files'])) {
+        return new WP_Error('twmcd_manifest_operation', __('The release manifest contains an invalid package operation.', 'tn-wp-migrate-code-diff'));
     }
 
     $manifest_files = array_keys($manifest['files']);
@@ -133,6 +275,17 @@ function twmcd_validate_manifest($manifest, $payload_files)
     $destinations = array();
     foreach ($manifest['packages'] as $package) {
         $package_validation = twmcd_validate_manifest_package($package);
+        if (is_wp_error($package_validation)) {
+            return $package_validation;
+        }
+        if (isset($destinations[$package['destination']])) {
+            return new WP_Error('twmcd_duplicate_target', __('The release declares the same destination more than once.', 'tn-wp-migrate-code-diff'));
+        }
+        $destinations[$package['destination']] = true;
+    }
+
+    foreach ($remove_packages as $package) {
+        $package_validation = twmcd_validate_remove_manifest_package($package);
         if (is_wp_error($package_validation)) {
             return $package_validation;
         }
@@ -170,6 +323,25 @@ function twmcd_validate_manifest_package($package)
     $installer_directory = dirname(plugin_basename(TWMCD_PLUGIN_FILE));
     if ('plugins' === $package['type'] && 'plugins/' . $installer_directory === $package['destination']) {
         return new WP_Error('twmcd_self_update', __('A manual release cannot replace the active release installer itself.', 'tn-wp-migrate-code-diff'));
+    }
+
+    return true;
+}
+
+function twmcd_validate_remove_manifest_package($package)
+{
+    if (!is_array($package)
+        || empty($package['type'])
+        || !in_array($package['type'], array('plugins', 'themes', 'muplugins'), true)
+        || empty($package['name'])
+        || empty($package['destination'])
+        || !twmcd_is_safe_destination($package['type'], $package['destination'])) {
+        return new WP_Error('twmcd_manifest_remove_package', __('The rollback release contains an invalid package removal.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $installer_directory = dirname(plugin_basename(TWMCD_PLUGIN_FILE));
+    if ('plugins' === $package['type'] && 'plugins/' . $installer_directory === $package['destination']) {
+        return new WP_Error('twmcd_self_remove', __('A rollback release cannot remove the active release installer itself.', 'tn-wp-migrate-code-diff'));
     }
 
     return true;
@@ -259,7 +431,10 @@ function twmcd_install_manifest_packages($workspace, $manifest)
 {
     global $wp_filesystem;
 
-    foreach ($manifest['packages'] as $package) {
+    $remove_packages = isset($manifest['remove_packages']) && is_array($manifest['remove_packages'])
+        ? $manifest['remove_packages']
+        : array();
+    foreach (array_merge($manifest['packages'], $remove_packages) as $package) {
         if ('themes' === $package['type'] && !current_user_can('update_themes')) {
             return new WP_Error('twmcd_theme_capability', __('You do not have permission to update themes in this release.', 'tn-wp-migrate-code-diff'));
         }
@@ -311,7 +486,31 @@ function twmcd_install_manifest_packages($workspace, $manifest)
             );
         }
 
-        $installed[] = sprintf('%1$s (%2$s)', $package['name'], $package['version'] ? $package['version'] : __('unknown version', 'tn-wp-migrate-code-diff'));
+        $version = !empty($package['version']) ? $package['version'] : __('unknown version', 'tn-wp-migrate-code-diff');
+        $installed[] = sprintf('%1$s (%2$s)', $package['name'], $version);
+    }
+
+    foreach ($remove_packages as $package) {
+        $target = twmcd_package_destination_path($package['type'], $package['destination']);
+        if (is_wp_error($target)) {
+            twmcd_rollback_operations($operations);
+            return $target;
+        }
+        if (!$wp_filesystem->exists($target)) {
+            $installed[] = sprintf(__('%s (already absent)', 'tn-wp-migrate-code-diff'), $package['name']);
+            continue;
+        }
+
+        $backup = trailingslashit($backup_root) . md5('remove:' . $package['destination']);
+        if (!$wp_filesystem->move($target, $backup, true)) {
+            twmcd_rollback_operations($operations);
+            return new WP_Error(
+                'twmcd_remove_failed',
+                sprintf(__('The newly added files for %s could not be removed. Earlier changes were rolled back.', 'tn-wp-migrate-code-diff'), $package['name'])
+            );
+        }
+        $operations[] = array('target' => $target, 'backup' => $backup, 'had_existing' => true);
+        $installed[] = sprintf(__('%s (removed)', 'tn-wp-migrate-code-diff'), $package['name']);
     }
 
     return $installed;

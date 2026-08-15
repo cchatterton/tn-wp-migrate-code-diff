@@ -105,6 +105,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce'   => wp_create_nonce('twmcd_admin'),
             'contextToken' => isset($_GET['twmcd_context']) ? sanitize_key(wp_unslash($_GET['twmcd_context'])) : '',
+            'comparisonToken' => isset($_GET['twmcd_comparison']) ? sanitize_key(wp_unslash($_GET['twmcd_comparison'])) : '',
             'labels'  => array(
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),

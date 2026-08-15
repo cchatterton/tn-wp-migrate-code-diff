@@ -128,6 +128,11 @@
     function renderComparison(comparison) {
         var differenceCount = 0;
         state.comparison = comparison;
+        if (comparison.comparison_token && window.history && typeof window.history.replaceState === 'function') {
+            var reportUrl = new URL(window.location.href);
+            reportUrl.searchParams.set('twmcd_comparison', comparison.comparison_token);
+            window.history.replaceState(null, '', reportUrl.toString());
+        }
         groupsElement.innerHTML = '';
 
         Object.keys(groupLabels).forEach(function (groupKey) {
@@ -268,6 +273,11 @@
     });
 
     function loadComparison() {
+        var requestData = state.comparison && state.comparison.comparison_token
+            ? { comparison_token: state.comparison.comparison_token }
+            : (TWMCD_ADMIN.comparisonToken
+                ? { comparison_token: TWMCD_ADMIN.comparisonToken }
+                : { context_token: TWMCD_ADMIN.contextToken });
         refreshButton.disabled = true;
         invalidateSavedProfile();
         resultsElement.hidden = true;
@@ -275,7 +285,7 @@
         document.getElementById('twmcd-loading').classList.add('is-active');
         messageElement.innerHTML = '';
 
-        request('twmcd_compare_code', { context_token: TWMCD_ADMIN.contextToken }).then(function (response) {
+        request('twmcd_compare_code', requestData).then(function (response) {
             if (!response.success) {
                 throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.comparisonFailed);
             }
@@ -290,7 +300,7 @@
 
     refreshButton.addEventListener('click', loadComparison);
 
-    if (!TWMCD_ADMIN.contextToken) {
+    if (!TWMCD_ADMIN.contextToken && !TWMCD_ADMIN.comparisonToken) {
         showError('No live WP Migrate context was supplied. Return to Migrate and choose Compare Code.');
         return;
     }

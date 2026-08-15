@@ -2,6 +2,16 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.6.0 - 2026-08-15
+
+- Generates and downloads a reusable `<release-name>-rollback.zip` before installing a normal manual release.
+- Includes complete existing files for packages being replaced, without the source-release development-file exclusions.
+- Records packages introduced by the incoming release as validated removal operations in the rollback manifest.
+- Restores replaced packages and removes newly introduced packages when the rollback ZIP is uploaded.
+- Prevents rollback releases from generating nested rollback packages.
+- Stops installation before changing files if the required rollback package cannot be created and validated.
+- Refreshes an open comparison from its current comparison token instead of relying on the shorter-lived entry-page token.
+
 ## 0.5.2 - 2026-08-15
 
 - Completely hides Database/Images comparison from the WP Migrate interface.

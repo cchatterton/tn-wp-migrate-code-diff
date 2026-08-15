@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
     <section class="twmcd-card" aria-labelledby="twmcd-upload-title">
         <h2 id="twmcd-upload-title"><?php esc_html_e('Install a manual code release', 'tn-wp-migrate-code-diff'); ?></h2>
         <p><?php esc_html_e('Upload a release ZIP created by this plugin on the source site. The installer validates its manifest and file checksums, then replaces only the included plugins, themes, and must-use plugins.', 'tn-wp-migrate-code-diff'); ?></p>
-        <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. Existing package files are held for rollback while installation runs.', 'tn-wp-migrate-code-diff'); ?></p>
+        <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. Before installation, existing package files are downloaded as a release with “-rollback” added to its name. That rollback restores replaced packages and removes packages introduced by the release. Installing a rollback release does not generate another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
 
         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="action" value="twmcd_upload_release">

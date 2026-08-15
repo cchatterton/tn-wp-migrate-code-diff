@@ -224,7 +224,7 @@ function twmcd_path_is_within($path, $root)
     return $path === $root || 0 === strpos($path, $root . '/');
 }
 
-function twmcd_add_release_path_to_zip($zip, $source_path, $archive_path)
+function twmcd_add_release_path_to_zip($zip, $source_path, $archive_path, $apply_exclusions = true)
 {
     $files = array();
     $source_path = wp_normalize_path($source_path);
@@ -248,7 +248,7 @@ function twmcd_add_release_path_to_zip($zip, $source_path, $archive_path)
         }
 
         $relative_path = ltrim(substr(wp_normalize_path($file->getPathname()), strlen($source_path)), '/');
-        if (twmcd_release_path_is_excluded($relative_path)) {
+        if ($apply_exclusions && twmcd_release_path_is_excluded($relative_path)) {
             continue;
         }
 

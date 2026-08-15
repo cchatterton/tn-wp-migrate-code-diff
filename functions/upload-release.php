@@ -18,6 +18,16 @@ function twmcd_handle_release_upload()
         : array('success' => true, 'message' => $result['message'], 'packages' => $result['packages']);
 
     set_site_transient('twmcd_install_result_' . get_current_user_id(), $stored_result, 5 * MINUTE_IN_SECONDS);
+
+    if (!is_wp_error($result)
+        && !empty($result['rollback_package']['path'])
+        && !empty($result['rollback_package']['filename'])) {
+        twmcd_send_release_package(
+            $result['rollback_package']['path'],
+            $result['rollback_package']['filename']
+        );
+    }
+
     wp_safe_redirect(twmcd_upload_release_page_url());
     exit;
 }
