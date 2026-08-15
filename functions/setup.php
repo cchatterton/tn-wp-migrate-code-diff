@@ -12,7 +12,9 @@ function twmcd_register_hooks()
     add_action('wp_ajax_twmcd_compare_database_images', 'twmcd_ajax_compare_database_images');
     add_action('wp_ajax_twmcd_prepare_comparison', 'twmcd_ajax_prepare_comparison');
     add_action('wp_ajax_twmcd_save_profile', 'twmcd_ajax_save_profile');
+    add_action('wp_ajax_twmcd_prepare_release_package', 'twmcd_ajax_prepare_release_package');
     add_action('admin_post_twmcd_create_release_package', 'twmcd_handle_create_release_package');
+    add_action('admin_post_twmcd_download_release_package', 'twmcd_handle_download_release_package');
     add_action('admin_post_twmcd_upload_release', 'twmcd_handle_release_upload');
     add_filter('plugin_action_links_' . plugin_basename(TWMCD_PLUGIN_FILE), 'twmcd_add_plugin_action_link');
     add_filter('pre_set_site_transient_update_plugins', 'twmcd_add_github_update_data');

@@ -52,6 +52,89 @@ function twmcd_handle_create_release_package()
     twmcd_send_release_package($release_package['path'], $release_package['filename']);
 }
 
+function twmcd_ajax_prepare_release_package()
+{
+    twmcd_verify_ajax_request();
+    twmcd_prepare_long_running_operation();
+
+    $release_name = isset($_POST['release_name'])
+        ? sanitize_text_field(wp_unslash($_POST['release_name']))
+        : twmcd_default_profile_name();
+    $comparison_token = isset($_POST['comparison_token'])
+        ? sanitize_key(wp_unslash($_POST['comparison_token']))
+        : '';
+    $selection_json = isset($_POST['selection']) ? wp_unslash($_POST['selection']) : '';
+    $selection = json_decode($selection_json, true);
+    $comparison_state = twmcd_get_comparison_state($comparison_token);
+    $selection = twmcd_validate_profile_selection($comparison_token, $selection);
+
+    if ('' === $release_name || is_wp_error($selection) || !is_array($comparison_state)) {
+        $message = is_wp_error($selection)
+            ? $selection->get_error_message()
+            : __('The comparison has expired. Refresh it before creating a release package.', 'tn-wp-migrate-code-diff');
+        wp_send_json_error(array('message' => $message), 400);
+    }
+
+    if (empty($comparison_state['context']['intent']) || 'push' !== $comparison_state['context']['intent']) {
+        wp_send_json_error(
+            array('message' => __('Release packages can only be created from a Push comparison.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
+
+    $release_package = twmcd_create_release_package($release_name, $comparison_state, $selection);
+    if (is_wp_error($release_package)) {
+        wp_send_json_error(array('message' => $release_package->get_error_message()), 500);
+    }
+
+    $download_token = wp_generate_password(32, false, false);
+    set_site_transient(
+        twmcd_release_download_transient_key($download_token),
+        $release_package,
+        10 * MINUTE_IN_SECONDS
+    );
+
+    wp_send_json_success(
+        array(
+            'download_url' => add_query_arg(
+                array(
+                    'action' => 'twmcd_download_release_package',
+                    'token'  => $download_token,
+                ),
+                admin_url('admin-post.php')
+            ),
+        )
+    );
+}
+
+function twmcd_release_download_transient_key($token)
+{
+    return 'twmcd_release_download_' . get_current_user_id() . '_' . sanitize_key($token);
+}
+
+function twmcd_handle_download_release_package()
+{
+    $download_token = isset($_GET['token']) ? sanitize_key(wp_unslash($_GET['token'])) : '';
+
+    if (!current_user_can(twmcd_admin_capability())) {
+        wp_die(esc_html__('You do not have permission to download release packages.', 'tn-wp-migrate-code-diff'), 403);
+    }
+
+    $transient_key = twmcd_release_download_transient_key($download_token);
+    $release_package = get_site_transient($transient_key);
+    delete_site_transient($transient_key);
+
+    if (!is_array($release_package) || empty($release_package['path']) || empty($release_package['filename'])) {
+        wp_die(
+            esc_html__('The prepared release download has expired. Create the release package again.', 'tn-wp-migrate-code-diff'),
+            esc_html__('Release package unavailable', 'tn-wp-migrate-code-diff'),
+            array('response' => 404)
+        );
+    }
+
+    twmcd_send_release_package($release_package['path'], $release_package['filename']);
+}
+
 function twmcd_create_release_package($release_name, $comparison_state, $selection)
 {
     if (!class_exists('ZipArchive')) {

@@ -256,25 +256,6 @@
 
     document.getElementById('twmcd-profile-name').addEventListener('input', invalidateSavedProfile);
 
-    function releaseFilename(response, fallbackName) {
-        var disposition = response.headers.get('Content-Disposition') || '';
-        var match = disposition.match(/filename="?([^";]+)"?/i);
-        return match && match[1] ? match[1] : fallbackName + '.zip';
-    }
-
-    function releaseError(response) {
-        return response.text().then(function (responseText) {
-            var errorDocument = new DOMParser().parseFromString(responseText, 'text/html');
-            var errorHeading = errorDocument.querySelector('h1');
-            var errorMessage = errorDocument.querySelector('.wp-die-message, p');
-            throw new Error(
-                (errorMessage && errorMessage.textContent.trim())
-                || (errorHeading && errorHeading.textContent.trim())
-                || TWMCD_ADMIN.labels.releasePackageFailed
-            );
-        });
-    }
-
     function setReleasePackageBusy(isBusy) {
         var label = releasePackageButton.querySelector('.twmcd-release-button-label');
         var spinner = releasePackageButton.querySelector('.twmcd-release-button-spinner');
@@ -286,7 +267,6 @@
     }
 
     releasePackageButton.addEventListener('click', function () {
-        var form = document.getElementById('twmcd-release-package-form');
         var selection = selectedPackages();
         var selectedCount = selection.plugins.length + selection.themes.length + selection.muplugins.length;
 
@@ -295,33 +275,25 @@
             return;
         }
 
-        form.elements.release_name.value = document.getElementById('twmcd-profile-name').value;
-        form.elements.comparison_token.value = state.comparison.comparison_token;
-        form.elements.selection.value = JSON.stringify(selection);
         setReleasePackageBusy(true);
         profileMessageElement.innerHTML = '';
 
-        fetch(form.action, {
-            method: 'POST',
-            credentials: 'same-origin',
-            body: new FormData(form)
+        request('twmcd_prepare_release_package', {
+            release_name: document.getElementById('twmcd-profile-name').value,
+            comparison_token: state.comparison.comparison_token,
+            selection: JSON.stringify(selection)
         }).then(function (response) {
-            if (!response.ok || (response.headers.get('Content-Type') || '').indexOf('application/zip') === -1) {
-                return releaseError(response);
+            if (!response.success || !response.data || !response.data.download_url) {
+                throw new Error(response.data && response.data.message
+                    ? response.data.message
+                    : TWMCD_ADMIN.labels.releasePackageFailed);
             }
-            var filename = releaseFilename(response, form.elements.release_name.value);
-            return response.blob().then(function (releaseBlob) {
-                var downloadUrl = URL.createObjectURL(releaseBlob);
-                var downloadLink = document.createElement('a');
-                downloadLink.href = downloadUrl;
-                downloadLink.download = filename;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                downloadLink.remove();
-                window.setTimeout(function () {
-                    URL.revokeObjectURL(downloadUrl);
-                }, 1000);
-            });
+
+            var downloadLink = document.createElement('a');
+            downloadLink.href = response.data.download_url;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
         }).catch(function (error) {
             showProfileMessage(error.message || TWMCD_ADMIN.labels.releasePackageFailed, true);
         }).then(function () {

@@ -40,13 +40,6 @@ if (!defined('ABSPATH')) {
                 <span class="twmcd-release-button-label"><?php esc_html_e('Create release package', 'tn-wp-migrate-code-diff'); ?></span>
             </button>
             <div id="twmcd-profile-message" class="twmcd-message" role="status" aria-live="polite"></div>
-            <form id="twmcd-release-package-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" hidden>
-                <input type="hidden" name="action" value="twmcd_create_release_package">
-                <?php wp_nonce_field('twmcd_create_release_package', 'twmcd_release_nonce'); ?>
-                <input type="hidden" name="release_name" value="">
-                <input type="hidden" name="comparison_token" value="">
-                <input type="hidden" name="selection" value="">
-            </form>
         </section>
     </div>
 </div>

@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.6 - 2026-08-15
+
+- Separates release-package preparation from the browser download.
+- Returns structured package-creation errors through WordPress AJAX.
+- Downloads a successfully prepared ZIP through a short-lived, authenticated URL instead of handling ZIP bytes in JavaScript.
+
 ## 0.8.5 - 2026-08-15
 
 - Loads the WordPress file API before creating release or rollback temporary ZIP files.
