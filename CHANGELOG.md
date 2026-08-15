@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.4 - 2026-08-15
+
+- Removes the global release-history schema check from `admin_init`.
+- Initializes release-history storage only on activation, Upload Release processing, or when Release Notes is opened.
+- Keeps comparison and Create release package requests completely independent of release-history storage.
+
 ## 0.8.3 - 2026-08-15
 
 - Simplifies the plugin-row actions to WP Migrate and Upload Release alongside WordPress native actions.
