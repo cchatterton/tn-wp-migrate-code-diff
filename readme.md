@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.3.1
+Version: 0.3.2
 Status: MVP
 
 ## Purpose
@@ -17,7 +17,7 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Offers separate Compare Code and Compare Database/Images actions and report routes.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
-- Selects source-only packages and active source upgrades by default, while leaving source downgrades and inactive different-version packages unselected.
+- Selects active source-only packages and active source upgrades by default, while leaving source downgrades and all inactive source packages unselected.
 - Provides per-section Select All, Deselect All, and Recommended controls.
 - Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
 - Creates a WP Migrate saved profile with database and media disabled.

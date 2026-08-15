@@ -49,7 +49,7 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
         $display_package = $source_package ? $source_package : $destination_package;
         $default_selected = 'source_only' === $status
             || ('different' === $status && !twmcd_source_version_is_older($source_package['version'], $destination_package['version']));
-        if ('different' === $status && 'inactive' === $source_activation) {
+        if (in_array($status, array('different', 'source_only'), true) && 'inactive' === $source_activation) {
             $default_selected = false;
         }
         $comparison[] = array(
