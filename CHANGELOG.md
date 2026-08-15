@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.2 - 2026-08-15
+
+- Writes release history only on the receiving site through Upload Release.
+- Keeps source creator/site and version metadata in the ZIP manifest without writing a source-side history record during package creation.
+- Removes the release-history database operation from Create release package.
+
 ## 0.8.1 - 2026-08-15
 
 - Limits default destination-only inactive removal selections to plugins.

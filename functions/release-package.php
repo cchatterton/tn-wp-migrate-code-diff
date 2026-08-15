@@ -133,7 +133,6 @@ function twmcd_create_release_package($release_name, $comparison_state, $selecti
         return new WP_Error('twmcd_manifest_write', __('The release manifest could not be written.', 'tn-wp-migrate-code-diff'));
     }
     $zip->close();
-    twmcd_record_release_history($manifest, 'package_created');
 
     return array(
         'path'     => $zip_path,

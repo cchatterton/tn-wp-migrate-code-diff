@@ -21,7 +21,7 @@ $change_groups = array(
 ?>
 <div class="wrap twmcd-admin-wrap twmcd-history-wrap">
     <h1><?php esc_html_e('Release Notes', 'tn-wp-migrate-code-diff'); ?></h1>
-    <p><?php esc_html_e('History of manual code release packages, rollback creation, and installations recorded by this site.', 'tn-wp-migrate-code-diff'); ?></p>
+    <p><?php esc_html_e('History of rollback creation and manual release installations processed through Upload Release on this site.', 'tn-wp-migrate-code-diff'); ?></p>
 
     <?php if (!$history_rows) : ?>
         <div class="notice notice-info inline"><p><?php esc_html_e('No manual release activity has been recorded yet.', 'tn-wp-migrate-code-diff'); ?></p></div>
