@@ -165,6 +165,7 @@ function twmcd_create_comparison_token($context, $comparison_groups)
         array(
             'context'       => $context,
             'allowed_paths' => $allowed_paths,
+            'packages'      => $comparison_groups,
         ),
         15 * MINUTE_IN_SECONDS
     );

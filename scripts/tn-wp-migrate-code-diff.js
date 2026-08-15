@@ -122,6 +122,9 @@
 
         var scope = comparison.scope_label ? '<br><span>' + escapeHtml(comparison.scope_label) + '</span>' : '';
         document.getElementById('twmcd-summary').innerHTML = '<strong>' + escapeHtml(comparison.source_url) + '</strong> &rarr; <strong>' + escapeHtml(comparison.destination_url) + '</strong>' + scope + '<br>' + differenceCount + ' ' + escapeHtml(TWMCD_ADMIN.labels.differencesFound) + '<p class="description">' + escapeHtml(comparison.note) + '</p>';
+        var releaseButton = document.getElementById('twmcd-create-release-package');
+        releaseButton.disabled = !comparison.release_package_available;
+        document.getElementById('twmcd-release-package-note').textContent = comparison.release_package_note || '';
         loadingCard.hidden = true;
         resultsElement.hidden = false;
         updateSelectionCounts();
@@ -207,6 +210,22 @@
             showError(error.message);
             saveButton.disabled = false;
         });
+    });
+
+    document.getElementById('twmcd-create-release-package').addEventListener('click', function () {
+        var form = document.getElementById('twmcd-release-package-form');
+        var selection = selectedPackages();
+        var selectedCount = selection.plugins.length + selection.themes.length + selection.muplugins.length;
+
+        if (!state.comparison || !state.comparison.release_package_available || !selectedCount) {
+            showError(TWMCD_ADMIN.labels.releasePackageEmpty);
+            return;
+        }
+
+        form.elements.release_name.value = document.getElementById('twmcd-profile-name').value;
+        form.elements.comparison_token.value = state.comparison.comparison_token;
+        form.elements.selection.value = JSON.stringify(selection);
+        form.submit();
     });
 
     if (!TWMCD_ADMIN.contextToken) {

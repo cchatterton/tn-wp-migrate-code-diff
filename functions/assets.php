@@ -101,6 +101,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             'labels'  => array(
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
+                'releasePackageEmpty' => __('Select at least one source package before creating the release package.', 'tn-wp-migrate-code-diff'),
                 'same'             => __('Same version', 'tn-wp-migrate-code-diff'),
                 'different'        => __('Different version', 'tn-wp-migrate-code-diff'),
                 'sourceOnly'       => __('Absent on Destination', 'tn-wp-migrate-code-diff'),

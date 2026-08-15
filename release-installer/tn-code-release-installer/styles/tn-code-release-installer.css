@@ -1,0 +1,27 @@
+.tncri-admin-wrap {
+    max-width: 860px;
+}
+
+.tncri-admin-wrap .tncri-card {
+    background: #fff;
+    border: 1px solid #dcdcde;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin-top: 20px;
+    padding: 20px;
+}
+
+.tncri-admin-wrap .tncri-card h2 {
+    margin-top: 0;
+}
+
+.tncri-admin-wrap .tncri-field-label {
+    display: block;
+    font-weight: 600;
+    margin: 18px 0 8px;
+}
+
+.tncri-admin-wrap input:focus,
+.tncri-admin-wrap button:focus {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}

@@ -2,6 +2,13 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.4.0 - 2026-08-15
+
+- Added a source-only “Create release package” action to the Code Comparison page.
+- Added a versioned release manifest with package destinations and SHA-256 checksums.
+- Added the companion TN Code Release Installer with an Upload Release admin page, safe archive validation, rollback during installation, and native GitHub updates.
+- Preserves database, media, plugin activation, and theme activation settings during manual code deployment.
+
 ## 0.3.2 - 2026-08-15
 
 - Leaves source-only packages unselected when they are inactive on the source.

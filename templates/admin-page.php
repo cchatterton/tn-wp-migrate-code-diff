@@ -32,6 +32,15 @@ if (!defined('ABSPATH')) {
             <label class="twmcd-field-label" for="twmcd-profile-name"><?php esc_html_e('Profile name', 'tn-wp-migrate-code-diff'); ?></label>
             <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>">
             <button id="twmcd-save-profile" class="button button-primary" type="button"><?php esc_html_e('Save and open profile', 'tn-wp-migrate-code-diff'); ?></button>
+            <button id="twmcd-create-release-package" class="button" type="button"><?php esc_html_e('Create release package', 'tn-wp-migrate-code-diff'); ?></button>
+            <p id="twmcd-release-package-note" class="description"></p>
+            <form id="twmcd-release-package-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" hidden>
+                <input type="hidden" name="action" value="twmcd_create_release_package">
+                <?php wp_nonce_field('twmcd_create_release_package', 'twmcd_release_nonce'); ?>
+                <input type="hidden" name="release_name" value="">
+                <input type="hidden" name="comparison_token" value="">
+                <input type="hidden" name="selection" value="">
+            </form>
         </section>
     </div>
 </div>

@@ -21,7 +21,7 @@ cp "$PROJECT_DIR/readme.md" "$PACKAGE_DIR/readme.md"
 cp "$PROJECT_DIR/CHANGELOG.md" "$PACKAGE_DIR/CHANGELOG.md"
 
 find "$PACKAGE_DIR" -name '.DS_Store' -delete
-rm -f "$PACKAGE_DIR/scripts/build-plugin-zip.sh"
+rm -f "$PACKAGE_DIR/scripts"/build-*.sh
 
 (
     cd "$WORK_DIR"

@@ -3,7 +3,7 @@
  * Plugin Name: TN WP Migrate Code Diff
  * Plugin URI: https://github.com/cchatterton/tn-wp-migrate-code-diff/releases/latest
  * Description: Compares code packages and database/media migration state through a WP Migrate connection.
- * Version: 0.3.2
+ * Version: 0.4.0
  * Requires at least: 5.2
  * Requires PHP: 5.6
  * Update URI: https://github.com/cchatterton/tn-wp-migrate-code-diff
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TWMCD_VERSION', '0.3.2');
+define('TWMCD_VERSION', '0.4.0');
 define('TWMCD_PLUGIN_FILE', __FILE__);
 define('TWMCD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TWMCD_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -31,6 +31,7 @@ define('TWMCD_GITHUB_ERROR_TRANSIENT', 'twmcd_github_latest_release_error');
 require_once TWMCD_PLUGIN_DIR . 'functions/helpers.php';
 require_once TWMCD_PLUGIN_DIR . 'functions/comparison.php';
 require_once TWMCD_PLUGIN_DIR . 'functions/profile.php';
+require_once TWMCD_PLUGIN_DIR . 'functions/release-package.php';
 require_once TWMCD_PLUGIN_DIR . 'functions/ajax.php';
 require_once TWMCD_PLUGIN_DIR . 'functions/assets.php';
 require_once TWMCD_PLUGIN_DIR . 'functions/admin.php';
