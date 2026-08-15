@@ -8,6 +8,12 @@ function twmcd_enqueue_admin_assets($hook_suffix)
 {
     $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
     $is_comparison_page = TWMCD_PAGE_SLUG === $page;
+    $is_wp_migrate_page = 'wp-migrate-db-pro' === $page
+        || false !== strpos((string) $hook_suffix, 'wp-migrate-db-pro');
+
+    if (!$is_comparison_page && !$is_wp_migrate_page) {
+        return;
+    }
 
     wp_enqueue_style(
         'twmcd_admin',
@@ -16,33 +22,33 @@ function twmcd_enqueue_admin_assets($hook_suffix)
         TWMCD_VERSION
     );
 
-    wp_enqueue_script(
-        'twmcd_integration',
-        TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-code-diff-integration.js',
-        array(),
-        TWMCD_VERSION,
-        true
-    );
+    if ($is_wp_migrate_page) {
+        wp_enqueue_script(
+            'twmcd_integration',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-code-diff-integration.js',
+            array(),
+            TWMCD_VERSION,
+            true
+        );
 
-    wp_localize_script(
-        'twmcd_integration',
-        'TWMCD_INTEGRATION',
-        array(
-            'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce'   => wp_create_nonce('twmcd_admin'),
-            'labels'  => array(
-                'message'           => __('Code Diff is listening — ready to compare.', 'tn-wp-migrate-code-diff'),
-                'button'            => __('Compare now', 'tn-wp-migrate-code-diff'),
-                'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
-                'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
-                'waitingStore'      => __('Code Diff is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
-                'waitingConnection' => __('Code Diff is listening — waiting for a WP Migrate connection.', 'tn-wp-migrate-code-diff'),
-                'selectSubsite'     => __('Code Diff is listening — connection detected; waiting on subsite selection.', 'tn-wp-migrate-code-diff'),
-            ),
-        )
-    );
+        wp_localize_script(
+            'twmcd_integration',
+            'TWMCD_INTEGRATION',
+            array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce'   => wp_create_nonce('twmcd_admin'),
+                'labels'  => array(
+                    'message'           => __('Code Diff is listening — ready to compare.', 'tn-wp-migrate-code-diff'),
+                    'button'            => __('Compare now', 'tn-wp-migrate-code-diff'),
+                    'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
+                    'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
+                    'waitingStore'      => __('Code Diff is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
+                    'waitingConnection' => __('Code Diff is listening — waiting for a WP Migrate connection.', 'tn-wp-migrate-code-diff'),
+                    'selectSubsite'     => __('Code Diff is listening — connection detected; waiting on subsite selection.', 'tn-wp-migrate-code-diff'),
+                ),
+            )
+        );
 
-    if (!$is_comparison_page) {
         return;
     }
 

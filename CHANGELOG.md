@@ -2,6 +2,13 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.2.4 - 2026-08-15
+
+- Fixed WP Migrate's loading screen hanging when Code Diff was active.
+- Moved the listener notice outside WP Migrate's React-owned root using the `wpmdb_notices` hook.
+- Removed the document-wide mutation observer that could repeatedly conflict with React rendering.
+- Added bounded startup polling while retaining live Redux subscriptions for connection and multisite changes.
+
 ## 0.2.3 - 2026-08-15
 
 - Added the standards-compliant public GitHub release configuration.

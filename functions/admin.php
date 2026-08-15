@@ -37,3 +37,18 @@ function twmcd_add_plugin_action_link($links)
 
     return $links;
 }
+
+function twmcd_render_integration_notice_mount()
+{
+    if (!current_user_can(twmcd_admin_capability())) {
+        return;
+    }
+    ?>
+    <div id="twmcd-integration-notice-mount" class="twmcd-integration-notice-mount">
+        <div id="twmcd-integration-notice" class="twmcd-migrate-notice" role="status">
+            <span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>
+            <strong><?php esc_html_e('Code Diff is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'); ?></strong>
+        </div>
+    </div>
+    <?php
+}

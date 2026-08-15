@@ -3,7 +3,7 @@
  * Plugin Name: TN WP Migrate Code Diff
  * Plugin URI: https://github.com/cchatterton/tn-wp-migrate-code-diff/releases/latest
  * Description: Compares plugin and theme packages through a WP Migrate connection and creates code-only migration profiles.
- * Version: 0.2.3
+ * Version: 0.2.4
  * Requires at least: 5.2
  * Requires PHP: 5.6
  * Update URI: https://github.com/cchatterton/tn-wp-migrate-code-diff
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TWMCD_VERSION', '0.2.3');
+define('TWMCD_VERSION', '0.2.4');
 define('TWMCD_PLUGIN_FILE', __FILE__);
 define('TWMCD_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('TWMCD_PLUGIN_URL', plugin_dir_url(__FILE__));

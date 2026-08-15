@@ -18,6 +18,7 @@ function twmcd_register_hooks()
     add_filter('plugin_row_meta', 'twmcd_add_github_plugin_row_meta', 10, 2);
     add_action('admin_init', 'twmcd_handle_manual_update_check');
     add_action('upgrader_process_complete', 'twmcd_clear_github_cache_after_upgrade', 10, 2);
+    add_action('wpmdb_notices', 'twmcd_render_integration_notice_mount');
 }
 
 twmcd_register_hooks();

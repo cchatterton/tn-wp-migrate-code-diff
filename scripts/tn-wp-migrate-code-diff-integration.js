@@ -4,6 +4,8 @@
     var noticeId = 'twmcd-integration-notice';
     var subscribedStore = null;
     var preparing = false;
+    var pollAttempts = 0;
+    var pollTimer = null;
 
     function boolValue(value) {
         return value === true || value === 1 || value === '1' || value === 'true';
@@ -102,12 +104,7 @@
     }
 
     function noticeContainer() {
-        var navigation = document.querySelector('#wpmdb-main #root .nav-wrap');
-        if (navigation && navigation.nextElementSibling) {
-            return navigation.nextElementSibling;
-        }
-
-        return document.querySelector('#wpmdb-main #root');
+        return document.getElementById('twmcd-integration-notice-mount');
     }
 
     function isMigrateRoute() {
@@ -220,7 +217,17 @@
         renderNotice();
     }
 
+    function pollForStore() {
+        initialise();
+        pollAttempts += 1;
+
+        if (pollAttempts >= 40 && pollTimer) {
+            window.clearInterval(pollTimer);
+            pollTimer = null;
+        }
+    }
+
     window.addEventListener('hashchange', initialise);
-    new MutationObserver(initialise).observe(document.documentElement, { childList: true, subtree: true });
     initialise();
+    pollTimer = window.setInterval(pollForStore, 250);
 }());
