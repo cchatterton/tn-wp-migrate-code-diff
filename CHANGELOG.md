@@ -2,6 +2,10 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.4.2 - 2026-08-15
+
+- Synchronized the comparison plugin release with the companion installer ZIP upload compatibility fix.
+
 ## 0.4.1 - 2026-08-15
 
 - Uses the exact code package selections from the active saved WP Migrate profile as the initial comparison selection.

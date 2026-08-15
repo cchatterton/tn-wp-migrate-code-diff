@@ -2,6 +2,10 @@
 
 All notable changes to TN Code Release Installer are recorded here.
 
+## 0.4.2 - 2026-08-15
+
+- Accepts valid ZIP uploads when a host reports a non-standard ZIP MIME type, while retaining extension, archive, manifest, path, and checksum validation.
+
 ## 0.4.1 - 2026-08-15
 
 - Synchronized the companion installer release with TN WP Migrate Code Diff 0.4.1.

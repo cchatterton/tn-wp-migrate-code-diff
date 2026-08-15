@@ -99,12 +99,21 @@ function tncri_receive_and_install_release()
         return new WP_Error('tncri_missing_upload', __('Choose a TN code release ZIP to upload.', 'tn-code-release-installer'));
     }
 
+    $uploaded_name = isset($_FILES['release_file']['name'])
+        ? sanitize_file_name(wp_unslash($_FILES['release_file']['name']))
+        : '';
+    if ('zip' !== strtolower(pathinfo($uploaded_name, PATHINFO_EXTENSION))) {
+        return new WP_Error('tncri_invalid_extension', __('The release file must use the .zip extension.', 'tn-code-release-installer'));
+    }
+
     require_once ABSPATH . 'wp-admin/includes/file.php';
     $uploaded_file = wp_handle_upload(
         $_FILES['release_file'],
         array(
             'test_form' => false,
-            'mimes'     => array('zip' => 'application/zip'),
+            // Hosts identify valid ZIPs with several incompatible MIME values.
+            // The archive is opened and fully validated before any payload is extracted.
+            'test_type' => false,
         )
     );
 
@@ -113,6 +122,11 @@ function tncri_receive_and_install_release()
     }
     if (empty($uploaded_file['file'])) {
         return new WP_Error('tncri_upload_missing', __('WordPress did not retain the uploaded release file.', 'tn-code-release-installer'));
+    }
+
+    if ('zip' !== strtolower(pathinfo($uploaded_file['file'], PATHINFO_EXTENSION))) {
+        wp_delete_file($uploaded_file['file']);
+        return new WP_Error('tncri_invalid_uploaded_extension', __('WordPress stored the release with an invalid file extension.', 'tn-code-release-installer'));
     }
 
     $result = tncri_install_release_archive($uploaded_file['file']);

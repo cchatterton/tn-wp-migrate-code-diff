@@ -1,7 +1,7 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.4.1
+Version: 0.4.2
 Status: MVP
 
 ## Purpose
