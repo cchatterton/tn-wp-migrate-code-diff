@@ -41,6 +41,13 @@ function twmcd_options_admin_page_url()
         : admin_url('admin.php?page=' . TWMCD_OPTIONS_PAGE_SLUG);
 }
 
+function twmcd_posts_admin_page_url()
+{
+    return is_multisite()
+        ? network_admin_url('admin.php?page=' . TWMCD_POSTS_PAGE_SLUG)
+        : admin_url('admin.php?page=' . TWMCD_POSTS_PAGE_SLUG);
+}
+
 function twmcd_migrate_admin_url()
 {
     return is_multisite()

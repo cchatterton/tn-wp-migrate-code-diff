@@ -11,9 +11,11 @@ function twmcd_register_hooks()
     add_action('wp_ajax_twmcd_compare_code', 'twmcd_ajax_compare_code');
     add_action('wp_ajax_twmcd_compare_database', 'twmcd_ajax_compare_database');
     add_action('wp_ajax_twmcd_compare_options', 'twmcd_ajax_compare_options');
+    add_action('wp_ajax_twmcd_compare_posts', 'twmcd_ajax_compare_posts');
     add_action('wp_ajax_twmcd_prepare_comparison', 'twmcd_ajax_prepare_comparison');
     add_action('wp_ajax_twmcd_save_profile', 'twmcd_ajax_save_profile');
     add_action('wp_ajax_twmcd_prepare_release_package', 'twmcd_ajax_prepare_release_package');
+    add_action('wp_ajax_twmcd_prepare_post_release_package', 'twmcd_ajax_prepare_post_release_package');
     add_action('wp_ajax_twmcd_prepare_rollback_package', 'twmcd_ajax_prepare_rollback_package');
     add_action('admin_post_twmcd_create_release_package', 'twmcd_handle_create_release_package');
     add_action('admin_post_twmcd_download_release_package', 'twmcd_handle_download_release_package');

@@ -10,12 +10,13 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     $is_comparison_page = TWMCD_PAGE_SLUG === $page;
     $is_database_page = TWMCD_DATABASE_PAGE_SLUG === $page;
     $is_options_page = TWMCD_OPTIONS_PAGE_SLUG === $page;
+    $is_posts_page = TWMCD_POSTS_PAGE_SLUG === $page;
     $is_upload_page = TWMCD_UPLOAD_PAGE_SLUG === $page;
     $is_history_page = TWMCD_HISTORY_PAGE_SLUG === $page;
     $is_wp_migrate_page = 'wp-migrate-db-pro' === $page
         || false !== strpos((string) $hook_suffix, 'wp-migrate-db-pro');
 
-    if (!$is_comparison_page && !$is_database_page && !$is_options_page && !$is_upload_page && !$is_history_page && !$is_wp_migrate_page) {
+    if (!$is_comparison_page && !$is_database_page && !$is_options_page && !$is_posts_page && !$is_upload_page && !$is_history_page && !$is_wp_migrate_page) {
         return;
     }
 
@@ -72,6 +73,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                     'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
                     'databaseButton'    => __('Compare Database', 'tn-wp-migrate-code-diff'),
                     'optionsButton'     => __('Compare Options', 'tn-wp-migrate-code-diff'),
+                    'postsButton'       => __('Compare Posts', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
                     'waitingStore'      => __('Site comparison is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
@@ -142,6 +144,36 @@ function twmcd_enqueue_admin_assets($hook_suffix)
         return;
     }
 
+    if ($is_posts_page) {
+        wp_enqueue_script(
+            'twmcd_posts_admin',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-posts-diff.js',
+            array(),
+            TWMCD_VERSION,
+            true
+        );
+        wp_localize_script(
+            'twmcd_posts_admin',
+            'TWMCD_POSTS_ADMIN',
+            array(
+                'ajaxUrl'      => admin_url('admin-ajax.php'),
+                'nonce'        => wp_create_nonce('twmcd_admin'),
+                'contextToken' => isset($_GET['twmcd_context']) ? sanitize_key(wp_unslash($_GET['twmcd_context'])) : '',
+                'labels'       => array(
+                    'comparisonFailed' => __('The Posts comparison could not be completed.', 'tn-wp-migrate-code-diff'),
+                    'same'             => __('Same', 'tn-wp-migrate-code-diff'),
+                    'different'        => __('Different', 'tn-wp-migrate-code-diff'),
+                    'sourceOnly'       => __('Absent on Destination', 'tn-wp-migrate-code-diff'),
+                    'destinationOnly'  => __('Absent from source', 'tn-wp-migrate-code-diff'),
+                    'creating'         => __('Creating release package…', 'tn-wp-migrate-code-diff'),
+                    'create'           => __('Create release package', 'tn-wp-migrate-code-diff'),
+                    'packageFailed'    => __('The Posts release package could not be created.', 'tn-wp-migrate-code-diff'),
+                ),
+            )
+        );
+        return;
+    }
+
     wp_enqueue_script(
         'twmcd_admin',
         TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-code-diff.js',
@@ -161,7 +193,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             'labels'  => array(
                 'comparisonFailed' => __('The code comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                 'saveFailed'       => __('The migration profile could not be saved.', 'tn-wp-migrate-code-diff'),
-                'profileSaved'     => __('Release profile saved. You can now open it in WP Migrate.', 'tn-wp-migrate-code-diff'),
+                'profileSaved'     => __('The release profile was updated automatically.', 'tn-wp-migrate-code-diff'),
                 'releasePackageEmpty' => __('Select at least one package operation before creating the release package.', 'tn-wp-migrate-code-diff'),
                 'releasePackageCreating' => __('Creating release package…', 'tn-wp-migrate-code-diff'),
                 'releasePackageFailed' => __('The release package could not be created.', 'tn-wp-migrate-code-diff'),

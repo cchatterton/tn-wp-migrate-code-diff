@@ -385,3 +385,37 @@ function twmcd_store_migration_profile($profile_name, $profile)
 
     return max(array_keys($profiles));
 }
+
+function twmcd_existing_migration_profile($profile_name)
+{
+    $profiles = get_site_option('wpmdb_saved_profiles');
+    foreach ((array) $profiles as $profile_id => $stored_profile) {
+        if (!isset($stored_profile['name']) || (string) $stored_profile['name'] !== (string) $profile_name) {
+            continue;
+        }
+        $profile = !empty($stored_profile['value']) ? json_decode($stored_profile['value'], true) : null;
+        return is_array($profile) ? array('id' => $profile_id, 'profile' => $profile) : false;
+    }
+
+    return false;
+}
+
+function twmcd_store_automatic_comparison_profile($context, $mode)
+{
+    $destination_url = !empty($context['intent']) && 'push' === $context['intent']
+        ? $context['connection']['url']
+        : home_url();
+    $profile_name = twmcd_default_profile_name($destination_url);
+    $profile = twmcd_create_code_only_profile(
+        $profile_name,
+        $context,
+        array('plugins' => array(), 'themes' => array(), 'muplugins' => array())
+    );
+    $existing = twmcd_existing_migration_profile($profile_name);
+    if ($existing && !empty($existing['profile']['theme_plugin_files'])) {
+        $profile['theme_plugin_files'] = $existing['profile']['theme_plugin_files'];
+    }
+    $profile['_twmcd']['last_comparison_mode'] = sanitize_key($mode);
+
+    return twmcd_store_migration_profile($profile_name, $profile);
+}

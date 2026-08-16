@@ -34,13 +34,29 @@ $manifest = array(
     'remove_packages' => array(
         array('type' => 'plugins', 'name' => 'Removed', 'destination' => 'plugins/removed', 'version' => '3.0.0'),
     ),
+    'posts' => array(
+        array(
+            'post_type' => 'page', 'title' => 'Landing page', 'identity' => 'page:path:landing',
+            'from_fingerprint' => str_repeat('a', 64), 'fingerprint' => str_repeat('b', 64),
+        ),
+    ),
+    'remove_posts' => array(
+        array(
+            'post_type' => 'post', 'title' => 'Old announcement', 'identity' => 'post:path:old-announcement',
+            'from_fingerprint' => str_repeat('c', 64),
+        ),
+    ),
 );
 
 $changes = twmcd_release_history_changes($manifest);
 if ('Added' !== $changes['added'][0]['name']
     || '1.0.0' !== $changes['updated'][0]['from_version']
     || '2.0.0' !== $changes['updated'][0]['to_version']
-    || '3.0.0' !== $changes['removed'][0]['from_version']) {
+    || '3.0.0' !== $changes['removed'][0]['from_version']
+    || 'post:page' !== $changes['updated'][1]['type']
+    || 'aaaaaaaaaaaa' !== $changes['updated'][1]['from_version']
+    || 'bbbbbbbbbbbb' !== $changes['updated'][1]['to_version']
+    || 'post:post' !== $changes['removed'][1]['type']) {
     fwrite(STDERR, "FAIL: release history change summary was incorrect.\n");
     exit(1);
 }

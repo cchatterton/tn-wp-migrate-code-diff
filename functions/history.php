@@ -118,6 +118,28 @@ function twmcd_release_history_changes($manifest)
         );
     }
 
+    foreach ((array) (isset($manifest['posts']) ? $manifest['posts'] : array()) as $post) {
+        $from_fingerprint = isset($post['from_fingerprint']) ? (string) $post['from_fingerprint'] : '';
+        $change = array(
+            'type'         => 'post:' . (isset($post['post_type']) ? $post['post_type'] : ''),
+            'name'         => isset($post['title']) ? $post['title'] : '',
+            'destination'  => isset($post['identity']) ? $post['identity'] : '',
+            'from_version' => $from_fingerprint ? substr($from_fingerprint, 0, 12) : '',
+            'to_version'   => !empty($post['fingerprint']) ? substr($post['fingerprint'], 0, 12) : '',
+        );
+        $changes['' === $from_fingerprint ? 'added' : 'updated'][] = $change;
+    }
+
+    foreach ((array) (isset($manifest['remove_posts']) ? $manifest['remove_posts'] : array()) as $post) {
+        $changes['removed'][] = array(
+            'type'         => 'post:' . (isset($post['post_type']) ? $post['post_type'] : ''),
+            'name'         => isset($post['title']) ? $post['title'] : '',
+            'destination'  => isset($post['identity']) ? $post['identity'] : '',
+            'from_version' => !empty($post['from_fingerprint']) ? substr($post['from_fingerprint'], 0, 12) : '',
+            'to_version'   => '',
+        );
+    }
+
     return $changes;
 }
 

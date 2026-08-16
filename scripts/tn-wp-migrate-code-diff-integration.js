@@ -276,6 +276,7 @@
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
         var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseButton;
         var optionsButtonLabel = TWMCD_INTEGRATION.labels.optionsButton;
+        var postsButtonLabel = TWMCD_INTEGRATION.labels.postsButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
         var actions = '';
@@ -295,6 +296,9 @@
         if (actionAvailable) {
             actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
                 + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
+            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="posts"'
+                + (preparing ? ' disabled' : '') + '>' + escapeHtml(postsButtonLabel) + '</button>';
 
             actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
                 + '<button type="button" class="button-link twmcd-compare-mode" data-mode="database"'
