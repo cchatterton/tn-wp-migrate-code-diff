@@ -90,7 +90,7 @@ function twmcd_render_release_history_page()
         wp_die(esc_html__('You do not have permission to view release notes.', 'tn-wp-migrate-code-diff'));
     }
 
-    $history_rows = twmcd_get_release_history();
+    $history_months = twmcd_get_release_history_months();
     require TWMCD_PLUGIN_DIR . 'templates/release-history-page.php';
 }
 

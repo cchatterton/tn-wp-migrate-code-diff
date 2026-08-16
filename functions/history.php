@@ -225,3 +225,147 @@ function twmcd_get_release_history($limit = 200)
 
     return $wpdb->get_results("SELECT * FROM {$table} ORDER BY COALESCE(installed_at, rollback_created_at, package_created_at, created_at) DESC, id DESC LIMIT {$limit}", ARRAY_A);
 }
+
+function twmcd_release_history_effective_date_sql()
+{
+    return 'COALESCE(installed_at, rollback_created_at, package_created_at, created_at)';
+}
+
+function twmcd_release_history_search_sql()
+{
+    return "CONCAT_WS(' ', release_id, release_type, source_url, destination_url,
+        package_user_name, upload_user_name, rollback_user_name, status, added, updated, removed)";
+}
+
+function twmcd_sanitize_release_history_month($month)
+{
+    $month = sanitize_text_field((string) $month);
+
+    return preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month) ? $month : '';
+}
+
+function twmcd_sanitize_release_history_search($search)
+{
+    return substr(sanitize_text_field((string) $search), 0, 100);
+}
+
+function twmcd_get_release_history_months($search = '')
+{
+    global $wpdb;
+
+    twmcd_maybe_install_release_history_table();
+    $table = twmcd_release_history_table();
+    $effective_date = twmcd_release_history_effective_date_sql();
+    $month_rows = $wpdb->get_results(
+        "SELECT DATE_FORMAT({$effective_date}, '%Y-%m') AS month_key, COUNT(*) AS release_count
+        FROM {$table}
+        GROUP BY month_key
+        ORDER BY month_key DESC",
+        ARRAY_A
+    );
+    $matches = array();
+    $search = twmcd_sanitize_release_history_search($search);
+    if ('' !== $search) {
+        $like = '%' . $wpdb->esc_like($search) . '%';
+        $search_sql = twmcd_release_history_search_sql();
+        $match_rows = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT DATE_FORMAT({$effective_date}, '%%Y-%%m') AS month_key, COUNT(*) AS match_count
+                FROM {$table}
+                WHERE {$search_sql} LIKE %s
+                GROUP BY month_key",
+                $like
+            ),
+            ARRAY_A
+        );
+        foreach ((array) $match_rows as $match_row) {
+            $matches[$match_row['month_key']] = (int) $match_row['match_count'];
+        }
+    }
+
+    $months = array();
+    foreach ((array) $month_rows as $month_row) {
+        $month_key = twmcd_sanitize_release_history_month($month_row['month_key']);
+        if ('' === $month_key) {
+            continue;
+        }
+        $months[] = array(
+            'key'     => $month_key,
+            'label'   => date_i18n('F Y', strtotime($month_key . '-01 12:00:00 UTC')),
+            'total'   => (int) $month_row['release_count'],
+            'matches' => isset($matches[$month_key]) ? $matches[$month_key] : 0,
+        );
+    }
+
+    return $months;
+}
+
+function twmcd_get_release_history_month($month)
+{
+    global $wpdb;
+
+    $month = twmcd_sanitize_release_history_month($month);
+    if ('' === $month) {
+        return array();
+    }
+
+    twmcd_maybe_install_release_history_table();
+    $table = twmcd_release_history_table();
+    $effective_date = twmcd_release_history_effective_date_sql();
+    $start = $month . '-01 00:00:00';
+    $end = gmdate('Y-m-d H:i:s', strtotime($start . ' +1 month'));
+
+    return $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$table}
+            WHERE {$effective_date} >= %s AND {$effective_date} < %s
+            ORDER BY {$effective_date} DESC, id DESC",
+            $start,
+            $end
+        ),
+        ARRAY_A
+    );
+}
+
+function twmcd_render_release_history_month($history_rows)
+{
+    ob_start();
+    require TWMCD_PLUGIN_DIR . 'templates/release-history-month.php';
+
+    return ob_get_clean();
+}
+
+function twmcd_ajax_get_release_history_month()
+{
+    check_ajax_referer('twmcd_release_history', 'nonce');
+    if (!current_user_can(twmcd_release_install_capability())) {
+        wp_send_json_error(array('message' => __('You do not have permission to view release notes.', 'tn-wp-migrate-code-diff')), 403);
+    }
+
+    $month = isset($_POST['month']) ? twmcd_sanitize_release_history_month(wp_unslash($_POST['month'])) : '';
+    if ('' === $month) {
+        wp_send_json_error(array('message' => __('The requested release month is invalid.', 'tn-wp-migrate-code-diff')), 400);
+    }
+
+    $history_rows = twmcd_get_release_history_month($month);
+    wp_send_json_success(array('html' => twmcd_render_release_history_month($history_rows)));
+}
+
+function twmcd_ajax_search_release_history()
+{
+    check_ajax_referer('twmcd_release_history', 'nonce');
+    if (!current_user_can(twmcd_release_install_capability())) {
+        wp_send_json_error(array('message' => __('You do not have permission to search release notes.', 'tn-wp-migrate-code-diff')), 403);
+    }
+
+    $search = isset($_POST['search']) ? twmcd_sanitize_release_history_search(wp_unslash($_POST['search'])) : '';
+    $months = twmcd_get_release_history_months($search);
+    $matches = array();
+    $total = 0;
+    foreach ($months as $month) {
+        $matches[$month['key']] = $month['matches'];
+        $total += $month['matches'];
+    }
+
+    wp_send_json_success(array('matches' => $matches, 'total' => $total));
+}

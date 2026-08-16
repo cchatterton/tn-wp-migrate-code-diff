@@ -23,6 +23,18 @@ function wp_get_current_user()
 
 require dirname(__DIR__) . '/functions/history.php';
 
+if ('2026-08' !== twmcd_sanitize_release_history_month('2026-08')
+    || '' !== twmcd_sanitize_release_history_month('2026-13')
+    || '' !== twmcd_sanitize_release_history_month('August 2026')) {
+    fwrite(STDERR, "FAIL: release history month validation was incorrect.\n");
+    exit(1);
+}
+
+if (str_repeat('a', 100) !== twmcd_sanitize_release_history_search(str_repeat('a', 120))) {
+    fwrite(STDERR, "FAIL: release history search was not limited to 100 characters.\n");
+    exit(1);
+}
+
 $manifest = array(
     'release_id' => 'Release-20260815-1700',
     'source_url' => 'https://source.example',

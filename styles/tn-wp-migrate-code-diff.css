@@ -22,6 +22,90 @@
     margin-top: 5px;
 }
 
+.twmcd-history-search {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.twmcd-history-search label {
+    display: block;
+    width: 100%;
+}
+
+.twmcd-history-month {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    margin-bottom: 12px;
+}
+
+.twmcd-history-month-heading {
+    margin: 0;
+}
+
+.twmcd-history-month-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: #1d2327;
+    cursor: pointer;
+    display: flex;
+    font-size: 15px;
+    font-weight: 600;
+    gap: 10px;
+    padding: 14px 16px;
+    text-align: left;
+    width: 100%;
+}
+
+.twmcd-history-month-toggle:hover,
+.twmcd-history-month-toggle:focus {
+    background: #f6f7f7;
+    color: #135e96;
+}
+
+.twmcd-history-month-toggle[aria-expanded="true"] .twmcd-history-month-icon {
+    transform: rotate(90deg);
+}
+
+.twmcd-history-month-total {
+    color: #646970;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.twmcd-history-match-count {
+    background: #dcdcde;
+    border-radius: 999px;
+    color: #1d2327;
+    font-size: 12px;
+    margin-left: auto;
+    padding: 3px 9px;
+}
+
+.twmcd-history-month-content {
+    border-top: 1px solid #c3c4c7;
+    padding: 16px;
+}
+
+.twmcd-history-loading {
+    margin: 0;
+}
+
+.twmcd-history-loading .spinner {
+    float: none;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.twmcd-history-month-content mark {
+    background: #fff3a3;
+    color: inherit;
+    padding: 0;
+}
+
 .twmcd-migrate-notice {
     align-items: center;
     background: #fff8e5;

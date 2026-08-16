@@ -50,6 +50,30 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     }
 
     if ($is_history_page) {
+        wp_enqueue_script(
+            'twmcd_release_history',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-release-history.js',
+            array(),
+            TWMCD_VERSION,
+            true
+        );
+        wp_localize_script(
+            'twmcd_release_history',
+            'TWMCD_RELEASE_HISTORY',
+            array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce'   => wp_create_nonce('twmcd_release_history'),
+                'labels'  => array(
+                    'loading'      => __('Loading release notes&hellip;', 'tn-wp-migrate-code-diff'),
+                    'searching'    => __('Searching&hellip;', 'tn-wp-migrate-code-diff'),
+                    'loadFailed'   => __('The release notes for this month could not be loaded.', 'tn-wp-migrate-code-diff'),
+                    'searchFailed' => __('Release Notes search could not be completed.', 'tn-wp-migrate-code-diff'),
+                    'oneMatch'     => __('1 matching release', 'tn-wp-migrate-code-diff'),
+                    'manyMatches'  => __('%d matching releases', 'tn-wp-migrate-code-diff'),
+                    'noMatches'    => __('No matching releases', 'tn-wp-migrate-code-diff'),
+                ),
+            )
+        );
         return;
     }
 
