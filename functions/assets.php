@@ -9,12 +9,13 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
     $is_comparison_page = TWMCD_PAGE_SLUG === $page;
     $is_database_page = TWMCD_DATABASE_PAGE_SLUG === $page;
+    $is_options_page = TWMCD_OPTIONS_PAGE_SLUG === $page;
     $is_upload_page = TWMCD_UPLOAD_PAGE_SLUG === $page;
     $is_history_page = TWMCD_HISTORY_PAGE_SLUG === $page;
     $is_wp_migrate_page = 'wp-migrate-db-pro' === $page
         || false !== strpos((string) $hook_suffix, 'wp-migrate-db-pro');
 
-    if (!$is_comparison_page && !$is_database_page && !$is_upload_page && !$is_history_page && !$is_wp_migrate_page) {
+    if (!$is_comparison_page && !$is_database_page && !$is_options_page && !$is_upload_page && !$is_history_page && !$is_wp_migrate_page) {
         return;
     }
 
@@ -66,11 +67,11 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce'   => wp_create_nonce('twmcd_admin'),
-                'databaseComparisonEnabled' => TWMCD_DATABASE_COMPARISON_ENABLED,
                 'labels'  => array(
                     'message'           => __('Site comparison is ready.', 'tn-wp-migrate-code-diff'),
                     'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
-                    'databaseButton'    => __('Compare Database/Images', 'tn-wp-migrate-code-diff'),
+                    'databaseButton'    => __('Compare Database', 'tn-wp-migrate-code-diff'),
+                    'optionsButton'     => __('Compare Options', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
                     'waitingStore'      => __('Site comparison is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
@@ -87,7 +88,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
     if ($is_database_page) {
         wp_enqueue_script(
             'twmcd_database_admin',
-            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-database-images-diff.js',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-database-diff.js',
             array(),
             TWMCD_VERSION,
             true
@@ -101,7 +102,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'nonce'        => wp_create_nonce('twmcd_admin'),
                 'contextToken' => isset($_GET['twmcd_context']) ? sanitize_key(wp_unslash($_GET['twmcd_context'])) : '',
                 'labels'       => array(
-                    'comparisonFailed' => __('The database and images comparison could not be completed.', 'tn-wp-migrate-code-diff'),
+                    'comparisonFailed' => __('The database comparison could not be completed.', 'tn-wp-migrate-code-diff'),
                     'same'             => __('Same metrics', 'tn-wp-migrate-code-diff'),
                     'different'        => __('Different metrics', 'tn-wp-migrate-code-diff'),
                     'sourceOnly'       => __('Only on source', 'tn-wp-migrate-code-diff'),
@@ -110,6 +111,34 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             )
         );
 
+        return;
+    }
+
+
+    if ($is_options_page) {
+        wp_enqueue_script(
+            'twmcd_options_admin',
+            TWMCD_PLUGIN_URL . 'scripts/tn-wp-migrate-options-diff.js',
+            array(),
+            TWMCD_VERSION,
+            true
+        );
+        wp_localize_script(
+            'twmcd_options_admin',
+            'TWMCD_OPTIONS_ADMIN',
+            array(
+                'ajaxUrl'      => admin_url('admin-ajax.php'),
+                'nonce'        => wp_create_nonce('twmcd_admin'),
+                'contextToken' => isset($_GET['twmcd_context']) ? sanitize_key(wp_unslash($_GET['twmcd_context'])) : '',
+                'labels'       => array(
+                    'comparisonFailed' => __('The Options comparison could not be completed.', 'tn-wp-migrate-code-diff'),
+                    'different'        => __('Different value', 'tn-wp-migrate-code-diff'),
+                    'sourceOnly'       => __('Absent on Destination', 'tn-wp-migrate-code-diff'),
+                    'destinationOnly'  => __('Absent from source', 'tn-wp-migrate-code-diff'),
+                    'ignored'          => __('Ignored', 'tn-wp-migrate-code-diff'),
+                ),
+            )
+        );
         return;
     }
 

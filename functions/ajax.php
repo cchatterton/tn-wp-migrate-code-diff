@@ -21,7 +21,10 @@ function twmcd_ajax_prepare_comparison()
     twmcd_verify_ajax_request();
 
     $intent = isset($_POST['intent']) && 'pull' === sanitize_key(wp_unslash($_POST['intent'])) ? 'pull' : 'push';
-    $mode = isset($_POST['mode']) && 'database' === sanitize_key(wp_unslash($_POST['mode'])) ? 'database' : 'code';
+    $mode = isset($_POST['mode']) ? sanitize_key(wp_unslash($_POST['mode'])) : 'code';
+    if (!in_array($mode, array('code', 'database', 'options'), true)) {
+        $mode = 'code';
+    }
 
     if ('database' === $mode && !TWMCD_DATABASE_COMPARISON_ENABLED) {
         wp_send_json_error(
@@ -56,7 +59,9 @@ function twmcd_ajax_prepare_comparison()
             'redirect_url' => add_query_arg(
                 'twmcd_context',
                 $token,
-                'database' === $mode ? twmcd_database_admin_page_url() : twmcd_admin_page_url()
+                'database' === $mode
+                    ? twmcd_database_admin_page_url()
+                    : ('options' === $mode ? twmcd_options_admin_page_url() : twmcd_admin_page_url())
             ),
         )
     );
@@ -102,6 +107,7 @@ function twmcd_ajax_compare_code()
             'intent'           => $intent,
             'source_url'       => $source_inventory['url'],
             'destination_url'  => $destination_inventory['url'],
+            'profile_name'     => twmcd_default_profile_name($destination_inventory['url']),
             'groups'           => $comparison_groups,
             'comparison_token' => $comparison_token,
             'profile_selection_applied' => !empty($profile_selection['active']),
@@ -112,13 +118,13 @@ function twmcd_ajax_compare_code()
     );
 }
 
-function twmcd_ajax_compare_database_images()
+function twmcd_ajax_compare_database()
 {
     twmcd_verify_ajax_request();
 
     if (!TWMCD_DATABASE_COMPARISON_ENABLED) {
         wp_send_json_error(
-            array('message' => __('Database/Images comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
+            array('message' => __('Database comparison is temporarily disabled.', 'tn-wp-migrate-code-diff')),
             400
         );
     }
@@ -128,7 +134,7 @@ function twmcd_ajax_compare_database_images()
 
     if (!is_array($context)) {
         wp_send_json_error(
-            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare Database/Images again.', 'tn-wp-migrate-code-diff')),
+            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare Database again.', 'tn-wp-migrate-code-diff')),
             400
         );
     }
@@ -144,18 +150,49 @@ function twmcd_ajax_compare_database_images()
     $local_inventory = twmcd_local_database_images_inventory($context);
     $source_inventory = 'push' === $intent ? $local_inventory : $remote_inventory;
     $destination_inventory = 'push' === $intent ? $remote_inventory : $local_inventory;
-    $comparison = twmcd_compare_database_images_inventories($source_inventory, $destination_inventory);
-    delete_site_transient(twmcd_context_transient_key($context_token));
+    $comparison = twmcd_compare_database_report($source_inventory, $destination_inventory);
 
     wp_send_json_success(
         array(
             'intent'          => $intent,
             'source_url'      => $source_inventory['url'],
             'destination_url' => $destination_inventory['url'],
-            'tables'          => $comparison['tables'],
-            'images'          => $comparison['images'],
+            'groups'          => $comparison,
             'scope_label'     => isset($context['migration']['scope_label']) ? $context['migration']['scope_label'] : '',
-            'note'            => __('Database differences use table presence, estimated row counts, and table size. Images reports WP Migrate Media capability and upload locations; the connection handshake does not expose a per-file image inventory.', 'tn-wp-migrate-code-diff'),
+        )
+    );
+}
+
+function twmcd_ajax_compare_options()
+{
+    twmcd_verify_ajax_request();
+
+    $context_token = isset($_POST['context_token']) ? sanitize_key(wp_unslash($_POST['context_token'])) : '';
+    $context = twmcd_get_comparison_context($context_token);
+    if (!is_array($context)) {
+        wp_send_json_error(
+            array('message' => __('The WP Migrate comparison context has expired. Return to Migrate and choose Compare Options again.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
+
+    $intent = $context['intent'];
+    $connection = $context['connection'];
+    $remote_inventory = twmcd_request_remote_options_inventory($connection['url'], $connection['key'], $intent, $context);
+    if (is_wp_error($remote_inventory)) {
+        wp_send_json_error(array('message' => $remote_inventory->get_error_message()), 400);
+    }
+
+    $local_inventory = twmcd_local_options_inventory($context, true);
+    $source_inventory = 'push' === $intent ? $local_inventory : $remote_inventory;
+    $destination_inventory = 'push' === $intent ? $remote_inventory : $local_inventory;
+
+    wp_send_json_success(
+        array(
+            'source_url'       => 'push' === $intent ? home_url() : $connection['url'],
+            'destination_url'  => 'push' === $intent ? $connection['url'] : home_url(),
+            'tables'           => twmcd_compare_options_inventories($source_inventory, $destination_inventory),
+            'scope_label'      => isset($context['migration']['scope_label']) ? $context['migration']['scope_label'] : '',
         )
     );
 }
@@ -164,16 +201,13 @@ function twmcd_ajax_save_profile()
 {
     twmcd_verify_ajax_request();
 
-    $profile_name = isset($_POST['profile_name'])
-        ? sanitize_text_field(wp_unslash($_POST['profile_name']))
-        : twmcd_default_profile_name();
     $selection_json = isset($_POST['selection']) ? wp_unslash($_POST['selection']) : '';
     $selection = json_decode($selection_json, true);
     $comparison_token = isset($_POST['comparison_token'])
         ? sanitize_key(wp_unslash($_POST['comparison_token']))
         : '';
 
-    if ('' === $profile_name || !is_array($selection)) {
+    if (!is_array($selection)) {
         wp_send_json_error(
             array('message' => __('Enter a profile name and select at least one valid package.', 'tn-wp-migrate-code-diff')),
             400
@@ -181,6 +215,11 @@ function twmcd_ajax_save_profile()
     }
 
     $comparison_state = twmcd_get_comparison_state($comparison_token);
+    $destination_url = is_array($comparison_state) && !empty($comparison_state['context']['intent'])
+        && 'push' === $comparison_state['context']['intent']
+        ? $comparison_state['context']['connection']['url']
+        : home_url();
+    $profile_name = twmcd_default_profile_name($destination_url);
     $selection = twmcd_validate_profile_selection($comparison_token, $selection);
     if (is_wp_error($selection) || !$comparison_state) {
         $message = is_wp_error($selection)

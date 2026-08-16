@@ -51,11 +51,20 @@ function twmcd_register_admin_page()
 
     add_submenu_page(
         null,
-        __('TN WP Migrate Database / Images Diff', 'tn-wp-migrate-code-diff'),
-        __('WP Migrate Database / Images Diff', 'tn-wp-migrate-code-diff'),
+        __('TN WP Migrate Database Diff', 'tn-wp-migrate-code-diff'),
+        __('WP Migrate Database Diff', 'tn-wp-migrate-code-diff'),
         twmcd_admin_capability(),
         TWMCD_DATABASE_PAGE_SLUG,
         'twmcd_render_database_admin_page'
+    );
+
+    add_submenu_page(
+        null,
+        __('TN WP Migrate Options Diff', 'tn-wp-migrate-code-diff'),
+        __('WP Migrate Options Diff', 'tn-wp-migrate-code-diff'),
+        twmcd_admin_capability(),
+        TWMCD_OPTIONS_PAGE_SLUG,
+        'twmcd_render_options_admin_page'
     );
 }
 
@@ -109,6 +118,18 @@ function twmcd_render_database_admin_page()
     $migrate_url = twmcd_migrate_admin_url();
 
     require TWMCD_PLUGIN_DIR . 'templates/database-page.php';
+}
+
+function twmcd_render_options_admin_page()
+{
+    if (!current_user_can(twmcd_admin_capability())) {
+        wp_die(esc_html__('You do not have permission to access this page.', 'tn-wp-migrate-code-diff'));
+    }
+
+    $wp_migrate_available = twmcd_is_wp_migrate_available();
+    $migrate_url = twmcd_migrate_admin_url();
+
+    require TWMCD_PLUGIN_DIR . 'templates/options-page.php';
 }
 
 function twmcd_render_admin_page()

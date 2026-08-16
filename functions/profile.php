@@ -360,12 +360,26 @@ function twmcd_store_migration_profile($profile_name, $profile)
 {
     $profiles = get_site_option('wpmdb_saved_profiles');
     $profiles = is_array($profiles) ? $profiles : array();
-    $profiles[] = array(
+    $stored_profile = array(
         'name'  => $profile_name,
         'value' => wp_json_encode($profile),
         'guid'  => wp_generate_uuid4(),
         'date'  => current_time('timestamp'),
     );
+
+    foreach ($profiles as $profile_id => $existing_profile) {
+        if (isset($existing_profile['name']) && (string) $existing_profile['name'] === (string) $profile_name) {
+            $stored_profile['guid'] = !empty($existing_profile['guid'])
+                ? $existing_profile['guid']
+                : $stored_profile['guid'];
+            $profiles[$profile_id] = $stored_profile;
+            update_site_option('wpmdb_saved_profiles', $profiles);
+
+            return $profile_id;
+        }
+    }
+
+    $profiles[] = $stored_profile;
 
     update_site_option('wpmdb_saved_profiles', $profiles);
 

@@ -59,7 +59,7 @@
 }
 
 .twmcd-migrate-notice .twmcd-compare-now:disabled,
-.twmcd-migrate-notice .twmcd-compare-database:disabled {
+.twmcd-migrate-notice .twmcd-compare-mode:disabled {
     color: #787c82;
     cursor: not-allowed;
 }
@@ -172,6 +172,15 @@
 .twmcd-admin-wrap .twmcd-status-source_older {
     background: #fce8e8;
     color: #8a2424;
+}
+
+.twmcd-admin-wrap .twmcd-status-different {
+    background: #fff3cd;
+    color: #6b4f00;
+}
+
+.twmcd-admin-wrap .twmcd-ignored-row {
+    color: #787c82;
 }
 
 .twmcd-admin-wrap .twmcd-status-source_only {

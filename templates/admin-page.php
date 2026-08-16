@@ -32,7 +32,7 @@ if (!defined('ABSPATH')) {
             <h2 id="twmcd-profile-title"><?php esc_html_e('Create a code-only migration profile', 'tn-wp-migrate-code-diff'); ?></h2>
             <p id="twmcd-release-selection-count" class="twmcd-release-selection-count" aria-live="polite"></p>
             <label class="twmcd-field-label" for="twmcd-profile-name"><?php esc_html_e('Profile name', 'tn-wp-migrate-code-diff'); ?></label>
-            <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>">
+            <input id="twmcd-profile-name" class="regular-text" value="<?php echo esc_attr(twmcd_default_profile_name()); ?>" readonly>
             <button id="twmcd-save-profile" class="button button-primary" type="button"><?php esc_html_e('Save release profile', 'tn-wp-migrate-code-diff'); ?></button>
             <button id="twmcd-open-profile" class="button" type="button" disabled><?php esc_html_e('Open profile', 'tn-wp-migrate-code-diff'); ?></button>
             <button id="twmcd-create-release-package" class="button" type="button">

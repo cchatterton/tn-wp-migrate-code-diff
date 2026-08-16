@@ -9,7 +9,8 @@ function twmcd_register_hooks()
     add_action(is_multisite() ? 'network_admin_menu' : 'admin_menu', 'twmcd_register_admin_page');
     add_action('admin_enqueue_scripts', 'twmcd_enqueue_admin_assets');
     add_action('wp_ajax_twmcd_compare_code', 'twmcd_ajax_compare_code');
-    add_action('wp_ajax_twmcd_compare_database_images', 'twmcd_ajax_compare_database_images');
+    add_action('wp_ajax_twmcd_compare_database', 'twmcd_ajax_compare_database');
+    add_action('wp_ajax_twmcd_compare_options', 'twmcd_ajax_compare_options');
     add_action('wp_ajax_twmcd_prepare_comparison', 'twmcd_ajax_prepare_comparison');
     add_action('wp_ajax_twmcd_save_profile', 'twmcd_ajax_save_profile');
     add_action('wp_ajax_twmcd_prepare_release_package', 'twmcd_ajax_prepare_release_package');
@@ -26,6 +27,8 @@ function twmcd_register_hooks()
     add_action('admin_init', 'twmcd_repair_legacy_release_profiles');
     add_action('upgrader_process_complete', 'twmcd_clear_github_cache_after_upgrade', 10, 2);
     add_action('wpmdb_notices', 'twmcd_render_integration_notice_mount');
+    add_filter('wpmdb_respond_to_verify_connection_key_rules', 'twmcd_add_remote_comparison_key_rules');
+    add_filter('wpmdb_establish_remote_connection_data', 'twmcd_extend_remote_connection_data', 30);
 }
 
 twmcd_register_hooks();

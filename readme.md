@@ -1,26 +1,27 @@
 # TN WP Migrate Code Diff
 
 Author: Techn
-Version: 0.8.8
+Version: 0.9.0
 Status: MVP
 
 ## Purpose
 
-Compare code packages between two connected WP Migrate Pro sites and create a selective, code-only migration profile.
+Compare code packages, database tables, and WordPress options between two connected WP Migrate Pro sites. Code comparisons can also create selective migration profiles and manual release packages.
 
 ## Key Features
 
 - Compares plugins, themes, and must-use plugins.
-- Keeps the experimental Database / Images implementation installed but hidden behind a disabled feature flag while code deployment is validated.
+- Provides separate, report-only Database and Options comparisons without changing the established Code workflow.
 - Reports same version, source newer, source older, absent on destination, and absent from source.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
-- Shows only Compare Code in the WP Migrate interface while the separate Database/Images implementation is disabled.
+- Shows Compare Code, Compare Database, and Compare Options in the WP Migrate interface after the connection and multisite scope are ready.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
 - Selects active source-only plugins/themes, active source upgrades, and inactive destination-only plugins by default, while leaving destination-only themes, must-use plugins, source downgrades, inactive source packages, and active destination-only plugins unselected.
 - Provides per-section Select All, Deselect All, and Recommended controls.
-- Defaults generated profile names to a chronological `Release-YYYYMMDD-HHMM` identifier.
+- Reuses one destination-specific monthly profile named `Release-YYYYMM-{destination-host}` and updates it when it already exists.
+- Names each downloaded manual release `Release-YYYYMMDD-HHMM` using the time Create release package is clicked.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Separates Save release profile, Open profile, and Create release package into independent actions.
 - Refreshes a comparison in place using the existing WP Migrate connection context.
@@ -36,6 +37,9 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Installs rollback ZIPs through the same Upload Release page without generating nested rollback packages.
 - Never selects active destination-only packages for removal unless the operator chooses them explicitly.
 - Delivers releases through the native WordPress Plugins update interface from public GitHub release assets.
+- Groups Database results into native WordPress tables and custom tables, excluding Options tables; changed native/source-only tables are recommended while custom tables remain unselected.
+- Groups Options differences by Options table, excludes transients, and reports source-only, destination-only, and changed values using fingerprints rather than transmitting raw values.
+- Shows ignored Options in a disabled state and supports a filterable ignore list for environment-specific values.
 
 ## Folder Structure
 
@@ -67,10 +71,13 @@ Compare code packages between two connected WP Migrate Pro sites and create a se
 - Manual release checksums detect corruption or modification but do not establish publisher identity. Install only packages obtained from a trusted source.
 - Release history stores WordPress user IDs/display names, site URLs, timestamps, and code package/version metadata; it does not store WP Migrate connection secrets.
 - The WP Migrate secret key is stored only as part of the saved WP Migrate profile, matching WP Migrate's existing profile behaviour.
+- Database and Options selections in 0.9.0 are report controls only; they do not save profiles or build release packages.
+- Options comparison requires version 0.9.0 or later of this plugin on both connected sites. Raw option values are never returned; only names and SHA-256 fingerprints cross the connection.
 
 ## Future Considerations
 
-- Re-enable the separate Database / Images comparison after its migration-scope model is validated.
+- Add a passive Images delta report in a future release.
+- Add Database and Options release-profile/package generation after the report recommendations are validated.
 - Add optional package content fingerprints if version metadata proves insufficient.
 - Add an optional remote endpoint for exact network-vs-subsite activation reporting.
 - Add GitHub release updates after a public destination repository and release asset name are declared.

@@ -275,6 +275,7 @@
 
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
         var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseButton;
+        var optionsButtonLabel = TWMCD_INTEGRATION.labels.optionsButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
         var actions = '';
@@ -295,11 +296,12 @@
             actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
                 + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
 
-            if (TWMCD_INTEGRATION.databaseComparisonEnabled) {
-                actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-                    + '<button type="button" class="button-link twmcd-compare-database" data-mode="database"'
-                    + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>';
-            }
+            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="database"'
+                + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>';
+            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="options"'
+                + (preparing ? ' disabled' : '') + '>' + escapeHtml(optionsButtonLabel) + '</button>';
         }
 
         var markup = '<span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>'
@@ -311,15 +313,17 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
-        var databaseButton = notice.querySelector('.twmcd-compare-database');
+        var modeButtons = notice.querySelectorAll('.twmcd-compare-mode');
         if (button && actionAvailable) {
             button.addEventListener('click', function () {
                 prepareComparison('code');
             });
         }
-        if (databaseButton && actionAvailable) {
-            databaseButton.addEventListener('click', function () {
-                prepareComparison('database');
+        if (actionAvailable) {
+            Array.prototype.forEach.call(modeButtons, function (modeButton) {
+                modeButton.addEventListener('click', function () {
+                    prepareComparison(modeButton.getAttribute('data-mode'));
+                });
             });
         }
     }

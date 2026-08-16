@@ -2,6 +2,17 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.9.0 - 2026-08-16
+
+- Keeps the 0.8.x Code comparison, selection, release, rollback, installation, and release-history behavior unchanged.
+- Reuses one monthly, destination-specific WP Migrate profile named `Release-YYYYMM-{destination-host}`, updating it in place when it already exists.
+- Generates each manual release ID and ZIP name as `Release-YYYYMMDD-HHMM` at the moment Create release package is clicked.
+- Adds a separate report-only Database comparison with native WordPress and custom-table accordions, table presence, row-count, and size differences.
+- Excludes Options tables from Database and leaves custom tables outside the Recommended selection.
+- Adds a separate report-only Options comparison with one accordion per Options table and source-only, destination-only, and changed-value statuses.
+- Excludes transients and disables filterable environment-specific ignored Options while transmitting only option names and SHA-256 value fingerprints through the authenticated WP Migrate connection.
+- Deliberately defers Images comparison and Database/Options profile or release packaging to a future release.
+
 ## 0.8.8 - 2026-08-16
 
 - Moves rollback preparation to a structured WordPress AJAX request.

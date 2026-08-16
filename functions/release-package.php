@@ -14,9 +14,7 @@ function twmcd_handle_create_release_package()
 
     twmcd_prepare_long_running_operation();
 
-    $release_name = isset($_POST['release_name'])
-        ? sanitize_text_field(wp_unslash($_POST['release_name']))
-        : twmcd_default_profile_name();
+    $release_name = twmcd_default_release_name();
     $comparison_token = isset($_POST['comparison_token'])
         ? sanitize_key(wp_unslash($_POST['comparison_token']))
         : '';
@@ -57,9 +55,7 @@ function twmcd_ajax_prepare_release_package()
     twmcd_verify_ajax_request();
     twmcd_prepare_long_running_operation();
 
-    $release_name = isset($_POST['release_name'])
-        ? sanitize_text_field(wp_unslash($_POST['release_name']))
-        : twmcd_default_profile_name();
+    $release_name = twmcd_default_release_name();
     $comparison_token = isset($_POST['comparison_token'])
         ? sanitize_key(wp_unslash($_POST['comparison_token']))
         : '';

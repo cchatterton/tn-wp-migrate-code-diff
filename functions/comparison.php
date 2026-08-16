@@ -267,3 +267,32 @@ function twmcd_compare_database_images_inventories($source, $destination)
         ),
     );
 }
+
+function twmcd_core_database_table_names()
+{
+    return array(
+        'posts', 'postmeta', 'comments', 'commentmeta', 'links',
+        'terms', 'termmeta', 'term_taxonomy', 'term_relationships',
+        'users', 'usermeta', 'blogs', 'blogmeta', 'signups', 'site',
+        'registration_log', 'sitecategories',
+    );
+}
+
+function twmcd_compare_database_report($source, $destination)
+{
+    $comparison = twmcd_compare_database_images_inventories($source, $destination);
+    $groups = array('native' => array(), 'custom' => array());
+
+    foreach ($comparison['tables'] as $table) {
+        if ('options' === $table['name'] || 'sitemeta' === $table['name']) {
+            continue;
+        }
+
+        $is_native = in_array($table['name'], twmcd_core_database_table_names(), true);
+        $table['default_selected'] = $is_native
+            && in_array($table['status'], array('source_only', 'different'), true);
+        $groups[$is_native ? 'native' : 'custom'][] = $table;
+    }
+
+    return $groups;
+}

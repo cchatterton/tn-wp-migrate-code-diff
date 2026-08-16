@@ -130,6 +130,9 @@
     function renderComparison(comparison) {
         var differenceCount = 0;
         state.comparison = comparison;
+        if (comparison.profile_name) {
+            document.getElementById('twmcd-profile-name').value = comparison.profile_name;
+        }
         if (comparison.comparison_token && window.history && typeof window.history.replaceState === 'function') {
             var reportUrl = new URL(window.location.href);
             reportUrl.searchParams.set('twmcd_comparison', comparison.comparison_token);
@@ -279,7 +282,6 @@
         profileMessageElement.innerHTML = '';
 
         request('twmcd_prepare_release_package', {
-            release_name: document.getElementById('twmcd-profile-name').value,
             comparison_token: state.comparison.comparison_token,
             selection: JSON.stringify(selection)
         }).then(function (response) {
