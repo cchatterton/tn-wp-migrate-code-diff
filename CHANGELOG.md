@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.10.1 - 2026-08-16
+
+- Allows Posts releases to insert, update, or remove records whose custom post type is not currently registered on the destination site.
+- Uses standard post capabilities as the fallback for unregistered post types instead of reporting a false permission failure.
+- Keeps unavailable destination taxonomies from blocking the post and post-meta installation.
+- Removes the `Plugin URI` header so WordPress no longer displays the redundant **Visit plugin site** link.
+
 ## 0.10.0 - 2026-08-16
 
 - Adds Compare Posts to the WP Migrate notice alongside Code, Database, and Options.

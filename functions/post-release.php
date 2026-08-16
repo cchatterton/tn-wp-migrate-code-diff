@@ -273,19 +273,30 @@ function twmcd_install_manifest_posts($manifest)
         $create_capability = $post_type_object && !empty($post_type_object->cap->create_posts)
             ? $post_type_object->cap->create_posts
             : 'edit_posts';
-        if (!$post_type_object
-            || ($existing_id && !current_user_can('edit_post', $existing_id))
+        $can_edit_existing = !$existing_id
+            || ($post_type_object
+                ? current_user_can('edit_post', $existing_id)
+                : current_user_can('edit_posts'));
+        if (!$can_edit_existing
             || (!$existing_id && !current_user_can($create_capability))) {
             return new WP_Error('twmcd_post_edit_capability', sprintf(__('You do not have permission to install “%s”.', 'tn-wp-migrate-code-diff'), $post['title']));
         }
+        $publish_capability = $post_type_object && !empty($post_type_object->cap->publish_posts)
+            ? $post_type_object->cap->publish_posts
+            : 'publish_posts';
         if (!empty($post['fields']['post_status']) && 'publish' === $post['fields']['post_status']
-            && !current_user_can($post_type_object->cap->publish_posts)) {
+            && !current_user_can($publish_capability)) {
             return new WP_Error('twmcd_post_publish_capability', sprintf(__('You do not have permission to publish “%s”.', 'tn-wp-migrate-code-diff'), $post['title']));
         }
     }
     foreach ($remove_posts as $post) {
         $post_id = twmcd_find_post_by_identity($post['identity'], $post['post_type']);
-        if ($post_id && !current_user_can('delete_post', $post_id)) {
+        $post_type_object = get_post_type_object($post['post_type']);
+        $can_delete = !$post_id
+            || ($post_type_object
+                ? current_user_can('delete_post', $post_id)
+                : current_user_can('delete_posts'));
+        if (!$can_delete) {
             return new WP_Error('twmcd_post_delete_capability', sprintf(__('You do not have permission to remove “%s”.', 'tn-wp-migrate-code-diff'), $post['title']));
         }
     }
