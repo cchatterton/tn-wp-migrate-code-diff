@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.10.0
+Version: 0.10.1
 Status: MVP
 
 ## Purpose
@@ -79,6 +79,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Options comparison requires version 0.10.0 on the requesting site and a compatible release on the remote site. Raw option values are never returned; only names and SHA-256 fingerprints cross the connection.
 - Posts comparison and packaging support up to 5,000 records in the selected WP Migrate site scope. ID-only records without a portable UUID, path, or slug are reported but cannot be selected.
 - Posts releases do not bundle attachments, comments, users, or media files. Existing authors are matched by login and otherwise fall back to the installing user.
+- Posts and post meta can be installed even when their custom post type is not registered on the destination. Taxonomy relationships are applied when the corresponding taxonomy is available and otherwise do not block the post record.
 - Code and Posts use separate release ZIPs so each release remains explicit and independently reversible.
 
 ## Future Considerations
