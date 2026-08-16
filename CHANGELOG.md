@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.0 - 2026-08-16
+
+- Groups Release Notes into monthly accordions and opens the most recent month by default.
+- Loads a month's release records through authenticated AJAX only when that accordion is first opened.
+- Keeps exactly one month open and does not expose a separate close control.
+- Adds debounced keyword search with a matching-release counter on each month and highlighted matches in the open month.
+
 ## 0.10.1 - 2026-08-16
 
 - Allows Posts releases to insert, update, or remove records whose custom post type is not currently registered on the destination site.
