@@ -87,6 +87,28 @@ function twmcd_ajax_prepare_release_package()
         wp_send_json_error(array('message' => $release_package->get_error_message()), 500);
     }
 
+    $download_url = twmcd_prepare_release_download($release_package);
+    if (is_wp_error($download_url)) {
+        wp_send_json_error(array('message' => $download_url->get_error_message()), 500);
+    }
+
+    wp_send_json_success(
+        array('download_url' => $download_url)
+    );
+}
+
+function twmcd_prepare_release_download($release_package)
+{
+    if (!is_array($release_package)
+        || empty($release_package['path'])
+        || empty($release_package['filename'])
+        || !is_file($release_package['path'])) {
+        return new WP_Error(
+            'twmcd_invalid_prepared_download',
+            __('The prepared release package could not be found.', 'tn-wp-migrate-code-diff')
+        );
+    }
+
     $download_token = wp_generate_password(32, false, false);
     set_site_transient(
         twmcd_release_download_transient_key($download_token),
@@ -94,16 +116,12 @@ function twmcd_ajax_prepare_release_package()
         10 * MINUTE_IN_SECONDS
     );
 
-    wp_send_json_success(
+    return add_query_arg(
         array(
-            'download_url' => add_query_arg(
-                array(
-                    'action' => 'twmcd_download_release_package',
-                    'token'  => $download_token,
-                ),
-                admin_url('admin-post.php')
-            ),
-        )
+            'action' => 'twmcd_download_release_package',
+            'token'  => $download_token,
+        ),
+        admin_url('admin-post.php')
     );
 }
 

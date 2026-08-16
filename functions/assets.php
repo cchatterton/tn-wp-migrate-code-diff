@@ -33,6 +33,17 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             TWMCD_VERSION,
             true
         );
+        wp_localize_script(
+            'twmcd_upload_release',
+            'TWMCD_UPLOAD',
+            array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce'   => wp_create_nonce('twmcd_upload_release'),
+                'labels'  => array(
+                    'rollbackFailed' => __('The rollback package could not be created.', 'tn-wp-migrate-code-diff'),
+                ),
+            )
+        );
         return;
     }
 

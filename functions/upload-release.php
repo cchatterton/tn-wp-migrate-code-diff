@@ -49,6 +49,31 @@ function twmcd_handle_release_upload()
     exit;
 }
 
+function twmcd_ajax_prepare_rollback_package()
+{
+    check_ajax_referer('twmcd_upload_release', 'nonce');
+
+    if (!current_user_can(twmcd_release_install_capability())) {
+        wp_send_json_error(
+            array('message' => __('You do not have permission to create rollback packages.', 'tn-wp-migrate-code-diff')),
+            403
+        );
+    }
+
+    twmcd_prepare_long_running_operation();
+    $rollback_package = twmcd_receive_and_create_rollback();
+    if (is_wp_error($rollback_package)) {
+        wp_send_json_error(array('message' => $rollback_package->get_error_message()), 400);
+    }
+
+    $download_url = twmcd_prepare_release_download($rollback_package);
+    if (is_wp_error($download_url)) {
+        wp_send_json_error(array('message' => $download_url->get_error_message()), 500);
+    }
+
+    wp_send_json_success(array('download_url' => $download_url));
+}
+
 function twmcd_receive_and_create_rollback()
 {
     $uploaded_file = twmcd_receive_release_upload();

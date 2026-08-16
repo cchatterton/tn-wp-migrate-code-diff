@@ -2,6 +2,12 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.8.8 - 2026-08-16
+
+- Moves rollback preparation to a structured WordPress AJAX request.
+- Downloads prepared rollback ZIPs through the same authenticated, single-use download flow as release packages.
+- Prevents front-end 404 responses from being mistaken for rollback errors.
+
 ## 0.8.7 - 2026-08-15
 
 - Accepts valid WordPress package directory names containing spaces.
