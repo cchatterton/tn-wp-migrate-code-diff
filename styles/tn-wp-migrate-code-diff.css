@@ -209,16 +209,11 @@
     font: inherit;
 }
 
-.twmcd-admin-wrap #twmcd-save-profile,
-.twmcd-admin-wrap #twmcd-open-profile,
 .twmcd-admin-wrap #twmcd-create-release-package {
     display: block;
     margin-top: 12px;
 }
 
-.twmcd-admin-wrap #twmcd-profile-name,
-.twmcd-admin-wrap #twmcd-save-profile,
-.twmcd-admin-wrap #twmcd-open-profile,
 .twmcd-admin-wrap #twmcd-create-release-package {
     box-sizing: border-box;
     height: 40px;
@@ -235,8 +230,6 @@
 }
 
 @media (min-width: 783px) {
-    .twmcd-admin-wrap #twmcd-save-profile,
-    .twmcd-admin-wrap #twmcd-open-profile,
     .twmcd-admin-wrap #twmcd-create-release-package {
         display: inline-block;
         margin-left: 8px;

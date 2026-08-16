@@ -105,6 +105,21 @@ function twmcd_record_release_history()
     return true;
 }
 
+function twmcd_validate_manifest_post($post)
+{
+    return is_array($post) && !empty($post['identity']) && !empty($post['post_type'])
+        && !empty($post['fingerprint']) && 64 === strlen($post['fingerprint'])
+        ? true
+        : new WP_Error('invalid_post', 'Invalid post operation.');
+}
+
+function twmcd_validate_remove_manifest_post($post)
+{
+    return is_array($post) && !empty($post['identity']) && !empty($post['post_type'])
+        ? true
+        : new WP_Error('invalid_post_removal', 'Invalid post removal.');
+}
+
 class TWMCD_Test_Filesystem
 {
     public function exists($path)
@@ -333,6 +348,33 @@ $remove_only_manifest = array(
 );
 if (is_wp_error(twmcd_validate_manifest($remove_only_manifest, array()))) {
     fwrite(STDERR, "FAIL: a valid removal-only rollback release was rejected.\n");
+    exit(1);
+}
+$content_manifest = array(
+    'format' => 'tn-code-release/v1',
+    'release_id' => 'Release-Posts',
+    'packages' => array(),
+    'remove_packages' => array(),
+    'posts' => array(
+        array('identity' => 'page:path:about', 'post_type' => 'page', 'fingerprint' => str_repeat('a', 64)),
+    ),
+    'remove_posts' => array(),
+    'files' => array(),
+);
+if (is_wp_error(twmcd_validate_manifest($content_manifest, array()))) {
+    fwrite(STDERR, "FAIL: a valid Posts-only release was rejected.\n");
+    exit(1);
+}
+$mixed_manifest = $content_manifest;
+$mixed_manifest['packages'] = $manifest['packages'];
+$mixed_manifest['files'] = $manifest['files'];
+if (!is_wp_error(twmcd_validate_manifest($mixed_manifest, array_keys($manifest['files'])))) {
+    fwrite(STDERR, "FAIL: a mixed Code and Posts release was accepted.\n");
+    exit(1);
+}
+$content_manifest['remove_posts'][] = array('identity' => 'page:path:about', 'post_type' => 'page');
+if (!is_wp_error(twmcd_validate_manifest($content_manifest, array()))) {
+    fwrite(STDERR, "FAIL: duplicate Posts operations were accepted.\n");
     exit(1);
 }
 $remove_only_manifest['release_id'] = 'Release-Remove';

@@ -1,6 +1,19 @@
 # Changelog
 
-All notable changes to TN WP Migrate Code Diff are recorded here.
+All notable changes to WP Migrate - Release Management are recorded here.
+
+## 0.10.0 - 2026-08-16
+
+- Adds Compare Posts to the WP Migrate notice alongside Code, Database, and Options.
+- Groups Posts differences by post type and compares stable UUID, path, or slug identities using fingerprints of post fields, post meta, term assignments, taxonomies, and parent relationships.
+- Adds separate offline Posts release ZIP creation for Push comparisons, with destination upserts and operator-selected removals.
+- Extends Upload Release, rollback generation, installation, and Release Notes to support Posts releases without changing the established Code package format or workflow.
+- Keeps Code and Posts operations in separate packages and retains WP Migrate only for its authenticated handshake, direction, connection state, and multisite scope.
+- Automatically creates or updates the destination-specific monthly WP Migrate profile whenever any comparison mode is opened.
+- Automatically updates the monthly profile's Code selections as comparison selections change, and removes the separate Save Profile and Open Profile actions.
+- Leaves Database comparison visible as a passive insight report while disabling its checkboxes and Select All, Deselect All, and Recommended controls.
+- Fixes Options comparison request signatures by encoding scope data before WP Migrate sanitises and verifies the signed request.
+- Preserves the v0.8.x Code comparison, release, removal, rollback, installation, release-history, and GitHub update behavior.
 
 ## 0.9.1 - 2026-08-16
 

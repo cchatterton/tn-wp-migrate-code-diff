@@ -11,6 +11,7 @@ trap 'rm -rf "$WORK_DIR"' EXIT
 
 mkdir -p "$OUTPUT_DIR" "$PACKAGE_DIR"
 rm -f "$OUTPUT_DIR/$PLUGIN_SLUG.zip"
+rm -f "$PROJECT_DIR/$PLUGIN_SLUG.zip"
 
 cp -R "$PROJECT_DIR/functions" "$PACKAGE_DIR/functions"
 cp -R "$PROJECT_DIR/scripts" "$PACKAGE_DIR/scripts"

@@ -178,7 +178,7 @@ function twmcd_github_plugin_information($result, $action, $args)
     }
 
     return (object) array(
-        'name'          => 'TN WP Migrate Code Diff',
+        'name'          => 'WP Migrate - Release Management',
         'slug'          => TWMCD_PAGE_SLUG,
         'version'       => $release['version'],
         'author'        => '<a href="https://techn.com.au">Techn</a>',

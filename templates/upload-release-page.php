@@ -21,9 +21,9 @@ if (!defined('ABSPATH')) {
     <?php endif; ?>
 
     <section class="twmcd-card" aria-labelledby="twmcd-upload-title">
-        <h2 id="twmcd-upload-title"><?php esc_html_e('Manual code release', 'tn-wp-migrate-code-diff'); ?></h2>
-        <p><?php esc_html_e('Choose a release ZIP created by this plugin. Create Rollback validates the release and downloads the destination’s current files without installing it. Install Release validates and installs the selected package.', 'tn-wp-migrate-code-diff'); ?></p>
-        <p class="description"><?php esc_html_e('Database content, media, plugin activation, and theme activation are not changed. The rollback restores replaced or removed packages and removes packages introduced by the release. A rollback release can be installed, but cannot be used to create another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
+        <h2 id="twmcd-upload-title"><?php esc_html_e('Manual release', 'tn-wp-migrate-code-diff'); ?></h2>
+        <p><?php esc_html_e('Choose a Code or Posts release ZIP created by this plugin. Create Rollback validates the release and downloads the destination’s current state without installing it. Install Release validates and installs the selected package.', 'tn-wp-migrate-code-diff'); ?></p>
+        <p class="description"><?php esc_html_e('Code releases do not change activation. Posts releases contain selected posts, post meta, terms, and taxonomy relationships. Rollback restores replaced or removed items and removes items introduced by the release. A rollback release cannot create another rollback.', 'tn-wp-migrate-code-diff'); ?></p>
 
         <form id="twmcd-upload-release-form" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="action" value="twmcd_upload_release">

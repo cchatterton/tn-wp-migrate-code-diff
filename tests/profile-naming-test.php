@@ -19,6 +19,21 @@ function absint($value)
     return abs((int) $value);
 }
 
+function sanitize_text_field($value)
+{
+    return trim((string) $value);
+}
+
+function sanitize_key($value)
+{
+    return preg_replace('/[^a-z0-9_-]/', '', strtolower((string) $value));
+}
+
+function home_url()
+{
+    return 'http://localhost:10365';
+}
+
 function get_site_option($key)
 {
     global $test_profiles;
@@ -71,6 +86,30 @@ if ($first_id !== $second_id || 1 !== count($test_profiles)) {
 $stored = json_decode($test_profiles[$first_id]['value'], true);
 if (2 !== $stored['revision'] || 'uuid-1' !== $test_profiles[$first_id]['guid']) {
     fwrite(STDERR, "FAIL: profile update did not replace its value while preserving identity.\n");
+    exit(1);
+}
+
+$stored['theme_plugin_files'] = array(
+    'plugin_files' => array('enabled' => true),
+    'plugins_option' => 'selected',
+    'plugins_selected' => array('/plugins/existing'),
+);
+twmcd_store_migration_profile('Release-202608-alphasys.com.au', $stored);
+$context = array(
+    'intent' => 'push',
+    'connection_info' => "https://alphasys.com.au\nsecret-key",
+    'connection' => array('url' => 'https://alphasys.com.au', 'key' => 'secret-key'),
+    'multisite_tools' => array('enabled' => false),
+    'migration' => array('local_source' => true, 'two_multisites' => false),
+);
+$automatic_id = twmcd_store_automatic_comparison_profile($context, 'posts');
+$automatic = json_decode($test_profiles[$automatic_id]['value'], true);
+if ($automatic_id !== $first_id
+    || 1 !== count($test_profiles)
+    || array('/plugins/existing') !== $automatic['theme_plugin_files']['plugins_selected']
+    || 'posts' !== $automatic['_twmcd']['last_comparison_mode']
+    || 'https://alphasys.com.au' !== $automatic['connection_info']['connection_state']['url']) {
+    fwrite(STDERR, "FAIL: automatic comparison profile did not preserve Code selections while refreshing connection state.\n");
     exit(1);
 }
 

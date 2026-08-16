@@ -58,7 +58,12 @@ function twmcd_install_release_archive($zip_path, $create_rollback = false)
         }
     }
 
-    $installation = twmcd_install_manifest_packages($workspace, $validation['manifest']);
+    $has_content = !empty($validation['manifest']['posts']) || !empty($validation['manifest']['remove_posts']);
+    $installation = $has_content
+        ? twmcd_with_manifest_blog($validation['manifest'], function () use ($validation) {
+            return twmcd_install_manifest_posts($validation['manifest']);
+        })
+        : twmcd_install_manifest_packages($workspace, $validation['manifest']);
     twmcd_delete_workspace($workspace);
 
     if (is_wp_error($installation)) {
@@ -69,7 +74,7 @@ function twmcd_install_release_archive($zip_path, $create_rollback = false)
     }
 
     $message = sprintf(
-        __('Release “%1$s” installed successfully. %2$d code package operations completed.', 'tn-wp-migrate-code-diff'),
+        __('Release “%1$s” installed successfully. %2$d operations completed.', 'tn-wp-migrate-code-diff'),
         $validation['manifest']['release_id'],
         count($installation)
     );
@@ -127,7 +132,46 @@ function twmcd_create_rollback_release_package($manifest)
         $existing_packages[] = array('package' => $restore_package, 'source_path' => $target);
     }
 
-    if (!$existing_packages && !$remove_packages) {
+    $rollback_posts = array();
+    $rollback_remove_posts = array();
+    $has_post_operations = !empty($manifest['posts']) || !empty($manifest['remove_posts']);
+    $content_rollback = true;
+    if ($has_post_operations) {
+        $content_rollback = twmcd_with_manifest_blog($manifest, function () use ($manifest, &$rollback_posts, &$rollback_remove_posts) {
+            foreach ((array) (isset($manifest['posts']) ? $manifest['posts'] : array()) as $post) {
+                $existing_id = twmcd_find_post_by_identity($post['identity'], $post['post_type']);
+                if ($existing_id) {
+                    $export = twmcd_export_post_content($existing_id);
+                    if ($export) {
+                        $export['fingerprint'] = twmcd_post_content_fingerprint($export);
+                        $export['from_fingerprint'] = isset($post['fingerprint']) ? $post['fingerprint'] : '';
+                        $rollback_posts[] = $export;
+                    }
+                } else {
+                    $rollback_remove_posts[] = array(
+                        'identity'  => $post['identity'],
+                        'post_type' => $post['post_type'],
+                        'title'     => isset($post['title']) ? $post['title'] : $post['identity'],
+                    );
+                }
+            }
+            foreach ((array) (isset($manifest['remove_posts']) ? $manifest['remove_posts'] : array()) as $post) {
+                $existing_id = twmcd_find_post_by_identity($post['identity'], $post['post_type']);
+                $export = $existing_id ? twmcd_export_post_content($existing_id) : false;
+                if ($export) {
+                    $export['fingerprint'] = twmcd_post_content_fingerprint($export);
+                    $export['from_fingerprint'] = '';
+                    $rollback_posts[] = $export;
+                }
+            }
+            return true;
+        });
+    }
+    if (is_wp_error($content_rollback)) {
+        return $content_rollback;
+    }
+
+    if (!$existing_packages && !$remove_packages && !$rollback_posts && !$rollback_remove_posts) {
         return false;
     }
 
@@ -180,6 +224,7 @@ function twmcd_create_rollback_release_package($manifest)
         'created_at'  => gmdate('c'),
         'source_url'  => home_url(),
         'destination_url' => isset($manifest['source_url']) ? $manifest['source_url'] : '',
+        'destination_blog_id' => isset($manifest['destination_blog_id']) ? absint($manifest['destination_blog_id']) : 0,
         'created_by'  => twmcd_current_release_user(),
         'parent_release_id' => $manifest['release_id'],
         'generator'   => array(
@@ -188,6 +233,8 @@ function twmcd_create_rollback_release_package($manifest)
         ),
         'packages'        => $manifest_packages,
         'remove_packages' => $remove_packages,
+        'posts'           => $rollback_posts,
+        'remove_posts'    => $rollback_remove_posts,
         'files'           => $manifest_files,
     );
 
@@ -270,6 +317,8 @@ function twmcd_validate_manifest($manifest, $payload_files)
         || !is_array($manifest['packages'])
         || !isset($manifest['files'])
         || (isset($manifest['remove_packages']) && !is_array($manifest['remove_packages']))
+        || (isset($manifest['posts']) && !is_array($manifest['posts']))
+        || (isset($manifest['remove_posts']) && !is_array($manifest['remove_posts']))
         || !is_array($manifest['files'])) {
         return new WP_Error('twmcd_manifest_invalid', __('The release manifest is missing or invalid.', 'tn-wp-migrate-code-diff'));
     }
@@ -277,8 +326,15 @@ function twmcd_validate_manifest($manifest, $payload_files)
     $remove_packages = isset($manifest['remove_packages']) && is_array($manifest['remove_packages'])
         ? $manifest['remove_packages']
         : array();
-    if (!$manifest['packages'] && !$remove_packages) {
+    $posts = isset($manifest['posts']) && is_array($manifest['posts']) ? $manifest['posts'] : array();
+    $remove_posts = isset($manifest['remove_posts']) && is_array($manifest['remove_posts']) ? $manifest['remove_posts'] : array();
+    $has_code = $manifest['packages'] || $remove_packages;
+    $has_content = $posts || $remove_posts;
+    if (!$has_code && !$has_content) {
         return new WP_Error('twmcd_manifest_empty', __('The release manifest does not contain any package operations.', 'tn-wp-migrate-code-diff'));
+    }
+    if ($has_code && $has_content) {
+        return new WP_Error('twmcd_manifest_mixed', __('Code and Posts operations must use separate release packages.', 'tn-wp-migrate-code-diff'));
     }
     if (($manifest['packages'] && !$manifest['files'])
         || (!$manifest['packages'] && $manifest['files'])) {
@@ -313,6 +369,31 @@ function twmcd_validate_manifest($manifest, $payload_files)
             return new WP_Error('twmcd_duplicate_target', __('The release declares the same destination more than once.', 'tn-wp-migrate-code-diff'));
         }
         $destinations[$package['destination']] = true;
+    }
+
+    $post_identities = array();
+    if (count($posts) + count($remove_posts) > 5000) {
+        return new WP_Error('twmcd_manifest_posts_limit', __('The release contains too many post operations.', 'tn-wp-migrate-code-diff'));
+    }
+    foreach ($posts as $post) {
+        $post_validation = twmcd_validate_manifest_post($post);
+        if (is_wp_error($post_validation)) {
+            return $post_validation;
+        }
+        if (isset($post_identities[$post['identity']])) {
+            return new WP_Error('twmcd_duplicate_post', __('The release declares the same post more than once.', 'tn-wp-migrate-code-diff'));
+        }
+        $post_identities[$post['identity']] = true;
+    }
+    foreach ($remove_posts as $post) {
+        $post_validation = twmcd_validate_remove_manifest_post($post);
+        if (is_wp_error($post_validation)) {
+            return $post_validation;
+        }
+        if (isset($post_identities[$post['identity']])) {
+            return new WP_Error('twmcd_duplicate_post', __('The release declares the same post more than once.', 'tn-wp-migrate-code-diff'));
+        }
+        $post_identities[$post['identity']] = true;
     }
 
     foreach ($manifest['files'] as $file_path => $checksum) {

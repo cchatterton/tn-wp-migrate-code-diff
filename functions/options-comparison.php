@@ -15,13 +15,19 @@ function twmcd_add_remote_comparison_key_rules($rules)
 function twmcd_extend_remote_connection_data($data)
 {
     $mode = isset($_POST['twmcd_mode']) ? sanitize_key(wp_unslash($_POST['twmcd_mode'])) : '';
-    if ('options' !== $mode) {
+    if (!in_array($mode, array('options', 'posts'), true)) {
         return $data;
     }
 
-    $context_json = isset($_POST['twmcd_context']) ? wp_unslash($_POST['twmcd_context']) : '';
+    $context_encoded = isset($_POST['twmcd_context']) ? wp_unslash($_POST['twmcd_context']) : '';
+    $context_json = base64_decode((string) $context_encoded, true);
+    $context_json = false === $context_json ? '' : $context_json;
     $context = twmcd_sanitize_migration_context(json_decode($context_json, true));
-    $data['twmcd_options_inventory'] = twmcd_local_options_inventory($context, false);
+    if ('posts' === $mode) {
+        $data['twmcd_posts_inventory'] = twmcd_local_posts_inventory($context, false);
+    } else {
+        $data['twmcd_options_inventory'] = twmcd_local_options_inventory($context, false);
+    }
 
     return $data;
 }
@@ -34,7 +40,7 @@ function twmcd_request_remote_options_inventory($remote_url, $secret_key, $inten
         $intent,
         array(
             'twmcd_mode'    => 'options',
-            'twmcd_context' => wp_json_encode(twmcd_sanitize_migration_context($context)),
+            'twmcd_context' => base64_encode(wp_json_encode(twmcd_sanitize_migration_context($context))),
         )
     );
 
@@ -45,7 +51,7 @@ function twmcd_request_remote_options_inventory($remote_url, $secret_key, $inten
     if (!isset($response['twmcd_options_inventory']) || !is_array($response['twmcd_options_inventory'])) {
         return new WP_Error(
             'twmcd_options_inventory_unavailable',
-            __('The remote site did not return its Options inventory. Install and activate version 0.9.0 or later of this plugin on both sites.', 'tn-wp-migrate-code-diff')
+            __('The remote site did not return its Options inventory. Install and activate the same current version of this plugin on both sites.', 'tn-wp-migrate-code-diff')
         );
     }
 

@@ -1,13 +1,13 @@
 (function () {
     'use strict';
 
-    var state = { comparison: null, savedProfileUrl: '' };
+    var state = { comparison: null };
+    var autoSaveTimer = null;
     var resultsElement = document.getElementById('twmcd-results');
     var groupsElement = document.getElementById('twmcd-groups');
     var messageElement = document.getElementById('twmcd-message');
     var loadingCard = document.getElementById('twmcd-loading-card');
     var profileMessageElement = document.getElementById('twmcd-profile-message');
-    var openProfileButton = document.getElementById('twmcd-open-profile');
     var refreshButton = document.getElementById('twmcd-refresh-comparison');
     var releasePackageButton = document.getElementById('twmcd-create-release-package');
     var groupLabels = {
@@ -75,10 +75,24 @@
             + ' inline"><p>' + escapeHtml(message) + '</p></div>';
     }
 
-    function invalidateSavedProfile() {
-        state.savedProfileUrl = '';
-        openProfileButton.disabled = true;
-        profileMessageElement.innerHTML = '';
+    function scheduleAutomaticProfileSave() {
+        if (!state.comparison || !state.comparison.comparison_token) {
+            return;
+        }
+        window.clearTimeout(autoSaveTimer);
+        autoSaveTimer = window.setTimeout(function () {
+            request('twmcd_save_profile', {
+                comparison_token: state.comparison.comparison_token,
+                selection: JSON.stringify(selectedPackages())
+            }).then(function (response) {
+                if (!response.success) {
+                    throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.saveFailed);
+                }
+                showProfileMessage(response.data.message || TWMCD_ADMIN.labels.profileSaved, false);
+            }).catch(function (error) {
+                showProfileMessage(error.message, true);
+            });
+        }, 250);
     }
 
     function renderGroup(groupKey, packages) {
@@ -130,9 +144,6 @@
     function renderComparison(comparison) {
         var differenceCount = 0;
         state.comparison = comparison;
-        if (comparison.profile_name) {
-            document.getElementById('twmcd-profile-name').value = comparison.profile_name;
-        }
         if (comparison.comparison_token && window.history && typeof window.history.replaceState === 'function') {
             var reportUrl = new URL(window.location.href);
             reportUrl.searchParams.set('twmcd_comparison', comparison.comparison_token);
@@ -162,6 +173,7 @@
         loadingCard.hidden = true;
         resultsElement.hidden = false;
         updateSelectionCounts();
+        scheduleAutomaticProfileSave();
     }
 
     function selectedPackages() {
@@ -219,45 +231,16 @@
             checkbox.checked = selectionMode === 'all'
                 || (selectionMode === 'recommended' && packageData && packageData.default_selected);
         });
-        invalidateSavedProfile();
         updateSelectionCounts();
+        scheduleAutomaticProfileSave();
     });
 
     groupsElement.addEventListener('change', function (event) {
         if (event.target && event.target.classList.contains('twmcd-package-selection')) {
-            invalidateSavedProfile();
             updateSelectionCounts();
+            scheduleAutomaticProfileSave();
         }
     });
-
-    document.getElementById('twmcd-save-profile').addEventListener('click', function () {
-        var saveButton = this;
-        saveButton.disabled = true;
-        request('twmcd_save_profile', {
-            profile_name: document.getElementById('twmcd-profile-name').value,
-            comparison_token: state.comparison.comparison_token,
-            selection: JSON.stringify(selectedPackages())
-        }).then(function (response) {
-            if (!response.success) {
-                throw new Error(response.data && response.data.message ? response.data.message : TWMCD_ADMIN.labels.saveFailed);
-            }
-            state.savedProfileUrl = response.data.redirect_url;
-            openProfileButton.disabled = false;
-            showProfileMessage(response.data.message || TWMCD_ADMIN.labels.profileSaved, false);
-            saveButton.disabled = false;
-        }).catch(function (error) {
-            showProfileMessage(error.message, true);
-            saveButton.disabled = false;
-        });
-    });
-
-    openProfileButton.addEventListener('click', function () {
-        if (state.savedProfileUrl) {
-            window.location.href = state.savedProfileUrl;
-        }
-    });
-
-    document.getElementById('twmcd-profile-name').addEventListener('input', invalidateSavedProfile);
 
     function setReleasePackageBusy(isBusy) {
         var label = releasePackageButton.querySelector('.twmcd-release-button-label');
@@ -310,7 +293,7 @@
                 ? { comparison_token: TWMCD_ADMIN.comparisonToken }
                 : { context_token: TWMCD_ADMIN.contextToken });
         refreshButton.disabled = true;
-        invalidateSavedProfile();
+        window.clearTimeout(autoSaveTimer);
         resultsElement.hidden = true;
         loadingCard.hidden = false;
         document.getElementById('twmcd-loading').classList.add('is-active');
