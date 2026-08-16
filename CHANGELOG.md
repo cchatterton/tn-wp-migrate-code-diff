@@ -2,6 +2,11 @@
 
 All notable changes to TN WP Migrate Code Diff are recorded here.
 
+## 0.9.1 - 2026-08-16
+
+- Renames the plugin shown on the WordPress Plugins screen to **WP Migrate - Release Management**.
+- Makes no functional changes to the 0.9.0 comparison or release-management workflows.
+
 ## 0.9.0 - 2026-08-16
 
 - Keeps the 0.8.x Code comparison, selection, release, rollback, installation, and release-history behavior unchanged.
