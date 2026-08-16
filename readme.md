@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.0
+Version: 0.11.1
 Status: MVP
 
 ## Purpose

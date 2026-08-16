@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.1 - 2026-08-16
+
+- Includes post types stored in the selected site's posts table even when their registering plugin is not loaded during a multisite remote request.
+- Keeps hierarchical post identities stable when a post type is unavailable in the comparison request.
+- Reads existing term relationships for unregistered post types so their fingerprints remain comparable across sites.
+
 ## 0.11.0 - 2026-08-16
 
 - Groups Release Notes into monthly accordions and opens the most recent month by default.
