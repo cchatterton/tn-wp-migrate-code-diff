@@ -145,6 +145,86 @@ function twmcd_normalize_content_value($value)
     return $value;
 }
 
+function twmcd_add_post_environment_replacement(&$replacements, $value, $token, $is_url = false)
+{
+    $value = rtrim((string) $value, "/\\");
+    if ('' === $value) {
+        return;
+    }
+
+    $variants = array($value);
+    if ($is_url) {
+        if (0 === stripos($value, 'https://')) {
+            $variants[] = 'http://' . substr($value, 8);
+        } elseif (0 === stripos($value, 'http://')) {
+            $variants[] = 'https://' . substr($value, 7);
+        }
+        $variants[] = preg_replace('#^https?:#i', '', $value);
+        foreach (array_values($variants) as $variant) {
+            $variants[] = str_replace('/', '\\/', $variant);
+            $variants[] = rawurlencode($variant);
+            $variants[] = urlencode($variant);
+        }
+    } else {
+        $normalized = wp_normalize_path($value);
+        $variants[] = $normalized;
+        $variants[] = str_replace('/', '\\', $normalized);
+    }
+
+    foreach (array_unique(array_filter($variants, 'strlen')) as $variant) {
+        $replacements[$variant] = $token;
+    }
+}
+
+function twmcd_post_environment_replacements()
+{
+    $uploads = wp_get_upload_dir();
+    $replacements = array();
+    twmcd_add_post_environment_replacement(
+        $replacements,
+        isset($uploads['baseurl']) ? $uploads['baseurl'] : '',
+        '{{TWMCD_UPLOADS_URL}}',
+        true
+    );
+    twmcd_add_post_environment_replacement($replacements, content_url(), '{{TWMCD_CONTENT_URL}}', true);
+    twmcd_add_post_environment_replacement($replacements, site_url(), '{{TWMCD_SITE_URL}}', true);
+    twmcd_add_post_environment_replacement($replacements, home_url(), '{{TWMCD_SITE_URL}}', true);
+    twmcd_add_post_environment_replacement(
+        $replacements,
+        isset($uploads['basedir']) ? $uploads['basedir'] : '',
+        '{{TWMCD_UPLOADS_PATH}}'
+    );
+    if (defined('WP_CONTENT_DIR')) {
+        twmcd_add_post_environment_replacement($replacements, WP_CONTENT_DIR, '{{TWMCD_CONTENT_PATH}}');
+    }
+    twmcd_add_post_environment_replacement($replacements, ABSPATH, '{{TWMCD_ROOT_PATH}}');
+
+    uksort($replacements, function ($left, $right) {
+        return strlen($right) - strlen($left);
+    });
+
+    return $replacements;
+}
+
+function twmcd_normalize_post_environment_values($value, $replacements = null)
+{
+    $replacements = is_array($replacements) ? $replacements : twmcd_post_environment_replacements();
+    if (is_array($value)) {
+        $normalized = array();
+        foreach ($value as $key => $item) {
+            $normalized_key = is_string($key) ? strtr($key, $replacements) : $key;
+            $normalized[$normalized_key] = twmcd_normalize_post_environment_values($item, $replacements);
+        }
+
+        return $normalized;
+    }
+    if (!is_string($value) || !$replacements) {
+        return $value;
+    }
+
+    return strtr($value, $replacements);
+}
+
 function twmcd_export_post_content($post_id)
 {
     $post = get_post($post_id);
@@ -226,7 +306,7 @@ function twmcd_export_post_content($post_id)
 
 function twmcd_post_content_fingerprint($export)
 {
-    $fingerprint_data = $export;
+    $fingerprint_data = twmcd_normalize_post_environment_values($export);
     unset(
         $fingerprint_data['source_id'],
         $fingerprint_data['title'],

@@ -62,4 +62,46 @@ if (!empty($by_identity['page:id:99']['selection']) || !empty($by_identity['page
     exit(1);
 }
 
-echo "PASS: Posts comparison grouping and recommendations.\n";
+$source_environment = array(
+    'https://source.example/wp-content/uploads' => '{{TWMCD_UPLOADS_URL}}',
+    'https:\\/\\/source.example\\/wp-content\\/uploads' => '{{TWMCD_UPLOADS_URL}}',
+    'https%3A%2F%2Fsource.example%2Fwp-content%2Fuploads' => '{{TWMCD_UPLOADS_URL}}',
+    '/nas/content/live/source/wp-content/uploads' => '{{TWMCD_UPLOADS_PATH}}',
+    'https://source.example' => '{{TWMCD_SITE_URL}}',
+);
+$destination_environment = array(
+    'https://destination.example/wp-content/uploads' => '{{TWMCD_UPLOADS_URL}}',
+    'https:\\/\\/destination.example\\/wp-content\\/uploads' => '{{TWMCD_UPLOADS_URL}}',
+    'https%3A%2F%2Fdestination.example%2Fwp-content%2Fuploads' => '{{TWMCD_UPLOADS_URL}}',
+    '/nas/content/live/destination/wp-content/uploads' => '{{TWMCD_UPLOADS_PATH}}',
+    'https://destination.example' => '{{TWMCD_SITE_URL}}',
+);
+$source_clone_value = array(
+    'content' => '<img src="https://source.example/wp-content/uploads/2026/08/image.jpg">',
+    'meta' => array(
+        'json' => '{"url":"https:\\/\\/source.example\\/wp-content\\/uploads\\/2026\\/08\\/image.jpg"}',
+        'encoded' => 'https%3A%2F%2Fsource.example%2Fwp-content%2Fuploads%2F2026%2F08%2Fimage.jpg',
+        'path' => '/nas/content/live/source/wp-content/uploads/2026/08/image.jpg',
+    ),
+);
+$destination_clone_value = array(
+    'content' => '<img src="https://destination.example/wp-content/uploads/2026/08/image.jpg">',
+    'meta' => array(
+        'json' => '{"url":"https:\\/\\/destination.example\\/wp-content\\/uploads\\/2026\\/08\\/image.jpg"}',
+        'encoded' => 'https%3A%2F%2Fdestination.example%2Fwp-content%2Fuploads%2F2026%2F08%2Fimage.jpg',
+        'path' => '/nas/content/live/destination/wp-content/uploads/2026/08/image.jpg',
+    ),
+);
+$normalized_source = twmcd_normalize_post_environment_values($source_clone_value, $source_environment);
+$normalized_destination = twmcd_normalize_post_environment_values($destination_clone_value, $destination_environment);
+if ($normalized_source !== $normalized_destination) {
+    fwrite(STDERR, "FAIL: cloned environment URLs and paths did not normalize to the same comparison value.\n");
+    exit(1);
+}
+$destination_clone_value['meta']['business_value'] = 'A genuinely changed value';
+if ($normalized_source === twmcd_normalize_post_environment_values($destination_clone_value, $destination_environment)) {
+    fwrite(STDERR, "FAIL: environment normalization concealed a genuine post content difference.\n");
+    exit(1);
+}
+
+echo "PASS: Posts comparison grouping, recommendations, and clone normalization.\n";
