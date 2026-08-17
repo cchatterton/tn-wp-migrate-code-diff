@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.2 - 2026-08-17
+
+- Normalizes each site's home, site, content, uploads, and filesystem roots before calculating Posts comparison fingerprints.
+- Treats cloned environment URLs, alternate HTTP schemes, protocol-relative URLs, JSON-escaped URLs, URL-encoded URLs, and host-specific server paths as equivalent.
+- Keeps the actual Posts release payload unchanged and continues to report genuine content, metadata, taxonomy, status, and date differences.
+
 ## 0.11.1 - 2026-08-16
 
 - Includes post types stored in the selected site's posts table even when their registering plugin is not loaded during a multisite remote request.
