@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.3 - 2026-09-04
+
+- Removes the control bar's dependency on WP Migrate rendering an update notice.
+- Adds a dedicated fallback slot immediately above the migration form when no WP Migrate notice is present.
+- Continues to place the control bar directly after WP Migrate's update notice when one is available.
+
 ## 0.11.2 - 2026-08-17
 
 - Normalizes each site's home, site, content, uploads, and filesystem roots before calculating Posts comparison fingerprints.
