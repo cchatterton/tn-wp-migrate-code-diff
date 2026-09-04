@@ -2,6 +2,7 @@
     'use strict';
 
     var noticeId = 'twmcd-integration-notice';
+    var noticeSlotId = 'twmcd-integration-notice-slot';
     var subscribedStore = null;
     var preparing = '';
     var pollAttempts = 0;
@@ -236,14 +237,37 @@
 
     function placeNotice(notice) {
         var wpMigrateNotice = document.querySelector('#root .migrate-notice.warning');
+        var noticeSlot = document.getElementById(noticeSlotId);
 
-        if (!wpMigrateNotice || !wpMigrateNotice.parentNode) {
-            return;
+        if (wpMigrateNotice && wpMigrateNotice.parentNode) {
+            if (notice.parentNode !== wpMigrateNotice.parentNode || notice.previousElementSibling !== wpMigrateNotice) {
+                wpMigrateNotice.parentNode.insertBefore(notice, wpMigrateNotice.nextSibling);
+            }
+            if (noticeSlot && !noticeSlot.children.length) {
+                noticeSlot.remove();
+            }
+
+            return true;
         }
 
-        if (notice.parentNode !== wpMigrateNotice.parentNode || notice.previousSibling !== wpMigrateNotice) {
-            wpMigrateNotice.parentNode.insertBefore(notice, wpMigrateNotice.nextSibling);
+        var migrationPanel = document.querySelector('#root .wrapper.migrate');
+        if (!migrationPanel || !migrationPanel.parentNode) {
+            return false;
         }
+
+        if (!noticeSlot) {
+            noticeSlot = document.createElement('div');
+            noticeSlot.id = noticeSlotId;
+            noticeSlot.className = 'twmcd-integration-notice-slot';
+        }
+        if (noticeSlot.parentNode !== migrationPanel.parentNode || noticeSlot.nextElementSibling !== migrationPanel) {
+            migrationPanel.parentNode.insertBefore(noticeSlot, migrationPanel);
+        }
+        if (notice.parentNode !== noticeSlot) {
+            noticeSlot.appendChild(notice);
+        }
+
+        return true;
     }
 
     function removeNotice() {

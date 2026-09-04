@@ -122,6 +122,10 @@
     display: none;
 }
 
+#root .twmcd-integration-notice-slot {
+    margin: 0;
+}
+
 #root .twmcd-migrate-notice {
     margin: 16px 0;
 }
