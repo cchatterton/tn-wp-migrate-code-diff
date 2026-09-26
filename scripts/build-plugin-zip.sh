@@ -18,6 +18,8 @@ cp -R "$PROJECT_DIR/scripts" "$PACKAGE_DIR/scripts"
 cp -R "$PROJECT_DIR/styles" "$PACKAGE_DIR/styles"
 cp -R "$PROJECT_DIR/templates" "$PACKAGE_DIR/templates"
 cp "$PROJECT_DIR/$PLUGIN_SLUG.php" "$PACKAGE_DIR/$PLUGIN_SLUG.php"
+cp "$PROJECT_DIR/LICENSE" "$PACKAGE_DIR/LICENSE"
+cp "$PROJECT_DIR/readme.txt" "$PACKAGE_DIR/readme.txt"
 cp "$PROJECT_DIR/readme.md" "$PACKAGE_DIR/readme.md"
 cp "$PROJECT_DIR/CHANGELOG.md" "$PACKAGE_DIR/CHANGELOG.md"
 

@@ -2,6 +2,14 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.4 - 2026-09-26
+
+- Require WordPress 7.0+ and PHP 8.5+ for this release.
+
+- Replace the independent GitHub updater with the version 1 TN Update Controller integration.
+- Add local Install/Activate/Check controller actions and standardise Techn author/repository metadata.
+- Preserve plugin identity, feature code, settings and activation scope; no feature-plugin release discovery runs during page rendering.
+
 ## 0.11.3 - 2026-09-04
 
 - Removes the control bar's dependency on WP Migrate rendering an update notice.
