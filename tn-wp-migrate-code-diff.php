@@ -2,9 +2,9 @@
 /**
  * Plugin Name: WP Migrate - Release Management
  * Description: Compares connected WordPress code and content, and creates or installs selective offline releases.
- * Version: 0.11.4
+ * Version: 0.11.5
  * Requires at least: 7.0
- * Requires PHP: 8.5
+ * Requires PHP: 7.4
  * Update URI: https://github.com/cchatterton/tn-wp-migrate-code-diff
  * Author: Techn
  * Author URI: https://techn.com.au
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TWMCD_VERSION', '0.11.4');
+define('TWMCD_VERSION', '0.11.5');
 define('TWMCD_DATABASE_COMPARISON_ENABLED', true);
 define('TWMCD_PLUGIN_FILE', __FILE__);
 define('TWMCD_PLUGIN_DIR', plugin_dir_path(__FILE__));
