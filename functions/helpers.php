@@ -55,19 +55,31 @@ function twmcd_migrate_admin_url()
         : admin_url('tools.php?page=wp-migrate-db-pro');
 }
 
-function twmcd_default_profile_name($destination_url = '')
+function twmcd_profile_environment_slug($url)
 {
-    $profile_name = 'Release-' . date_i18n('Ym');
-    if ('' === (string) $destination_url) {
-        return $profile_name;
+    $host = wp_parse_url($url, PHP_URL_HOST);
+    $port = wp_parse_url($url, PHP_URL_PORT);
+    $environment = strtolower((string) $host) . ($port ? '-' . absint($port) : '');
+
+    return trim(preg_replace('/[^a-z0-9.-]+/', '-', $environment), '-');
+}
+
+function twmcd_default_profile_name($destination_url = '', $source_url = '')
+{
+    $source = twmcd_profile_environment_slug('' === (string) $source_url ? home_url() : $source_url);
+    $destination = twmcd_profile_environment_slug($destination_url);
+
+    if ('' === $source && '' === $destination) {
+        return 'Release-connection';
+    }
+    if ('' === $destination) {
+        return 'Release-' . $source;
+    }
+    if ('' === $source) {
+        return 'Release-' . $destination;
     }
 
-    $host = wp_parse_url($destination_url, PHP_URL_HOST);
-    $port = wp_parse_url($destination_url, PHP_URL_PORT);
-    $destination = strtolower((string) $host) . ($port ? '-' . absint($port) : '');
-    $destination = trim(preg_replace('/[^a-z0-9.-]+/', '-', $destination), '-');
-
-    return '' === $destination ? $profile_name : $profile_name . '-' . $destination;
+    return 'Release-' . $source . '-to-' . $destination;
 }
 
 function twmcd_default_release_name()

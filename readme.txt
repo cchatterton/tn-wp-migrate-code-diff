@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.5
+Stable tag: 0.11.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -22,6 +22,11 @@ Compares connected WordPress code and content, and creates or installs selective
 
 == Changelog ==
 
+= 0.11.6 =
+* Replace monthly automatic profile names with one stable, directional profile per source and destination environment pair.
+* Consolidate matching legacy monthly profiles into the stable environment profile while preserving Code selections.
+* Add an always-visible retry icon to the comparison control bar that re-reads connection state and invokes WP Migrate's connection control when available.
+
 = 0.11.5 =
 * Lower the PHP requirement to 7.4 to match WordPress 7.0; update the controller installation compatibility check.
 
@@ -33,7 +38,7 @@ Compares connected WordPress code and content, and creates or installs selective
 
 == Managed updates ==
 
-Install and activate TN Update Controller to discover and install updates. The plugin row offers Install Techn Update Controller, Activate Techn Update Controller, or Check for updates according to local state and permissions. Feature operation does not require the controller. No release lookup happens while rendering this plugin's row. On multisite the controller must be network active. This plugin release requires WordPress 7.0 and PHP 8.5 or later.
+Install and activate TN Update Controller to discover and install updates. The plugin row offers Install Techn Update Controller, Activate Techn Update Controller, or Check for updates according to local state and permissions. Feature operation does not require the controller. No release lookup happens while rendering this plugin's row. On multisite the controller must be network active. This plugin release requires WordPress 7.0 and PHP 7.4 or later.
 
 == Controller installation service ==
 

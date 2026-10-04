@@ -152,6 +152,32 @@
     cursor: not-allowed;
 }
 
+.twmcd-migrate-notice .twmcd-notice-refresh {
+    align-items: center;
+    color: #135e96;
+    display: inline-flex;
+    height: 30px;
+    justify-content: center;
+    margin-left: auto;
+    min-width: 30px;
+    padding: 0;
+}
+
+.twmcd-migrate-notice .twmcd-notice-refresh:disabled {
+    color: #787c82;
+    cursor: wait;
+}
+
+.twmcd-migrate-notice .twmcd-notice-refresh.is-retrying .dashicons {
+    animation: twmcd-connection-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes twmcd-connection-refresh-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .twmcd-admin-wrap .twmcd-card,
 .twmcd-admin-wrap .twmcd-summary {
     background: #fff;

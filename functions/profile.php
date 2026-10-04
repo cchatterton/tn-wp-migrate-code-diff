@@ -400,22 +400,129 @@ function twmcd_existing_migration_profile($profile_name)
     return false;
 }
 
+function twmcd_profile_environment_urls($profile)
+{
+    if (!is_array($profile)
+        || empty($profile['current_migration']['intent'])
+        || empty($profile['connection_info']['connection_state']['url'])) {
+        return false;
+    }
+
+    $intent = (string) $profile['current_migration']['intent'];
+    $remote_url = (string) $profile['connection_info']['connection_state']['url'];
+    if ('push' === $intent) {
+        return array('source' => home_url(), 'destination' => $remote_url);
+    }
+    if ('pull' === $intent) {
+        return array('source' => $remote_url, 'destination' => home_url());
+    }
+
+    return false;
+}
+
+function twmcd_environment_profile_candidates($profile_name, $source_url, $destination_url)
+{
+    $profiles = get_site_option('wpmdb_saved_profiles');
+    $source_slug = twmcd_profile_environment_slug($source_url);
+    $destination_slug = twmcd_profile_environment_slug($destination_url);
+    $candidates = array();
+
+    foreach ((array) $profiles as $profile_id => $stored_profile) {
+        $stored_name = isset($stored_profile['name']) ? (string) $stored_profile['name'] : '';
+        $is_current_name = $stored_name === (string) $profile_name;
+        $is_legacy_name = 1 === preg_match('/^Release-\d{6}-[a-z0-9.-]+(?:-\d+)?$/', $stored_name);
+        if (!$is_current_name && !$is_legacy_name) {
+            continue;
+        }
+
+        $profile = !empty($stored_profile['value']) ? json_decode($stored_profile['value'], true) : null;
+        $environment = twmcd_profile_environment_urls($profile);
+        if (!$environment
+            || twmcd_profile_environment_slug($environment['source']) !== $source_slug
+            || twmcd_profile_environment_slug($environment['destination']) !== $destination_slug) {
+            continue;
+        }
+
+        $candidates[$profile_id] = array(
+            'stored'  => $stored_profile,
+            'profile' => $profile,
+            'current' => $is_current_name,
+        );
+    }
+
+    return $candidates;
+}
+
+function twmcd_existing_environment_profile($profile_name, $source_url, $destination_url)
+{
+    $candidates = twmcd_environment_profile_candidates($profile_name, $source_url, $destination_url);
+    if (!$candidates) {
+        return false;
+    }
+
+    uasort(
+        $candidates,
+        function ($left, $right) {
+            if ($left['current'] !== $right['current']) {
+                return $left['current'] ? -1 : 1;
+            }
+
+            return (int) $right['stored']['date'] - (int) $left['stored']['date'];
+        }
+    );
+    $profile_id = key($candidates);
+
+    return array('id' => $profile_id, 'profile' => $candidates[$profile_id]['profile']);
+}
+
+function twmcd_store_environment_profile($profile_name, $profile, $source_url, $destination_url)
+{
+    $profiles = get_site_option('wpmdb_saved_profiles');
+    $profiles = is_array($profiles) ? $profiles : array();
+    $candidates = twmcd_environment_profile_candidates($profile_name, $source_url, $destination_url);
+    if (!$candidates) {
+        return twmcd_store_migration_profile($profile_name, $profile);
+    }
+
+    $existing = twmcd_existing_environment_profile($profile_name, $source_url, $destination_url);
+    $profile_id = $existing['id'];
+    $stored_profile = $profiles[$profile_id];
+    $profiles[$profile_id] = array(
+        'name'  => $profile_name,
+        'value' => wp_json_encode($profile),
+        'guid'  => !empty($stored_profile['guid']) ? $stored_profile['guid'] : wp_generate_uuid4(),
+        'date'  => current_time('timestamp'),
+    );
+
+    foreach (array_keys($candidates) as $candidate_id) {
+        if ((string) $candidate_id !== (string) $profile_id) {
+            unset($profiles[$candidate_id]);
+        }
+    }
+    update_site_option('wpmdb_saved_profiles', $profiles);
+
+    return $profile_id;
+}
+
 function twmcd_store_automatic_comparison_profile($context, $mode)
 {
+    $source_url = !empty($context['intent']) && 'push' === $context['intent']
+        ? home_url()
+        : $context['connection']['url'];
     $destination_url = !empty($context['intent']) && 'push' === $context['intent']
         ? $context['connection']['url']
         : home_url();
-    $profile_name = twmcd_default_profile_name($destination_url);
+    $profile_name = twmcd_default_profile_name($destination_url, $source_url);
     $profile = twmcd_create_code_only_profile(
         $profile_name,
         $context,
         array('plugins' => array(), 'themes' => array(), 'muplugins' => array())
     );
-    $existing = twmcd_existing_migration_profile($profile_name);
+    $existing = twmcd_existing_environment_profile($profile_name, $source_url, $destination_url);
     if ($existing && !empty($existing['profile']['theme_plugin_files'])) {
         $profile['theme_plugin_files'] = $existing['profile']['theme_plugin_files'];
     }
     $profile['_twmcd']['last_comparison_mode'] = sanitize_key($mode);
 
-    return twmcd_store_migration_profile($profile_name, $profile);
+    return twmcd_store_environment_profile($profile_name, $profile, $source_url, $destination_url);
 }

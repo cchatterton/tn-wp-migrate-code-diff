@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.6 - 2026-10-04
+
+- Replace destination-specific monthly automatic profiles with one stable, directional profile for each source and destination environment pair.
+- Consolidate matching legacy monthly automatic profiles into the stable environment profile and retain the latest Code selections.
+- Add an always-visible refresh icon to the comparison control bar that restarts state polling and invokes WP Migrate's native connection action when available.
+
 ## 0.11.5 - 2026-09-26
 
 - Lower the PHP requirement to 7.4, matching WordPress 7.0.

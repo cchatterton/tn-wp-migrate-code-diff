@@ -11,6 +11,10 @@ $expectations = array(
     "document.querySelector('#root .wrapper.migrate')" => 'migration-form fallback placement',
     "noticeSlotId = 'twmcd-integration-notice-slot'" => 'dedicated fallback slot',
     'migrationPanel.parentNode.insertBefore(noticeSlot, migrationPanel)' => 'fallback insertion before the migration form',
+    'class="button-link twmcd-notice-refresh' => 'always-visible refresh control',
+    'function retryConnection()' => 'connection retry handler',
+    "document.querySelectorAll('#connect button" => 'native WP Migrate connection control lookup',
+    'restartPolling();' => 'WP Migrate state polling restart',
 );
 foreach ($expectations as $needle => $description) {
     if (false === strpos($script, $needle)) {
