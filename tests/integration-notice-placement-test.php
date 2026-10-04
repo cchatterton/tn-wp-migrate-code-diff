@@ -8,7 +8,10 @@ if (false === $script) {
 
 $expectations = array(
     "document.querySelector('#root .migrate-notice.warning')" => 'WP Migrate notice placement',
-    "document.querySelector('#root .wrapper.migrate')" => 'migration-form fallback placement',
+    "root.querySelector('.wrapper.migrate')" => 'single-site migration-form fallback placement',
+    "root.querySelector('.nav-wrap')" => 'multisite navigation anchor',
+    'navigation.nextElementSibling' => 'multisite content-panel placement',
+    "root.querySelector('.wrapper')" => 'generic WP Migrate content fallback',
     "noticeSlotId = 'twmcd-integration-notice-slot'" => 'dedicated fallback slot',
     'migrationPanel.parentNode.insertBefore(noticeSlot, migrationPanel)' => 'fallback insertion before the migration form',
     'class="button-link twmcd-notice-refresh' => 'always-visible refresh control',

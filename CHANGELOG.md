@@ -2,6 +2,11 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.7 - 2026-10-04
+
+- Fix comparison control-bar placement in WP Migrate's multisite layout, where the single-site `.wrapper.migrate` anchor is not present.
+- Use WP Migrate's navigation sibling and generic content wrapper as ordered fallbacks so the hidden server-rendered mount never becomes the visible location.
+
 ## 0.11.6 - 2026-10-04
 
 - Replace destination-specific monthly automatic profiles with one stable, directional profile for each source and destination environment pair.
