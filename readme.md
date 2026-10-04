@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.7
+Version: 0.11.8
 Status: MVP
 
 ## Purpose
@@ -27,6 +27,8 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Creates a WP Migrate saved profile with database and media disabled.
 - Refreshes a comparison in place using the existing WP Migrate connection context.
 - Provides an always-visible retry icon on the WP Migrate comparison bar to re-read state and retry the native connection action.
+- Adds a right-aligned Reset link to WP Migrate's Last 10 Unsaved Profiles table and clears that recent-history list through an authenticated action.
+- Keeps the comparison control bar exclusive to WP Migrate's Migrate route while leaving profile-management enhancements on Profiles.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Compares posts by post type and stable UUID, hierarchical path, or slug identity, including post fields, post meta, term assignments, taxonomies, and parent relationships in its fingerprints.
 - Creates a separate offline Posts release ZIP from selected local source posts when the comparison direction is Push.

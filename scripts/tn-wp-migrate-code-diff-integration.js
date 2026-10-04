@@ -6,6 +6,7 @@
     var subscribedStore = null;
     var preparing = '';
     var retrying = false;
+    var resettingRecentProfiles = false;
     var retryTimer = null;
     var pollAttempts = 0;
     var pollTimer = null;
@@ -237,6 +238,15 @@
         return document.getElementById('twmcd-integration-notice-mount');
     }
 
+    function isMigrationScreen() {
+        var hash = (window.location.hash || '').toLowerCase();
+        if (hash) {
+            return /^#\/?migrate(?:$|[/?])/.test(hash);
+        }
+
+        return Boolean(document.querySelector('#root .wrapper.migrate, #root #panel-title-action_buttons, #root #connect'));
+    }
+
     function migrationPanelAnchor() {
         var root = document.getElementById('root');
         if (!root) {
@@ -296,6 +306,10 @@
         if (notice) {
             notice.remove();
         }
+        var noticeSlot = document.getElementById(noticeSlotId);
+        if (noticeSlot && !noticeSlot.children.length) {
+            noticeSlot.remove();
+        }
     }
 
     function renderNotice() {
@@ -303,6 +317,10 @@
         var container = noticeContainer();
 
         if (!container) {
+            removeNotice();
+            return;
+        }
+        if (!isMigrationScreen()) {
             removeNotice();
             return;
         }
@@ -395,6 +413,78 @@
         var element = document.createElement('div');
         element.textContent = value == null ? '' : String(value);
         return element.innerHTML;
+    }
+
+    function injectRecentProfilesReset() {
+        var headings = document.querySelectorAll('#root h2.table-heading');
+
+        Array.prototype.forEach.call(headings, function (heading) {
+            if (heading.textContent.trim() !== TWMCD_INTEGRATION.labels.recentProfilesHeading) {
+                return;
+            }
+
+            var table = heading.closest ? heading.closest('.container-shadow.table') : null;
+            var header = heading.parentNode;
+            if (!header || (table && table.querySelector('.no-items'))) {
+                return;
+            }
+            if (header.querySelector('.twmcd-reset-recent-profiles')) {
+                return;
+            }
+
+            header.classList.add('twmcd-recent-profiles-header');
+            var reset = document.createElement('button');
+            reset.type = 'button';
+            reset.className = 'button-link twmcd-reset-recent-profiles';
+            reset.textContent = resettingRecentProfiles
+                ? TWMCD_INTEGRATION.labels.resettingRecentProfiles
+                : TWMCD_INTEGRATION.labels.resetRecentProfiles;
+            reset.disabled = resettingRecentProfiles;
+            reset.addEventListener('click', resetRecentProfiles);
+            header.appendChild(reset);
+        });
+    }
+
+    function resetRecentProfiles() {
+        if (resettingRecentProfiles) {
+            return;
+        }
+
+        resettingRecentProfiles = true;
+        var reset = document.querySelector('.twmcd-reset-recent-profiles');
+        if (reset) {
+            reset.disabled = true;
+            reset.textContent = TWMCD_INTEGRATION.labels.resettingRecentProfiles;
+        }
+
+        var body = new URLSearchParams({
+            action: 'twmcd_clear_recent_migrations',
+            nonce: TWMCD_INTEGRATION.nonce
+        });
+        fetch(TWMCD_INTEGRATION.ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body
+        }).then(function (response) {
+            return response.json();
+        }).then(function (response) {
+            if (!response.success) {
+                throw new Error(response.data && response.data.message
+                    ? response.data.message
+                    : TWMCD_INTEGRATION.labels.resetRecentProfilesError);
+            }
+            window.location.reload();
+        }).catch(function (error) {
+            resettingRecentProfiles = false;
+            injectRecentProfilesReset();
+            reset = document.querySelector('.twmcd-reset-recent-profiles');
+            if (reset) {
+                reset.disabled = false;
+                reset.textContent = TWMCD_INTEGRATION.labels.resetRecentProfiles;
+            }
+            window.alert(error.message);
+        });
     }
 
     function prepareComparison(mode) {
@@ -513,6 +603,7 @@
             subscribedStore = store;
         }
         renderNotice();
+        injectRecentProfilesReset();
     }
 
     function pollForStore() {
@@ -535,7 +626,7 @@
     document.addEventListener('input', migrationControlChanged);
     document.addEventListener('change', migrationControlChanged);
     document.addEventListener('click', function () {
-        window.setTimeout(renderNotice, 0);
+        window.setTimeout(initialise, 0);
     });
     initialise();
     pollTimer = window.setInterval(pollForStore, 250);

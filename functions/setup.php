@@ -13,6 +13,7 @@ function twmcd_register_hooks()
     add_action('wp_ajax_twmcd_compare_options', 'twmcd_ajax_compare_options');
     add_action('wp_ajax_twmcd_compare_posts', 'twmcd_ajax_compare_posts');
     add_action('wp_ajax_twmcd_prepare_comparison', 'twmcd_ajax_prepare_comparison');
+    add_action('wp_ajax_twmcd_clear_recent_migrations', 'twmcd_ajax_clear_recent_migrations');
     add_action('wp_ajax_twmcd_save_profile', 'twmcd_ajax_save_profile');
     add_action('wp_ajax_twmcd_prepare_release_package', 'twmcd_ajax_prepare_release_package');
     add_action('wp_ajax_twmcd_prepare_post_release_package', 'twmcd_ajax_prepare_post_release_package');

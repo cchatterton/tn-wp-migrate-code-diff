@@ -106,6 +106,10 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                     'waitingProfile'    => __('Site comparison is listening — waiting for the saved profile selections.', 'tn-wp-migrate-code-diff'),
                     'retryConnection'   => __('Retry WP Migrate connection', 'tn-wp-migrate-code-diff'),
                     'retryingConnection' => __('Retrying WP Migrate connection…', 'tn-wp-migrate-code-diff'),
+                    'recentProfilesHeading' => __('Last 10 Unsaved Profiles', 'tn-wp-migrate-code-diff'),
+                    'resetRecentProfiles' => __('Reset', 'tn-wp-migrate-code-diff'),
+                    'resettingRecentProfiles' => __('Resetting…', 'tn-wp-migrate-code-diff'),
+                    'resetRecentProfilesError' => __('The unsaved profile history could not be cleared.', 'tn-wp-migrate-code-diff'),
                 ),
             )
         );

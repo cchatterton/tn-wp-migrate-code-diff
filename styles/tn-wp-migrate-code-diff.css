@@ -154,13 +154,22 @@
 
 .twmcd-migrate-notice .twmcd-notice-refresh {
     align-items: center;
-    color: #135e96;
+    border-bottom: 0;
+    color: #d58a00;
     display: inline-flex;
     height: 30px;
     justify-content: center;
     margin-left: auto;
     min-width: 30px;
     padding: 0;
+    text-decoration: none !important;
+}
+
+.twmcd-migrate-notice .twmcd-notice-refresh:hover,
+.twmcd-migrate-notice .twmcd-notice-refresh:active,
+.twmcd-migrate-notice .twmcd-notice-refresh:focus {
+    color: #b76e00;
+    text-decoration: none !important;
 }
 
 .twmcd-migrate-notice .twmcd-notice-refresh:disabled {
@@ -176,6 +185,15 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+#root .twmcd-recent-profiles-header {
+    width: 100%;
+}
+
+#root .twmcd-reset-recent-profiles {
+    margin-left: auto;
+    margin-right: 1.5rem;
 }
 
 .twmcd-admin-wrap .twmcd-card,
