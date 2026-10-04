@@ -237,6 +237,25 @@
         return document.getElementById('twmcd-integration-notice-mount');
     }
 
+    function migrationPanelAnchor() {
+        var root = document.getElementById('root');
+        if (!root) {
+            return null;
+        }
+
+        var migrationPanel = root.querySelector('.wrapper.migrate');
+        if (migrationPanel) {
+            return migrationPanel;
+        }
+
+        var navigation = root.querySelector('.nav-wrap');
+        if (navigation && navigation.nextElementSibling) {
+            return navigation.nextElementSibling;
+        }
+
+        return root.querySelector('.wrapper');
+    }
+
     function placeNotice(notice) {
         var wpMigrateNotice = document.querySelector('#root .migrate-notice.warning');
         var noticeSlot = document.getElementById(noticeSlotId);
@@ -252,7 +271,7 @@
             return true;
         }
 
-        var migrationPanel = document.querySelector('#root .wrapper.migrate');
+        var migrationPanel = migrationPanelAnchor();
         if (!migrationPanel || !migrationPanel.parentNode) {
             return false;
         }

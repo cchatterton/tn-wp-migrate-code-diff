@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.6
+Stable tag: 0.11.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,10 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.7 =
+* Place the comparison control bar inside WP Migrate's multisite app layout when the single-site migration wrapper class is absent.
+* Keep the hidden server-rendered mount as a staging container only; the visible control now sits between WP Migrate navigation and migration content.
 
 = 0.11.6 =
 * Replace monthly automatic profile names with one stable, directional profile per source and destination environment pair.
