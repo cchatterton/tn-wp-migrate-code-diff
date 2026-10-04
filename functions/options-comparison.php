@@ -15,7 +15,15 @@ function twmcd_add_remote_comparison_key_rules($rules)
 function twmcd_extend_remote_connection_data($data)
 {
     $mode = isset($_POST['twmcd_mode']) ? sanitize_key(wp_unslash($_POST['twmcd_mode'])) : '';
-    if (!in_array($mode, array('options', 'posts'), true)) {
+    if (!in_array($mode, array('code', 'options', 'posts'), true)) {
+        return $data;
+    }
+
+    if ('code' === $mode) {
+        $data['twmcd_code_inventory'] = array(
+            'muplugins' => twmcd_local_mu_plugins(),
+        );
+
         return $data;
     }
 

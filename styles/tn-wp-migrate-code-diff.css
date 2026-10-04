@@ -325,6 +325,11 @@
     color: #50575e;
 }
 
+.twmcd-admin-wrap .twmcd-status-unknown {
+    background: #f1f1f1;
+    color: #50575e;
+}
+
 .twmcd-admin-wrap .twmcd-table-scroll {
     overflow-x: auto;
 }

@@ -2,6 +2,14 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.10 - 2026-10-04
+
+- Match local and remote must-use plugins by the same canonical top-level entry in `wp-content/mu-plugins`.
+- Enrich the signed WP Migrate connection response with MU-plugin friendly names, versions, paths, and activation state when the current plugin is installed on both sites.
+- Include both root files and non-empty top-level MU-plugin directories so the comparison represents the same filesystem scope WP Migrate can transfer.
+- Report an entry with unavailable version metadata as **Review Manually** instead of falsely describing it as an upgrade.
+- Keep MU plugins unselected in Recommended mode.
+
 ## 0.11.9 - 2026-10-04
 
 - Rename the Code comparison **Version Status** column to **Release Actions**.

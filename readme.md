@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.9
+Version: 0.11.10
 Status: MVP
 
 ## Purpose
@@ -11,6 +11,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 ## Key Features
 
 - Compares plugins, themes, and must-use plugins.
+- Matches must-use plugins by canonical top-level filesystem entry and exchanges enriched header metadata through the authenticated connection.
 - Provides separate Code, Posts, Database, and Options comparison pages without changing the established Code release behavior.
 - Presents code differences as destination release actions: add, remove, upgrade, downgrade, no change, or manual review.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.

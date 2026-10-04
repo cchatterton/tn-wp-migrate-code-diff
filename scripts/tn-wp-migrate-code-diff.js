@@ -48,7 +48,8 @@
             source_newer: TWMCD_ADMIN.labels.sourceNewer,
             source_older: TWMCD_ADMIN.labels.sourceOlder,
             source_only: TWMCD_ADMIN.labels.sourceOnly,
-            destination_only: TWMCD_ADMIN.labels.destinationOnly
+            destination_only: TWMCD_ADMIN.labels.destinationOnly,
+            unknown: TWMCD_ADMIN.labels.unknownVersion
         };
         return labels[status] || status;
     }

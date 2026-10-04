@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.9
+Stable tag: 0.11.10
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,11 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.10 =
+* Match must-use plugins by their canonical top-level mu-plugins entry on both sites.
+* Exchange enriched MU-plugin names and versions through the authenticated WP Migrate connection when this plugin is current on both sites.
+* Report missing version metadata as Review Manually instead of a false destination upgrade.
 
 = 0.11.9 =
 * Rename the Code comparison Version Status column to Release Actions.
