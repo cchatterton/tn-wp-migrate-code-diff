@@ -16,6 +16,17 @@ function twmcd_verify_ajax_request()
     }
 }
 
+function twmcd_ajax_clear_recent_migrations()
+{
+    twmcd_verify_ajax_request();
+
+    delete_site_option('wpmdb_recent_migrations');
+
+    wp_send_json_success(
+        array('message' => __('The unsaved profile history was cleared.', 'tn-wp-migrate-code-diff'))
+    );
+}
+
 function twmcd_ajax_prepare_comparison()
 {
     twmcd_verify_ajax_request();

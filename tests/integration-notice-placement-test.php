@@ -18,6 +18,12 @@ $expectations = array(
     'function retryConnection()' => 'connection retry handler',
     "document.querySelectorAll('#connect button" => 'native WP Migrate connection control lookup',
     'restartPolling();' => 'WP Migrate state polling restart',
+    'function injectRecentProfilesReset()' => 'unsaved-profile reset link injection',
+    "action: 'twmcd_clear_recent_migrations'" => 'unsaved-profile reset request',
+    'window.location.reload();' => 'Profiles screen refresh after reset',
+    'function isMigrationScreen()' => 'Migrate-route visibility guard',
+    '/^#\\/?migrate(?:$|[/?])/' => 'Migrate hash-route detection',
+    'if (!isMigrationScreen())' => 'comparison bar suppression outside Migrate',
 );
 foreach ($expectations as $needle => $description) {
     if (false === strpos($script, $needle)) {
@@ -31,4 +37,12 @@ if (preg_match('/if \(!wpMigrateNotice \|\| !wpMigrateNotice\.parentNode\) \{\s*
     exit(1);
 }
 
-echo "PASS: integration notice has update-notice and independent fallback placement.\n";
+$styles = file_get_contents(dirname(__DIR__) . '/styles/tn-wp-migrate-code-diff.css');
+if (false === strpos($styles, '.twmcd-reset-recent-profiles')
+    || false === strpos($styles, 'color: #d58a00;')
+    || false === strpos($styles, 'text-decoration: none !important;')) {
+    fwrite(STDERR, "FAIL: reset-link alignment or refresh-icon presentation is missing.\n");
+    exit(1);
+}
+
+echo "PASS: integration controls, placement, profile reset, and refresh styling.\n";

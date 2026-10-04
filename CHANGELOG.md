@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.8 - 2026-10-04
+
+- Add a right-aligned **Reset** link to the **Last 10 Unsaved Profiles** table header.
+- Clear only WP Migrate's `wpmdb_recent_migrations` history through a nonce- and capability-protected admin request, then reload the Profiles view.
+- Present the comparison-bar refresh icon in the notice's orange accent without an underline.
+- Restrict the comparison control bar to WP Migrate's Migrate route so it is not shown on the Profiles screen.
+
 ## 0.11.7 - 2026-10-04
 
 - Fix comparison control-bar placement in WP Migrate's multisite layout, where the single-site `.wrapper.migrate` anchor is not present.
