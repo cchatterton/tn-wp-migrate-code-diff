@@ -118,7 +118,7 @@
         }
 
         markup += '<div class="twmcd-table-scroll"><table class="widefat striped">';
-        markup += '<thead><tr><td class="check-column"></td><th scope="col">Package</th><th scope="col">Version status</th><th scope="col">Source</th><th scope="col">Destination</th><th scope="col">Source activation</th><th scope="col">Destination activation</th></tr></thead><tbody>';
+        markup += '<thead><tr><td class="check-column"></td><th scope="col">Package</th><th scope="col">' + escapeHtml(TWMCD_ADMIN.labels.releaseActions) + '</th><th scope="col">Source</th><th scope="col">Destination</th><th scope="col">Source activation</th><th scope="col">Destination activation</th></tr></thead><tbody>';
 
         packages.forEach(function (packageData, packageIndex) {
             var selectedByDefault = Boolean(

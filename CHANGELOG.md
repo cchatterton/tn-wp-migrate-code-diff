@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.9 - 2026-10-04
+
+- Rename the Code comparison **Version Status** column to **Release Actions**.
+- Reframe Code comparison states as destination operations: **Add to Destination**, **Remove from Destination**, **Upgrade in Destination**, **Downgrade in Destination**, **No Change**, and **Review Manually**.
+- Preserve all established selection recommendations and release-package behavior; this is a presentation change only.
+
 ## 0.11.8 - 2026-10-04
 
 - Add a right-aligned **Reset** link to the **Last 10 Unsaved Profiles** table header.
