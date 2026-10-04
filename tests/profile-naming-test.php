@@ -68,19 +68,20 @@ function current_time()
 require dirname(__DIR__) . '/functions/helpers.php';
 require dirname(__DIR__) . '/functions/profile.php';
 
-if ('Release-202608-alphasys.com.au' !== twmcd_default_profile_name('https://alphasys.com.au')) {
-    fwrite(STDERR, "FAIL: destination profile name was incorrect.\n");
+if ('Release-localhost-10365-to-alphasys.com.au' !== twmcd_default_profile_name('https://alphasys.com.au')) {
+    fwrite(STDERR, "FAIL: environment-pair profile name was incorrect.\n");
     exit(1);
 }
-if ('Release-202608-localhost-10365' !== twmcd_default_profile_name('http://localhost:10365')) {
-    fwrite(STDERR, "FAIL: destination port was not represented in the profile name.\n");
+if ('Release-alphasys.com.au-to-localhost-10365' !== twmcd_default_profile_name('http://localhost:10365', 'https://alphasys.com.au')) {
+    fwrite(STDERR, "FAIL: source and destination order was not represented in the profile name.\n");
     exit(1);
 }
 
-$first_id = twmcd_store_migration_profile('Release-202608-alphasys.com.au', array('revision' => 1));
-$second_id = twmcd_store_migration_profile('Release-202608-alphasys.com.au', array('revision' => 2));
+$stable_name = 'Release-localhost-10365-to-alphasys.com.au';
+$first_id = twmcd_store_migration_profile($stable_name, array('revision' => 1));
+$second_id = twmcd_store_migration_profile($stable_name, array('revision' => 2));
 if ($first_id !== $second_id || 1 !== count($test_profiles)) {
-    fwrite(STDERR, "FAIL: monthly destination profile was duplicated instead of updated.\n");
+    fwrite(STDERR, "FAIL: environment profile was duplicated instead of updated.\n");
     exit(1);
 }
 $stored = json_decode($test_profiles[$first_id]['value'], true);
@@ -89,12 +90,20 @@ if (2 !== $stored['revision'] || 'uuid-1' !== $test_profiles[$first_id]['guid'])
     exit(1);
 }
 
-$stored['theme_plugin_files'] = array(
+$test_profiles = array();
+$legacy_profile = array(
+    'current_migration' => array('intent' => 'push'),
+    'connection_info' => array(
+        'connection_state' => array('url' => 'https://alphasys.com.au'),
+    ),
+    'theme_plugin_files' => array(
     'plugin_files' => array('enabled' => true),
     'plugins_option' => 'selected',
     'plugins_selected' => array('/plugins/existing'),
+    ),
 );
-twmcd_store_migration_profile('Release-202608-alphasys.com.au', $stored);
+$legacy_id = twmcd_store_migration_profile('Release-202608-alphasys.com.au', $legacy_profile);
+$older_legacy_id = twmcd_store_migration_profile('Release-202607-alphasys.com.au', $legacy_profile);
 $context = array(
     'intent' => 'push',
     'connection_info' => "https://alphasys.com.au\nsecret-key",
@@ -104,13 +113,15 @@ $context = array(
 );
 $automatic_id = twmcd_store_automatic_comparison_profile($context, 'posts');
 $automatic = json_decode($test_profiles[$automatic_id]['value'], true);
-if ($automatic_id !== $first_id
+if ($automatic_id !== $legacy_id
     || 1 !== count($test_profiles)
+    || $stable_name !== $test_profiles[$automatic_id]['name']
+    || isset($test_profiles[$older_legacy_id])
     || array('/plugins/existing') !== $automatic['theme_plugin_files']['plugins_selected']
     || 'posts' !== $automatic['_twmcd']['last_comparison_mode']
     || 'https://alphasys.com.au' !== $automatic['connection_info']['connection_state']['url']) {
-    fwrite(STDERR, "FAIL: automatic comparison profile did not preserve Code selections while refreshing connection state.\n");
+    fwrite(STDERR, "FAIL: automatic comparison profile did not consolidate legacy monthly profiles while preserving Code selections.\n");
     exit(1);
 }
 
-echo "PASS: destination profile naming and upsert.\n";
+echo "PASS: environment-pair profile naming, migration, and upsert.\n";

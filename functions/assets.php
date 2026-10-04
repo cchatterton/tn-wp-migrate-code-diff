@@ -104,6 +104,8 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                     'waitingConnection' => __('Site comparison is listening — waiting for a WP Migrate connection.', 'tn-wp-migrate-code-diff'),
                     'selectSubsite'     => __('Site comparison is listening — connection detected; waiting on subsite selection.', 'tn-wp-migrate-code-diff'),
                     'waitingProfile'    => __('Site comparison is listening — waiting for the saved profile selections.', 'tn-wp-migrate-code-diff'),
+                    'retryConnection'   => __('Retry WP Migrate connection', 'tn-wp-migrate-code-diff'),
+                    'retryingConnection' => __('Retrying WP Migrate connection…', 'tn-wp-migrate-code-diff'),
                 ),
             )
         );

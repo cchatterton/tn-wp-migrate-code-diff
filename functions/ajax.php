@@ -110,7 +110,7 @@ function twmcd_ajax_compare_code()
             'intent'           => $intent,
             'source_url'       => $source_inventory['url'],
             'destination_url'  => $destination_inventory['url'],
-            'profile_name'     => twmcd_default_profile_name($destination_inventory['url']),
+            'profile_name'     => twmcd_default_profile_name($destination_inventory['url'], $source_inventory['url']),
             'groups'           => $comparison_groups,
             'comparison_token' => $comparison_token,
             'profile_selection_applied' => !empty($profile_selection['active']),
@@ -262,11 +262,16 @@ function twmcd_ajax_save_profile()
     }
 
     $comparison_state = twmcd_get_comparison_state($comparison_token);
-    $destination_url = is_array($comparison_state) && !empty($comparison_state['context']['intent'])
-        && 'push' === $comparison_state['context']['intent']
-        ? $comparison_state['context']['connection']['url']
-        : home_url();
-    $profile_name = twmcd_default_profile_name($destination_url);
+    $comparison_context = is_array($comparison_state) && !empty($comparison_state['context'])
+        ? $comparison_state['context']
+        : array();
+    $remote_url = !empty($comparison_context['connection']['url'])
+        ? $comparison_context['connection']['url']
+        : '';
+    $is_push = !empty($comparison_context['intent']) && 'push' === $comparison_context['intent'];
+    $source_url = $is_push ? home_url() : $remote_url;
+    $destination_url = $is_push ? $remote_url : home_url();
+    $profile_name = twmcd_default_profile_name($destination_url, $source_url);
     $selection = twmcd_validate_profile_selection($comparison_token, $selection);
     if (is_wp_error($selection) || !$comparison_state) {
         $message = is_wp_error($selection)
@@ -276,7 +281,12 @@ function twmcd_ajax_save_profile()
     }
 
     $profile = twmcd_create_code_only_profile($profile_name, $comparison_state['context'], $selection);
-    $profile_id = twmcd_store_migration_profile($profile_name, $profile);
+    $profile_id = twmcd_store_environment_profile(
+        $profile_name,
+        $profile,
+        $source_url,
+        $destination_url
+    );
     $redirect_url = add_query_arg(
         array(
             'redirect_profile' => $profile_id,

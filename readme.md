@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.4
+Version: 0.11.6
 Status: MVP
 
 ## Purpose
@@ -20,11 +20,13 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
 - Selects active source-only plugins/themes, active source upgrades, and inactive destination-only plugins by default, while leaving destination-only themes, must-use plugins, source downgrades, inactive source packages, and active destination-only plugins unselected.
 - Provides per-section Select All, Deselect All, and Recommended controls.
-- Automatically creates or updates one destination-specific monthly profile named `Release-YYYYMM-{destination-host}` whenever a comparison mode is opened.
+- Automatically creates or updates one stable directional profile named `Release-{source-host}-to-{destination-host}` whenever a comparison mode is opened.
+- Consolidates matching legacy monthly automatic profiles into that environment-pair profile while preserving Code selections.
 - Automatically updates that profile's Code selections when the Code comparison selection changes; there are no separate Save Profile or Open Profile actions.
 - Names each downloaded manual release `Release-YYYYMMDD-HHMM` using the time Create release package is clicked.
 - Creates a WP Migrate saved profile with database and media disabled.
 - Refreshes a comparison in place using the existing WP Migrate connection context.
+- Provides an always-visible retry icon on the WP Migrate comparison bar to re-read state and retry the native connection action.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Compares posts by post type and stable UUID, hierarchical path, or slug identity, including post fields, post meta, term assignments, taxonomies, and parent relationships in its fingerprints.
 - Creates a separate offline Posts release ZIP from selected local source posts when the comparison direction is Push.

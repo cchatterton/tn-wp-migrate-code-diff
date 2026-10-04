@@ -5,6 +5,8 @@
     var noticeSlotId = 'twmcd-integration-notice-slot';
     var subscribedStore = null;
     var preparing = '';
+    var retrying = false;
+    var retryTimer = null;
     var pollAttempts = 0;
     var pollTimer = null;
 
@@ -305,6 +307,10 @@
         var actionAvailable = false;
         var actions = '';
 
+        if (snapshot && snapshot.connection_ready && retrying) {
+            stopRetrying();
+        }
+
         if (snapshot) {
             if (!snapshot.has_direction || !snapshot.connection_ready) {
                 message = TWMCD_INTEGRATION.labels.waitingConnection;
@@ -332,8 +338,14 @@
                 + (preparing ? ' disabled' : '') + '>' + escapeHtml(optionsButtonLabel) + '</button>';
         }
 
+        var retryLabel = retrying
+            ? TWMCD_INTEGRATION.labels.retryingConnection
+            : TWMCD_INTEGRATION.labels.retryConnection;
         var markup = '<span class="twmcd-notice-icon" aria-hidden="true">&#8644;</span>'
-            + '<strong>' + escapeHtml(message) + '</strong> ' + actions;
+            + '<strong>' + escapeHtml(message) + '</strong> ' + actions
+            + '<button type="button" class="button-link twmcd-notice-refresh' + (retrying ? ' is-retrying' : '') + '"'
+            + ' aria-label="' + escapeHtml(retryLabel) + '" title="' + escapeHtml(retryLabel) + '"'
+            + (retrying ? ' disabled' : '') + '><span class="dashicons dashicons-update" aria-hidden="true"></span></button>';
 
         if (notice.innerHTML === markup) {
             return;
@@ -353,6 +365,10 @@
                     prepareComparison(modeButton.getAttribute('data-mode'));
                 });
             });
+        }
+        var refreshButton = notice.querySelector('.twmcd-notice-refresh');
+        if (refreshButton && !retrying) {
+            refreshButton.addEventListener('click', retryConnection);
         }
     }
 
@@ -396,6 +412,79 @@
             renderNotice();
             window.alert(error.message);
         });
+    }
+
+    function stopRetrying() {
+        retrying = false;
+        if (retryTimer) {
+            window.clearTimeout(retryTimer);
+            retryTimer = null;
+        }
+    }
+
+    function restartPolling() {
+        pollAttempts = 0;
+        if (pollTimer) {
+            window.clearInterval(pollTimer);
+        }
+        pollTimer = window.setInterval(pollForStore, 250);
+    }
+
+    function dispatchConnectionChange() {
+        var field = document.querySelector('#connect textarea');
+        if (!field) {
+            return;
+        }
+
+        ['input', 'change'].forEach(function (eventName) {
+            var event = document.createEvent('Event');
+            event.initEvent(eventName, true, true);
+            field.dispatchEvent(event);
+        });
+    }
+
+    function clickNativeConnectionButton() {
+        var controls = document.querySelectorAll('#connect button, #connect input[type="button"], #connect input[type="submit"]');
+        var clicked = false;
+
+        Array.prototype.some.call(controls, function (control) {
+            var label = (control.textContent || control.value || '').trim().toLowerCase();
+            if (control.disabled || (!/connect|retry/.test(label) && controls.length > 1)) {
+                return false;
+            }
+            control.click();
+            clicked = true;
+            return true;
+        });
+
+        return clicked;
+    }
+
+    function retryConnection() {
+        if (retrying) {
+            return;
+        }
+
+        retrying = true;
+        renderNotice();
+        restartPolling();
+        dispatchConnectionChange();
+
+        if (!clickNativeConnectionButton()) {
+            var panelHeader = document.getElementById('wpmdb-connect');
+            if (panelHeader) {
+                panelHeader.click();
+                window.setTimeout(function () {
+                    dispatchConnectionChange();
+                    clickNativeConnectionButton();
+                }, 100);
+            }
+        }
+
+        retryTimer = window.setTimeout(function () {
+            stopRetrying();
+            renderNotice();
+        }, 15000);
     }
 
     function initialise() {
