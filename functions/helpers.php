@@ -361,7 +361,12 @@ function twmcd_request_remote_site_data($remote_url, $secret_key, $intent, $extr
 
 function twmcd_request_remote_inventory($remote_url, $secret_key, $intent)
 {
-    $decoded = twmcd_request_remote_site_data($remote_url, $secret_key, $intent);
+    $decoded = twmcd_request_remote_site_data(
+        $remote_url,
+        $secret_key,
+        $intent,
+        array('twmcd_mode' => 'code')
+    );
     if (is_wp_error($decoded)) {
         return $decoded;
     }
@@ -388,13 +393,42 @@ function twmcd_normalize_remote_inventory($remote_data)
 
     $is_multisite = isset($site_details['is_multisite']) && twmcd_sanitize_boolean($site_details['is_multisite']);
 
+    $mu_plugins = isset($remote_data['twmcd_code_inventory']['muplugins'])
+        ? twmcd_normalize_enriched_mu_plugins($remote_data['twmcd_code_inventory']['muplugins'])
+        : twmcd_normalize_remote_packages(isset($site_details['muplugins']) ? $site_details['muplugins'] : array(), $is_multisite, true);
+
     return array(
         'url'       => isset($remote_data['url']) ? esc_url_raw($remote_data['url']) : '',
         'is_multisite' => $is_multisite,
         'plugins'   => twmcd_normalize_remote_packages(isset($site_details['plugins']) ? $site_details['plugins'] : array(), $is_multisite, false),
         'themes'    => twmcd_normalize_remote_packages(isset($site_details['themes']) ? $site_details['themes'] : array(), $is_multisite, false),
-        'muplugins' => twmcd_normalize_remote_packages(isset($site_details['muplugins']) ? $site_details['muplugins'] : array(), $is_multisite, true),
+        'muplugins' => $mu_plugins,
     );
+}
+
+function twmcd_normalize_enriched_mu_plugins($remote_packages)
+{
+    $packages = array();
+    foreach ((array) $remote_packages as $package_key => $package) {
+        if (!is_array($package)) {
+            continue;
+        }
+
+        $canonical_key = basename(str_replace('\\', '/', (string) $package_key));
+        if ('' === $canonical_key || '.' === $canonical_key || '..' === $canonical_key) {
+            continue;
+        }
+
+        $packages[$canonical_key] = array(
+            'key'        => $canonical_key,
+            'name'       => isset($package['name']) ? wp_strip_all_tags((string) $package['name']) : $canonical_key,
+            'version'    => isset($package['version']) ? sanitize_text_field((string) $package['version']) : '',
+            'path'       => isset($package['path']) ? (string) $package['path'] : $canonical_key,
+            'activation' => 'always_active',
+        );
+    }
+
+    return $packages;
 }
 
 function twmcd_normalize_remote_packages($remote_packages, $is_multisite, $is_mu_plugin)
@@ -496,17 +530,31 @@ function twmcd_local_themes($context = array())
 function twmcd_local_mu_plugins()
 {
     $packages = array();
+    $registered_plugins = get_mu_plugins();
+    $entries = is_dir(WPMU_PLUGIN_DIR) ? scandir(WPMU_PLUGIN_DIR) : array();
 
-    foreach (get_mu_plugins() as $plugin_key => $plugin_data) {
-        if ('wp-migrate-db-pro-compatibility.php' === $plugin_key) {
+    foreach ((array) $entries as $plugin_key) {
+        if (in_array($plugin_key, array('.', '..', '.DS_Store', 'index.php', 'wp-migrate-db-pro-compatibility.php'), true)) {
             continue;
         }
+
+        $package_path = WPMU_PLUGIN_DIR . '/' . $plugin_key;
+        if (is_dir($package_path)) {
+            $directory_entries = scandir($package_path);
+            if (!array_diff((array) $directory_entries, array('.', '..', '.DS_Store'))) {
+                continue;
+            }
+        }
+
+        $plugin_data = isset($registered_plugins[$plugin_key]) && is_array($registered_plugins[$plugin_key])
+            ? $registered_plugins[$plugin_key]
+            : array();
 
         $packages[$plugin_key] = array(
             'key'     => $plugin_key,
             'name'    => isset($plugin_data['Name']) ? $plugin_data['Name'] : basename($plugin_key),
             'version' => isset($plugin_data['Version']) ? (string) $plugin_data['Version'] : '',
-            'path'    => WPMU_PLUGIN_DIR . '/' . $plugin_key,
+            'path'    => $package_path,
             'activation' => 'always_active',
         );
     }

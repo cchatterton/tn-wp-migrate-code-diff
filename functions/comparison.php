@@ -38,11 +38,17 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
         } elseif (!$source_package) {
             $status = 'destination_only';
         } else {
-            $status = (string) $source_package['version'] === (string) $destination_package['version']
-                ? 'same'
-                : (twmcd_source_version_is_older($source_package['version'], $destination_package['version'])
+            $source_version = trim((string) $source_package['version']);
+            $destination_version = trim((string) $destination_package['version']);
+            if ($source_version === $destination_version) {
+                $status = 'same';
+            } elseif ('' === $source_version || '' === $destination_version) {
+                $status = 'unknown';
+            } else {
+                $status = twmcd_source_version_is_older($source_version, $destination_version)
                     ? 'source_older'
-                    : 'source_newer');
+                    : 'source_newer';
+            }
         }
 
         $source_activation = $source_package && isset($source_package['activation'])
