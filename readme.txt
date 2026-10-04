@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.8
+Stable tag: 0.11.9
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,10 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.9 =
+* Rename the Code comparison Version Status column to Release Actions.
+* Describe each row as its destination operation: add, remove, upgrade, downgrade, no change, or manual review.
 
 = 0.11.8 =
 * Add a right-aligned Reset link to WP Migrate's Last 10 Unsaved Profiles header.

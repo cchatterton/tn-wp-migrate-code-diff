@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.8
+Version: 0.11.9
 Status: MVP
 
 ## Purpose
@@ -12,7 +12,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 
 - Compares plugins, themes, and must-use plugins.
 - Provides separate Code, Posts, Database, and Options comparison pages without changing the established Code release behavior.
-- Reports same version, source newer, source older, absent on destination, and absent from source.
+- Presents code differences as destination release actions: add, remove, upgrade, downgrade, no change, or manual review.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
 - Shows Compare Code, Compare Posts, Compare Database, and Compare Options in the WP Migrate interface after the connection and multisite scope are ready.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
