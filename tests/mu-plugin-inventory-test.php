@@ -1,6 +1,12 @@
 <?php
 
 define('ABSPATH', __DIR__ . '/');
+define('TWMCD_PLUGIN_FILE', '/plugins/tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php');
+
+function plugin_basename($value)
+{
+    return 'tn-wp-migrate-code-diff/tn-wp-migrate-code-diff.php';
+}
 
 function esc_url_raw($value)
 {
@@ -92,6 +98,73 @@ if ('unknown' !== $unknown_version[0]['status'] || !empty($unknown_version[0]['d
     exit(1);
 }
 
+$collapsed = twmcd_compare_code_inventories(
+    array(
+        'plugins' => array(
+            'wp-migrate-db-pro/wp-migrate-db-pro.php' => array(
+                'name' => 'WP Migrate',
+                'version' => '2.7.4',
+                'path' => '/local/plugins/wp-migrate-db-pro',
+                'activation' => 'site_active',
+            ),
+        ),
+        'themes' => array(),
+        'muplugins' => array(
+            'force-strong-passwords' => array(
+                'name' => 'force-strong-passwords',
+                'version' => '',
+                'path' => '/local/mu-plugins/force-strong-passwords',
+                'activation' => 'always_active',
+                'entry_type' => 'directory',
+            ),
+            'force-strong-passwords.php' => array(
+                'name' => 'Force Strong Passwords - WPE Edition',
+                'version' => '1.8.0',
+                'path' => '/local/mu-plugins/force-strong-passwords.php',
+                'activation' => 'always_active',
+                'entry_type' => 'file',
+            ),
+        ),
+    ),
+    array(
+        'plugins' => array(
+            'different-key.php' => array(
+                'name' => 'WP Migrate',
+                'version' => '2.7.4',
+                'path' => '/remote/plugins/wp-migrate-db-pro/wp-migrate-db-pro.php',
+                'activation' => 'site_active',
+            ),
+        ),
+        'themes' => array(),
+        'muplugins' => array(
+            'force-strong-passwords' => array(
+                'name' => 'force-strong-passwords',
+                'version' => '',
+                'path' => '/remote/mu-plugins/force-strong-passwords',
+                'activation' => 'always_active',
+                'entry_type' => 'directory',
+            ),
+            'force-strong-passwords.php' => array(
+                'name' => 'Force Strong Passwords - WPE Edition',
+                'version' => '1.8.0',
+                'path' => '/remote/mu-plugins/force-strong-passwords.php',
+                'activation' => 'always_active',
+                'entry_type' => 'file',
+            ),
+        ),
+    )
+);
+
+if (!empty($collapsed['plugins'])
+    || 1 !== count($collapsed['muplugins'])
+    || 'Force Strong Passwords - WPE Edition' !== $collapsed['muplugins'][0]['name']
+    || 'same' !== $collapsed['muplugins'][0]['status']
+    || 2 !== count($collapsed['muplugins'][0]['selection_paths'])
+    || 2 !== count($collapsed['muplugins'][0]['removal_keys'])) {
+    fwrite(STDERR, "FAIL: transport plugins were shown or MU loader/support components were not collapsed.\n");
+    exit(1);
+}
+
 $extension = file_get_contents(dirname(__DIR__) . '/functions/options-comparison.php');
 if (false === strpos($extension, "'twmcd_code_inventory'")
     || false === strpos($extension, "array('code', 'options', 'posts')")) {
@@ -99,4 +172,4 @@ if (false === strpos($extension, "'twmcd_code_inventory'")
     exit(1);
 }
 
-echo "PASS: MU plugins use matching top-level identities and enriched remote versions.\n";
+echo "PASS: MU plugins use logical identities, collapse loader/support pairs, and omit transport plugins.\n";

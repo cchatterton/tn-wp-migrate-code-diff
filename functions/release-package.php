@@ -266,37 +266,54 @@ function twmcd_selected_release_operations($comparison_state, $selection)
             }
 
             if ('remove' === (isset($package['selection_operation']) ? $package['selection_operation'] : '')) {
-                $removal = twmcd_release_removal_operation($group_key, $package);
-                if (is_wp_error($removal)) {
-                    return $removal;
+                $removal_keys = 'muplugins' === $group_key && !empty($package['removal_keys'])
+                    ? (array) $package['removal_keys']
+                    : array($package['key']);
+                foreach ($removal_keys as $removal_key) {
+                    $component_package = $package;
+                    $component_package['key'] = $removal_key;
+                    $removal = twmcd_release_removal_operation($group_key, $component_package);
+                    if (is_wp_error($removal)) {
+                        return $removal;
+                    }
+                    if (isset($seen_paths[$removal['destination']])) {
+                        continue;
+                    }
+                    $seen_paths[$removal['destination']] = true;
+                    $remove_packages[] = $removal;
                 }
-                if (isset($seen_paths[$removal['destination']])) {
+                continue;
+            }
+
+            $selection_paths = 'muplugins' === $group_key && !empty($package['selection_paths'])
+                ? (array) $package['selection_paths']
+                : array($package['selection']);
+            foreach ($selection_paths as $selection_path) {
+                $component_package = $package;
+                $component_package['selection'] = $selection_path;
+                if ('muplugins' === $group_key) {
+                    $component_package['key'] = basename(str_replace('\\', '/', (string) $selection_path));
+                }
+                $release_path = twmcd_release_source_and_destination($group_key, $component_package);
+                if (is_wp_error($release_path)) {
+                    return $release_path;
+                }
+                if (isset($seen_paths[$release_path['destination']])) {
                     continue;
                 }
-                $seen_paths[$removal['destination']] = true;
-                $remove_packages[] = $removal;
-                continue;
-            }
 
-            $release_path = twmcd_release_source_and_destination($group_key, $package);
-            if (is_wp_error($release_path)) {
-                return $release_path;
+                $seen_paths[$release_path['destination']] = true;
+                $selected_rows[] = array_merge(
+                    $release_path,
+                    array(
+                        'type'    => $group_key,
+                        'key'     => sanitize_text_field($component_package['key']),
+                        'name'    => sanitize_text_field($package['name']),
+                        'version' => sanitize_text_field($package['source_version']),
+                        'destination_version' => sanitize_text_field($package['destination_version']),
+                    )
+                );
             }
-            if (isset($seen_paths[$release_path['destination']])) {
-                continue;
-            }
-
-            $seen_paths[$release_path['destination']] = true;
-            $selected_rows[] = array_merge(
-                $release_path,
-                array(
-                    'type'    => $group_key,
-                    'key'     => sanitize_text_field($package['key']),
-                    'name'    => sanitize_text_field($package['name']),
-                    'version' => sanitize_text_field($package['source_version']),
-                    'destination_version' => sanitize_text_field($package['destination_version']),
-                )
-            );
         }
     }
 

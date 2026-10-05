@@ -6,14 +6,86 @@ if (!defined('ABSPATH')) {
 
 function twmcd_compare_code_inventories($source_inventory, $destination_inventory)
 {
-    $plugin_file = plugin_basename(TWMCD_PLUGIN_FILE);
-    unset($source_inventory['plugins'][$plugin_file], $destination_inventory['plugins'][$plugin_file]);
+    $source_inventory['plugins'] = twmcd_exclude_transport_plugins(
+        isset($source_inventory['plugins']) ? $source_inventory['plugins'] : array()
+    );
+    $destination_inventory['plugins'] = twmcd_exclude_transport_plugins(
+        isset($destination_inventory['plugins']) ? $destination_inventory['plugins'] : array()
+    );
+    $source_inventory['muplugins'] = twmcd_collapse_mu_plugin_components(
+        isset($source_inventory['muplugins']) ? $source_inventory['muplugins'] : array()
+    );
+    $destination_inventory['muplugins'] = twmcd_collapse_mu_plugin_components(
+        isset($destination_inventory['muplugins']) ? $destination_inventory['muplugins'] : array()
+    );
 
     return array(
         'plugins'   => twmcd_compare_package_group($source_inventory, $destination_inventory, 'plugins'),
         'themes'    => twmcd_compare_package_group($source_inventory, $destination_inventory, 'themes'),
         'muplugins' => twmcd_compare_package_group($source_inventory, $destination_inventory, 'muplugins'),
     );
+}
+
+function twmcd_collapse_mu_plugin_components($packages)
+{
+    $packages = is_array($packages) ? $packages : array();
+
+    foreach ($packages as $package_key => $package) {
+        if (!is_array($package)) {
+            continue;
+        }
+
+        $packages[$package_key]['component_paths'] = !empty($package['component_paths'])
+            ? array_values(array_unique((array) $package['component_paths']))
+            : array((string) $package['path']);
+        $packages[$package_key]['component_keys'] = !empty($package['component_keys'])
+            ? array_values(array_unique((array) $package['component_keys']))
+            : array((string) $package_key);
+    }
+
+    foreach ($packages as $package_key => $package) {
+        if (!is_array($package) || 'directory' !== (isset($package['entry_type']) ? $package['entry_type'] : '')) {
+            continue;
+        }
+
+        $loader_key = rtrim((string) $package_key, '/') . '.php';
+        if (!isset($packages[$loader_key]) || !is_array($packages[$loader_key])) {
+            continue;
+        }
+
+        $packages[$loader_key]['component_paths'] = array_values(array_unique(array_merge(
+            (array) $packages[$loader_key]['component_paths'],
+            (array) $packages[$package_key]['component_paths']
+        )));
+        $packages[$loader_key]['component_keys'] = array_values(array_unique(array_merge(
+            (array) $packages[$loader_key]['component_keys'],
+            (array) $packages[$package_key]['component_keys']
+        )));
+        unset($packages[$package_key]);
+    }
+
+    return $packages;
+}
+
+function twmcd_exclude_transport_plugins($plugins)
+{
+    $release_manager_file = plugin_basename(TWMCD_PLUGIN_FILE);
+
+    foreach ((array) $plugins as $plugin_key => $plugin) {
+        $name = is_array($plugin) && isset($plugin['name']) ? (string) $plugin['name'] : '';
+        $path = is_array($plugin) && isset($plugin['path']) ? (string) $plugin['path'] : '';
+        $identity = strtolower(str_replace('\\', '/', (string) $plugin_key . ' ' . $path));
+        $is_release_manager = (string) $plugin_key === (string) $release_manager_file
+            || false !== strpos($identity, 'tn-wp-migrate-code-diff');
+        $is_wp_migrate = false !== strpos($identity, 'wp-migrate-db')
+            || 0 === stripos(trim($name), 'WP Migrate');
+
+        if ($is_release_manager || $is_wp_migrate) {
+            unset($plugins[$plugin_key]);
+        }
+    }
+
+    return $plugins;
 }
 
 function twmcd_compare_package_group($source_inventory, $destination_inventory, $group_key)
@@ -79,6 +151,12 @@ function twmcd_compare_package_group($source_inventory, $destination_inventory, 
                 ? $source_package['path']
                 : twmcd_removal_selection_value($group_key, $package_key),
             'selection_operation' => $source_package ? 'install' : 'remove',
+            'selection_paths'      => $source_package && !empty($source_package['component_paths'])
+                ? array_values((array) $source_package['component_paths'])
+                : ($source_package ? array($source_package['path']) : array()),
+            'removal_keys'         => $destination_package && !empty($destination_package['component_keys'])
+                ? array_values((array) $destination_package['component_keys'])
+                : ($destination_package ? array($package_key) : array()),
             'default_selected'   => $default_selected,
         );
     }
