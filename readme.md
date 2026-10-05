@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.10
+Version: 0.11.11
 Status: MVP
 
 ## Purpose
@@ -11,7 +11,8 @@ Compare code packages, posts, database tables, and WordPress options between two
 ## Key Features
 
 - Compares plugins, themes, and must-use plugins.
-- Matches must-use plugins by canonical top-level filesystem entry and exchanges enriched header metadata through the authenticated connection.
+- Matches must-use plugins by canonical top-level filesystem entry, collapses same-stem loader/support pairs into one logical row, and exchanges enriched header metadata through the authenticated connection.
+- Omits WP Migrate and Release Management transport plugins from Code comparison because they are connection prerequisites rather than release payloads.
 - Provides separate Code, Posts, Database, and Options comparison pages without changing the established Code release behavior.
 - Presents code differences as destination release actions: add, remove, upgrade, downgrade, no change, or manual review.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
@@ -31,6 +32,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Adds a right-aligned Reset link to WP Migrate's Last 10 Unsaved Profiles table and clears that recent-history list through an authenticated action.
 - Keeps the comparison control bar exclusive to WP Migrate's Migrate route while leaving profile-management enhancements on Profiles.
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
+- Includes every loader file and support directory represented by a collapsed must-use-plugin row in its release, removal, and rollback operations.
 - Compares posts by post type and stable UUID, hierarchical path, or slug identity, including post fields, post meta, term assignments, taxonomies, and parent relationships in its fingerprints.
 - Creates a separate offline Posts release ZIP from selected local source posts when the comparison direction is Push.
 - Installs and rolls back Posts releases through the same Upload Release workflow used by Code releases.

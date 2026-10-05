@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.10
+Stable tag: 0.11.11
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,11 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.11 =
+* Hide WP Migrate and Release Management transport plugins from Code comparison.
+* Collapse matching must-use-plugin loader files and support directories into one logical package row.
+* Preserve every collapsed MU-plugin component in release, removal, and rollback operations.
 
 = 0.11.10 =
 * Match must-use plugins by their canonical top-level mu-plugins entry on both sites.

@@ -425,6 +425,9 @@ function twmcd_normalize_enriched_mu_plugins($remote_packages)
             'version'    => isset($package['version']) ? sanitize_text_field((string) $package['version']) : '',
             'path'       => isset($package['path']) ? (string) $package['path'] : $canonical_key,
             'activation' => 'always_active',
+            'entry_type' => isset($package['entry_type'])
+                ? ('directory' === $package['entry_type'] ? 'directory' : 'file')
+                : ('' === pathinfo($canonical_key, PATHINFO_EXTENSION) ? 'directory' : 'file'),
         );
     }
 
@@ -452,6 +455,9 @@ function twmcd_normalize_remote_packages($remote_packages, $is_multisite, $is_mu
             'activation' => $is_mu_plugin
                 ? 'always_active'
                 : twmcd_remote_activation_state(isset($package['active']) ? $package['active'] : null, $is_multisite),
+            'entry_type' => $is_mu_plugin && '' === pathinfo((string) $package_key, PATHINFO_EXTENSION)
+                ? 'directory'
+                : 'file',
         );
     }
 
@@ -556,6 +562,7 @@ function twmcd_local_mu_plugins()
             'version' => isset($plugin_data['Version']) ? (string) $plugin_data['Version'] : '',
             'path'    => $package_path,
             'activation' => 'always_active',
+            'entry_type' => is_dir($package_path) ? 'directory' : 'file',
         );
     }
 

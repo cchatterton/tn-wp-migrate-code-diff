@@ -65,6 +65,11 @@ function trailingslashit($path)
     return rtrim($path, '/\\') . '/';
 }
 
+function untrailingslashit($path)
+{
+    return rtrim($path, '/\\');
+}
+
 function get_theme_root()
 {
     return WP_CONTENT_DIR . '/themes';
@@ -197,6 +202,52 @@ if (is_wp_error($selected_operations)
     exit(1);
 }
 
+$mu_loader = WPMU_PLUGIN_DIR . '/force-strong-passwords.php';
+$mu_support = WPMU_PLUGIN_DIR . '/force-strong-passwords';
+mkdir($mu_support, 0777, true);
+file_put_contents($mu_loader, "<?php\n/* Plugin Name: Force Strong Passwords */\n");
+file_put_contents($mu_support . '/bootstrap.php', "<?php\n");
+$mu_operations = twmcd_selected_release_operations(
+    array(
+        'packages' => array(
+            'muplugins' => array(
+                array(
+                    'key' => 'force-strong-passwords.php',
+                    'name' => 'Force Strong Passwords - WPE Edition',
+                    'source_version' => '1.8.0',
+                    'destination_version' => '1.8.0',
+                    'selection' => $mu_loader,
+                    'selection_paths' => array($mu_loader, $mu_support),
+                    'selection_operation' => 'install',
+                ),
+                array(
+                    'key' => 'obsolete-loader.php',
+                    'name' => 'Obsolete MU plugin',
+                    'destination_version' => '1.0.0',
+                    'selection' => 'twmcd-remove:muplugins:obsolete-loader.php',
+                    'removal_keys' => array('obsolete-loader.php', 'obsolete-loader'),
+                    'selection_operation' => 'remove',
+                ),
+            ),
+        ),
+    ),
+    array(
+        'plugins' => array(),
+        'themes' => array(),
+        'muplugins' => array($mu_loader, 'twmcd-remove:muplugins:obsolete-loader.php'),
+    )
+);
+$mu_install_destinations = array_column($mu_operations['packages'], 'destination');
+$mu_remove_destinations = array_column($mu_operations['remove_packages'], 'destination');
+sort($mu_install_destinations);
+sort($mu_remove_destinations);
+if (is_wp_error($mu_operations)
+    || array('mu-plugins/force-strong-passwords', 'mu-plugins/force-strong-passwords.php') !== $mu_install_destinations
+    || array('mu-plugins/obsolete-loader', 'mu-plugins/obsolete-loader.php') !== $mu_remove_destinations) {
+    fwrite(STDERR, "FAIL: collapsed MU-plugin operations did not preserve loader and support components.\n");
+    exit(1);
+}
+
 $temporary_directory = sys_get_temp_dir() . '/tncri-test-' . uniqid('', true);
 $plugin_directory = $temporary_directory . '/sample-plugin';
 mkdir($plugin_directory . '/assets', 0777, true);
@@ -275,7 +326,9 @@ if (is_wp_error(twmcd_validate_extracted_files($workspace, $manifest))) {
 
 mkdir(WP_PLUGIN_DIR, 0777, true);
 mkdir(WP_CONTENT_DIR . '/themes', 0777, true);
-mkdir(WPMU_PLUGIN_DIR, 0777, true);
+if (!is_dir(WPMU_PLUGIN_DIR)) {
+    mkdir(WPMU_PLUGIN_DIR, 0777, true);
+}
 mkdir(WP_PLUGIN_DIR . '/sample-plugin', 0777, true);
 file_put_contents(WP_PLUGIN_DIR . '/sample-plugin/old.php', "old\n");
 mkdir(WP_PLUGIN_DIR . '/obsolete-plugin', 0777, true);

@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.11 - 2026-10-05
+
+- Omit WP Migrate and this Release Management plugin from Code comparison because they provide the comparison transport rather than a deployable release difference.
+- Collapse an MU-plugin loader file and its same-stem support directory into one logical comparison row using the loader's friendly name and version.
+- Preserve both filesystem components behind the single selection so release packages, destination removals, and rollback packages remain complete.
+- Add regression coverage for transport filtering, MU-plugin identity collapsing, and multi-component release operations.
+
 ## 0.11.10 - 2026-10-04
 
 - Match local and remote must-use plugins by the same canonical top-level entry in `wp-content/mu-plugins`.
