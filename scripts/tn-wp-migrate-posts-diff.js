@@ -59,7 +59,7 @@
         return '<section class="twmcd-card twmcd-posts-group"><div class="twmcd-group-heading"><h2><button type="button" class="button-link twmcd-accordion-toggle" aria-expanded="true" aria-controls="' + id + '"><span class="twmcd-accordion-icon" aria-hidden="true">&#9662;</span> '
             + escapeHtml(postType) + ' <span class="twmcd-selected-count"></span></button></h2><div class="twmcd-group-toggles">'
             + '<button class="button-link" type="button" data-select="all">Select all</button> / <button class="button-link" type="button" data-select="none">Deselect all</button> / <button class="button-link" type="button" data-select="recommended">Recommended</button></div></div>'
-            + '<div id="' + id + '" class="twmcd-table-scroll twmcd-accordion-content"><table class="widefat striped"><thead><tr><td class="check-column"></td><th>Post</th><th>Status</th><th>Source status</th><th>Destination status</th><th>Identity</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>';
+            + '<div id="' + id + '" class="twmcd-table-scroll twmcd-accordion-content"><table class="widefat striped"><thead><tr><td class="check-column"></td><th>Post</th><th>' + escapeHtml(TWMCD_POSTS_ADMIN.labels.releaseActions) + '</th><th>Source status</th><th>Destination status</th><th>Identity</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>';
     }
 
     function render(data) {

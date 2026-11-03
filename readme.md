@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.13
+Version: 0.11.14
 Status: MVP
 
 ## Purpose
@@ -35,6 +35,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Creates a manual release ZIP from selected local source packages when the comparison direction is Push.
 - Includes every loader file and support directory represented by a collapsed must-use-plugin row in its release, removal, and rollback operations.
 - Compares posts by post type and stable UUID, hierarchical path, or slug identity, including post fields, post meta, term assignments, taxonomies, and parent relationships in its fingerprints.
+- Presents Content differences as destination release actions: no change, update, add, or remove, while keeping the source and destination publication statuses visible separately.
 - Creates a separate offline Posts release ZIP from selected local source posts when the comparison direction is Push.
 - Installs and rolls back Posts releases through the same Upload Release workflow used by Code releases.
 - Records selected destination-only packages as explicit removal operations, allowing a manual release to add, replace, and remove code packages.

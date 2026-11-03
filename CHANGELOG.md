@@ -2,6 +2,16 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.14 - 2026-11-03
+
+- Rename the Content comparison **Status** column to **Release Actions**.
+- Present equal content as **No Change**.
+- Present changed content as **Update in Destination**.
+- Present source-only content as **Add to Destination**.
+- Present destination-only content as **Remove from Destination**.
+- Preserve the independent **Source status** and **Destination status** columns for publication state.
+- Add regression coverage for the Content release-action heading and labels.
+
 ## 0.11.13 - 2026-11-03
 
 - Restore **Compare Content** beside **Compare Code** in the ready-state WP Migrate notice.
