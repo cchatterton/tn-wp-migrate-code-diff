@@ -96,6 +96,7 @@ function twmcd_enqueue_admin_assets($hook_suffix)
                 'labels'  => array(
                     'message'           => __('Site comparison is ready.', 'tn-wp-migrate-code-diff'),
                     'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
+                    'contentButton'     => __('Compare Content', 'tn-wp-migrate-code-diff'),
                     'compareTab'        => __('Compare', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),

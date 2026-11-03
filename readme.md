@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.12
+Version: 0.11.13
 Status: MVP
 
 ## Purpose
@@ -13,11 +13,11 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Compares plugins, themes, and must-use plugins.
 - Matches must-use plugins by canonical top-level filesystem entry, collapses same-stem loader/support pairs into one logical row, and exchanges enriched header metadata through the authenticated connection.
 - Omits WP Migrate and Release Management transport plugins from Code comparison because they are connection prerequisites rather than release payloads.
-- Retains separate Code, Posts, Database, and Options comparison implementations without changing the established Code release behavior; only Code is currently exposed in the operator UX.
+- Retains separate Code, Posts, Database, and Options comparison implementations without changing the established release behavior; Code and Content are currently exposed in the operator UX while Database and Options remain hidden.
 - Presents code differences as destination release actions: add, remove, upgrade, downgrade, no change, or manual review.
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
 - Adds a persistent **Compare** tab beside **What's New** in WP Migrate. It opens Code comparison when the connection and multisite scope are ready, or returns to Migrate so they can be configured.
-- Keeps the existing comparison notice as a secondary Code-only action when its WP Migrate mount is available.
+- Shows **Compare Code** and **Compare Content** in the existing comparison notice when its WP Migrate mount is available. Content uses the established Posts, post-meta, terms, and taxonomy comparison workflow.
 - Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.

@@ -28,6 +28,8 @@ $expectations = array(
     "document.querySelector('#root .nav-wrap ul.nav')" => 'WP Migrate primary navigation lookup',
     "item.className = 'twmcd-compare-nav-item'" => 'dedicated Compare navigation item',
     "prepareComparison('code')" => 'Code-only Compare tab action',
+    'data-mode="posts"' => 'Content comparison notice action',
+    "prepareComparison('posts')" => 'Content comparison preparation',
     'function observeWpMigrateRoot()' => 'navigation remount observer',
     'rootObserver.observe(root, { childList: true, subtree: true })' => 'persistent navigation reinjection',
 );
@@ -43,11 +45,17 @@ if (preg_match('/if \(!wpMigrateNotice \|\| !wpMigrateNotice\.parentNode\) \{\s*
     exit(1);
 }
 
-foreach (array('data-mode="posts"', 'data-mode="database"', 'data-mode="options"') as $hidden_mode) {
+foreach (array('data-mode="database"', 'data-mode="options"') as $hidden_mode) {
     if (false !== strpos($script, $hidden_mode)) {
         fwrite(STDERR, "FAIL: a non-Code comparison remains exposed in the WP Migrate UX.\n");
         exit(1);
     }
+}
+
+$content_template = file_get_contents(dirname(__DIR__) . '/templates/posts-page.php');
+if (false === strpos($content_template, "'Content comparison'")) {
+    fwrite(STDERR, "FAIL: the restored Content comparison still uses the internal Posts title.\n");
+    exit(1);
 }
 
 $styles = file_get_contents(dirname(__DIR__) . '/styles/tn-wp-migrate-code-diff.css');
