@@ -32,6 +32,9 @@ $expectations = array(
     "prepareComparison('posts')" => 'Content comparison preparation',
     'function observeWpMigrateRoot()' => 'navigation remount observer',
     'rootObserver.observe(root, { childList: true, subtree: true })' => 'persistent navigation reinjection',
+    "snapshot.intent !== 'push'" => 'client-side Push-only comparison guard',
+    'TWMCD_INTEGRATION.labels.pushRequired' => 'Push-only operator guidance',
+    "intent: 'push'" => 'fixed Push comparison request',
 );
 foreach ($expectations as $needle => $description) {
     if (false === strpos($script, $needle)) {
@@ -58,10 +61,18 @@ if (false === strpos($content_template, "'Content comparison'")) {
     exit(1);
 }
 
+$ajax = file_get_contents(dirname(__DIR__) . '/functions/ajax.php');
+if (false === strpos($ajax, "if ('push' !== \$intent)")
+    || false === strpos($ajax, "\$context['intent'] = 'push';")) {
+    fwrite(STDERR, "FAIL: comparison preparation does not enforce Push on the server.\n");
+    exit(1);
+}
+
 $styles = file_get_contents(dirname(__DIR__) . '/styles/tn-wp-migrate-code-diff.css');
 if (false === strpos($styles, '.twmcd-reset-recent-profiles')
     || false === strpos($styles, 'color: #d58a00;')
-    || false === strpos($styles, 'text-decoration: none !important;')) {
+    || false === strpos($styles, 'text-decoration: none !important;')
+    || false === strpos($styles, '.twmcd-compare-content:disabled')) {
     fwrite(STDERR, "FAIL: reset-link alignment or refresh-icon presentation is missing.\n");
     exit(1);
 }

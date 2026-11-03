@@ -147,6 +147,7 @@
 }
 
 .twmcd-migrate-notice .twmcd-compare-now:disabled,
+.twmcd-migrate-notice .twmcd-compare-content:disabled,
 .twmcd-migrate-notice .twmcd-compare-mode:disabled {
     color: #787c82;
     cursor: not-allowed;

@@ -31,7 +31,13 @@ function twmcd_ajax_prepare_comparison()
 {
     twmcd_verify_ajax_request();
 
-    $intent = isset($_POST['intent']) && 'pull' === sanitize_key(wp_unslash($_POST['intent'])) ? 'pull' : 'push';
+    $intent = isset($_POST['intent']) ? sanitize_key(wp_unslash($_POST['intent'])) : '';
+    if ('push' !== $intent) {
+        wp_send_json_error(
+            array('message' => __('Set WP Migrate Action to Push before starting a comparison.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
     $mode = isset($_POST['mode']) ? sanitize_key(wp_unslash($_POST['mode'])) : 'code';
     if (!in_array($mode, array('code', 'database', 'options', 'posts'), true)) {
         $mode = 'code';
@@ -60,7 +66,7 @@ function twmcd_ajax_prepare_comparison()
         wp_send_json_error(array('message' => $context_validation->get_error_message()), 400);
     }
 
-    $context['intent'] = $intent;
+    $context['intent'] = 'push';
     $context['connection_info'] = $connection_info;
     $context['connection'] = $connection;
     twmcd_store_automatic_comparison_profile($context, $mode);

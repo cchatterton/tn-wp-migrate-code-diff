@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.14
+Stable tag: 0.11.15
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,11 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.15 =
+* Make Code and Content comparison a Push-only workflow.
+* Disable comparison actions and show clear guidance when WP Migrate Action is Pull.
+* Enforce Push in the authenticated comparison-preparation endpoint.
 
 = 0.11.14 =
 * Rename the Content comparison Status column to Release Actions.
