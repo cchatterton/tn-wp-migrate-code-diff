@@ -24,6 +24,12 @@ $expectations = array(
     'function isMigrationScreen()' => 'Migrate-route visibility guard',
     '/^#\\/?migrate(?:$|[/?])/' => 'Migrate hash-route detection',
     'if (!isMigrationScreen())' => 'comparison bar suppression outside Migrate',
+    'function injectCompareTab()' => 'persistent Compare tab injection',
+    "document.querySelector('#root .nav-wrap ul.nav')" => 'WP Migrate primary navigation lookup',
+    "item.className = 'twmcd-compare-nav-item'" => 'dedicated Compare navigation item',
+    "prepareComparison('code')" => 'Code-only Compare tab action',
+    'function observeWpMigrateRoot()' => 'navigation remount observer',
+    'rootObserver.observe(root, { childList: true, subtree: true })' => 'persistent navigation reinjection',
 );
 foreach ($expectations as $needle => $description) {
     if (false === strpos($script, $needle)) {
@@ -35,6 +41,13 @@ foreach ($expectations as $needle => $description) {
 if (preg_match('/if \(!wpMigrateNotice \|\| !wpMigrateNotice\.parentNode\) \{\s*return;\s*\}/', $script)) {
     fwrite(STDERR, "FAIL: integration control still requires the WP Migrate update notice.\n");
     exit(1);
+}
+
+foreach (array('data-mode="posts"', 'data-mode="database"', 'data-mode="options"') as $hidden_mode) {
+    if (false !== strpos($script, $hidden_mode)) {
+        fwrite(STDERR, "FAIL: a non-Code comparison remains exposed in the WP Migrate UX.\n");
+        exit(1);
+    }
 }
 
 $styles = file_get_contents(dirname(__DIR__) . '/styles/tn-wp-migrate-code-diff.css');

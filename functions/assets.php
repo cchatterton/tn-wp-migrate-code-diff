@@ -92,12 +92,11 @@ function twmcd_enqueue_admin_assets($hook_suffix)
             array(
                 'ajaxUrl' => admin_url('admin-ajax.php'),
                 'nonce'   => wp_create_nonce('twmcd_admin'),
+                'migrateUrl' => twmcd_migrate_admin_url() . '#/migrate',
                 'labels'  => array(
                     'message'           => __('Site comparison is ready.', 'tn-wp-migrate-code-diff'),
                     'button'            => __('Compare Code', 'tn-wp-migrate-code-diff'),
-                    'databaseButton'    => __('Compare Database', 'tn-wp-migrate-code-diff'),
-                    'optionsButton'     => __('Compare Options', 'tn-wp-migrate-code-diff'),
-                    'postsButton'       => __('Compare Posts', 'tn-wp-migrate-code-diff'),
+                    'compareTab'        => __('Compare', 'tn-wp-migrate-code-diff'),
                     'preparing'         => __('Preparing comparison…', 'tn-wp-migrate-code-diff'),
                     'error'             => __('The comparison could not be prepared.', 'tn-wp-migrate-code-diff'),
                     'waitingStore'      => __('Site comparison is listening — waiting for WP Migrate state.', 'tn-wp-migrate-code-diff'),
