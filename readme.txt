@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.16
+Stable tag: 0.11.17
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,11 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.17 =
+* Stop reporting repeated Content updates when source and destination post authors differ.
+* Ignore WordPress-generated old-slug and old-date history when comparing or installing Content.
+* Require matching Content comparison rules on both connected sites before showing a comparison.
 
 = 0.11.16 =
 * Allow authorised Content releases to update posts protected by Post Lock.

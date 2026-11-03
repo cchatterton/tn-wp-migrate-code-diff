@@ -237,6 +237,12 @@ function twmcd_ajax_compare_posts()
         wp_send_json_error(array('message' => $remote_inventory->get_error_message()), 400);
     }
     $local_inventory = twmcd_local_posts_inventory($context, true);
+    if (($local_inventory['fingerprint_schema'] ?? 0) !== ($remote_inventory['fingerprint_schema'] ?? 0)) {
+        wp_send_json_error(
+            array('message' => __('The two sites use different Content comparison versions. Update WP Migrate - Release Management on both sites, then refresh the comparison.', 'tn-wp-migrate-code-diff')),
+            400
+        );
+    }
     if (!empty($local_inventory['truncated']) || !empty($remote_inventory['truncated'])) {
         wp_send_json_error(
             array('message' => __('Posts comparison currently supports up to 5,000 posts in the selected site scope.', 'tn-wp-migrate-code-diff')),

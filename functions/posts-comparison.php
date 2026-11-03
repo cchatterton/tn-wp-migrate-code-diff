@@ -229,7 +229,7 @@ function twmcd_normalize_post_environment_values($value, $replacements = null)
 function twmcd_local_post_meta_keys()
 {
     return array(
-        '_edit_lock', '_edit_last', '_twmcd_content_uuid',
+        '_edit_lock', '_edit_last', '_wp_old_slug', '_wp_old_date', '_twmcd_content_uuid',
         '_locked_by_user', '_best_before_date', '_best_before_action',
     );
 }
@@ -320,6 +320,7 @@ function twmcd_post_content_fingerprint($export)
         $fingerprint_data['source_id'],
         $fingerprint_data['title'],
         $fingerprint_data['portable'],
+        $fingerprint_data['author_login'],
         $fingerprint_data['fingerprint'],
         $fingerprint_data['from_fingerprint']
     );
@@ -345,7 +346,7 @@ function twmcd_local_posts_inventory($context, $is_local = true)
 
         $post_types = twmcd_post_types_for_comparison();
         if (!$post_types) {
-            return array('posts' => array(), 'total' => 0, 'truncated' => false);
+            return array('posts' => array(), 'total' => 0, 'truncated' => false, 'fingerprint_schema' => 2);
         }
 
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
@@ -374,7 +375,7 @@ function twmcd_local_posts_inventory($context, $is_local = true)
             );
         }
 
-        return array('posts' => $posts, 'total' => count($post_ids), 'truncated' => $truncated);
+        return array('posts' => $posts, 'total' => count($post_ids), 'truncated' => $truncated, 'fingerprint_schema' => 2);
     });
 }
 
@@ -405,6 +406,7 @@ function twmcd_sanitize_posts_inventory($inventory)
         'posts'     => $posts,
         'total'     => absint(isset($inventory['total']) ? $inventory['total'] : count($posts)),
         'truncated' => !empty($inventory['truncated']),
+        'fingerprint_schema' => absint(isset($inventory['fingerprint_schema']) ? $inventory['fingerprint_schema'] : 0),
     );
 }
 

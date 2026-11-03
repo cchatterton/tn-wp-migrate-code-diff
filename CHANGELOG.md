@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.17 - 2026-11-04
+
+- Stop reporting a Content update after installation solely because the destination keeps its own post author.
+- Treat WordPress-generated old-slug and old-date history as destination-local metadata.
+- Require matching Content comparison rules on both connected sites before displaying a comparison, with a clear update instruction when they differ.
+- Add regression coverage for the author mismatch and genuine content differences.
+
 ## 0.11.16 - 2026-11-03
 
 - Allow authorised Content releases to update posts protected by Post Lock without interrupting Upload Release.

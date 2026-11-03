@@ -7,6 +7,13 @@ function apply_filters($hook, $value)
     return $value;
 }
 
+function wp_get_upload_dir() { return array('baseurl' => 'https://source.example/wp-content/uploads', 'basedir' => '/nas/content/live/source/wp-content/uploads'); }
+function content_url() { return 'https://source.example/wp-content'; }
+function site_url() { return 'https://source.example'; }
+function home_url() { return 'https://source.example'; }
+function wp_normalize_path($path) { return str_replace('\\', '/', $path); }
+function wp_json_encode($value) { return json_encode($value); }
+
 require dirname(__DIR__) . '/functions/posts-comparison.php';
 
 $source = array(
@@ -102,6 +109,32 @@ $destination_clone_value['meta']['business_value'] = 'A genuinely changed value'
 if ($normalized_source === twmcd_normalize_post_environment_values($destination_clone_value, $destination_environment)) {
     fwrite(STDERR, "FAIL: environment normalization concealed a genuine post content difference.\n");
     exit(1);
+}
+
+$source_export = array(
+    'identity' => 'card:path:accordion', 'source_id' => 10, 'title' => 'Accordion',
+    'portable' => true, 'author_login' => 'source_editor',
+    'fields' => array('post_title' => 'Accordion', 'post_content' => 'Updated content'),
+    'meta' => array('business_setting' => array('value')),
+    'terms' => array(), 'taxonomies' => array(),
+);
+$destination_export = $source_export;
+$destination_export['source_id'] = 99;
+$destination_export['author_login'] = 'destination_editor';
+if (twmcd_post_content_fingerprint($source_export) !== twmcd_post_content_fingerprint($destination_export)) {
+    fwrite(STDERR, "FAIL: destination-local author kept a released post perpetually different.\n");
+    exit(1);
+}
+$destination_export['fields']['post_content'] = 'Different content';
+if (twmcd_post_content_fingerprint($source_export) === twmcd_post_content_fingerprint($destination_export)) {
+    fwrite(STDERR, "FAIL: genuine content changes were ignored.\n");
+    exit(1);
+}
+foreach (array('_wp_old_slug', '_wp_old_date') as $key) {
+    if (!in_array($key, twmcd_local_post_meta_keys(), true)) {
+        fwrite(STDERR, "FAIL: WordPress local history metadata was included in releases.\n");
+        exit(1);
+    }
 }
 
 echo "PASS: Posts comparison grouping, recommendations, and clone normalization.\n";
