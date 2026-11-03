@@ -376,7 +376,10 @@ function twmcd_install_manifest_posts($manifest)
                 continue;
             }
             foreach ((array) $values as $value) {
-                add_post_meta($post_id, $meta_key, twmcd_replace_content_environment_values($value, $manifest));
+                $value = twmcd_replace_content_environment_values($value, $manifest);
+                // The metadata API unslashes its input before storing it. Manifest
+                // values have already been decoded, so preserve literal backslashes.
+                add_post_meta($post_id, $meta_key, wp_slash($value));
             }
         }
         if (preg_match('/^[^:]+:uuid:([^:]+)$/', $post['identity'], $uuid_match)) {

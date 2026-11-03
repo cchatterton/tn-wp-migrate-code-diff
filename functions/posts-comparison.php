@@ -313,7 +313,7 @@ function twmcd_export_post_content($post_id)
     );
 }
 
-function twmcd_post_content_fingerprint($export)
+function twmcd_post_content_comparison_data($export)
 {
     $fingerprint_data = twmcd_normalize_post_environment_values($export);
     unset(
@@ -336,7 +336,23 @@ function twmcd_post_content_fingerprint($export)
         isset($fingerprint_data['terms']) ? (array) $fingerprint_data['terms'] : array()
     );
 
-    return hash('sha256', wp_json_encode(twmcd_normalize_content_value($fingerprint_data)));
+    return twmcd_normalize_content_value($fingerprint_data);
+}
+
+function twmcd_post_content_fingerprint($export)
+{
+    return hash('sha256', wp_json_encode(twmcd_post_content_comparison_data($export)));
+}
+
+function twmcd_post_content_component_fingerprints($export)
+{
+    $data = twmcd_post_content_comparison_data($export);
+    $components = array();
+    foreach (array('fields', 'meta', 'terms', 'parent_identity') as $name) {
+        $components[$name] = hash('sha256', wp_json_encode(isset($data[$name]) ? $data[$name] : null));
+    }
+
+    return $components;
 }
 
 function twmcd_local_posts_inventory($context, $is_local = true)
@@ -346,7 +362,7 @@ function twmcd_local_posts_inventory($context, $is_local = true)
 
         $post_types = twmcd_post_types_for_comparison();
         if (!$post_types) {
-            return array('posts' => array(), 'total' => 0, 'truncated' => false, 'fingerprint_schema' => 2);
+            return array('posts' => array(), 'total' => 0, 'truncated' => false, 'fingerprint_schema' => 3);
         }
 
         $placeholders = implode(',', array_fill(0, count($post_types), '%s'));
@@ -372,10 +388,11 @@ function twmcd_local_posts_inventory($context, $is_local = true)
                 'title'       => $export['title'],
                 'status'      => $export['fields']['post_status'],
                 'fingerprint' => twmcd_post_content_fingerprint($export),
+                'components'  => twmcd_post_content_component_fingerprints($export),
             );
         }
 
-        return array('posts' => $posts, 'total' => count($post_ids), 'truncated' => $truncated, 'fingerprint_schema' => 2);
+        return array('posts' => $posts, 'total' => count($post_ids), 'truncated' => $truncated, 'fingerprint_schema' => 3);
     });
 }
 
@@ -399,7 +416,14 @@ function twmcd_sanitize_posts_inventory($inventory)
             'title'       => sanitize_text_field(isset($post['title']) ? $post['title'] : ''),
             'status'      => sanitize_key(isset($post['status']) ? $post['status'] : ''),
             'fingerprint' => $fingerprint,
+            'components'  => array(),
         );
+        foreach (array('fields', 'meta', 'terms', 'parent_identity') as $name) {
+            $hash = isset($post['components'][$name]) ? strtolower((string) $post['components'][$name]) : '';
+            if (preg_match('/^[a-f0-9]{64}$/', $hash)) {
+                $posts[$identity]['components'][$name] = $hash;
+            }
+        }
     }
 
     return array(
@@ -447,6 +471,15 @@ function twmcd_compare_posts_inventories($source, $destination)
         $status = !$destination_post ? 'source_only' : (!$source_post ? 'destination_only'
             : ($source_post['fingerprint'] === $destination_post['fingerprint'] ? 'same' : 'different'));
         $portable = !empty($display_post['portable']);
+        $difference_parts = array();
+        if ('different' === $status) {
+            foreach (array('fields', 'meta', 'terms', 'parent_identity') as $name) {
+                if (isset($source_post['components'][$name], $destination_post['components'][$name])
+                    && $source_post['components'][$name] !== $destination_post['components'][$name]) {
+                    $difference_parts[] = $name;
+                }
+            }
+        }
         $groups[$display_post['post_type']][] = array(
             'identity'                => $identity,
             'title'                   => $display_post['title'],
@@ -462,6 +495,7 @@ function twmcd_compare_posts_inventories($source, $destination)
             'default_selected'        => $portable && in_array($status, array('source_only', 'different'), true),
             'source_fingerprint'      => $source_post ? $source_post['fingerprint'] : '',
             'destination_fingerprint' => $destination_post ? $destination_post['fingerprint'] : '',
+            'difference_parts'        => $difference_parts,
         );
     }
     ksort($groups);

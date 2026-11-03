@@ -29,6 +29,7 @@ class WP_Post_Lock_Functionality
 $wp_filter = array();
 $allow_release = true;
 $unrelated_calls = 0;
+$stored_business_meta = null;
 
 function add_filter($hook, $handler, $priority = 10, $accepted_args = 1)
 {
@@ -80,8 +81,12 @@ function get_post_meta($post_id, $key = '', $single = false) {
     );
 }
 function delete_post_meta($post_id, $key) { if ($key !== 'business_meta') { throw new RuntimeException('Destination lock metadata was deleted: ' . $key); } }
-function add_post_meta($post_id, $key) { if ($key !== 'business_meta') { throw new RuntimeException('Source lock metadata was imported: ' . $key); } }
-function wp_slash($value) { return $value; }
+function add_post_meta($post_id, $key, $value) {
+    global $stored_business_meta;
+    if ($key !== 'business_meta') { throw new RuntimeException('Source lock metadata was imported: ' . $key); }
+    $stored_business_meta = is_array($value) ? array_map('stripslashes', $value) : stripslashes($value);
+}
+function wp_slash($value) { return is_array($value) ? array_map('wp_slash', $value) : (is_string($value) ? addslashes($value) : $value); }
 function wp_insert_post($fields) { apply_filters('wp_insert_post_data', $fields, $fields); return $fields['ID']; }
 function wp_update_post($fields) { apply_filters('wp_insert_post_data', $fields, $fields); return $fields['ID']; }
 function taxonomy_exists() { return false; }
@@ -103,7 +108,7 @@ add_filter('wp_insert_post_data', 'unrelated_post_filter', 11, 2);
 $post = array(
     'identity' => 'page:path:locked', 'post_type' => 'page', 'title' => 'Locked page',
     'fields' => array('post_title' => 'Updated title'),
-    'meta' => array('_locked_by_user' => array(99), '_best_before_date' => array('2027-01-01'), 'business_meta' => array('updated')),
+    'meta' => array('_locked_by_user' => array(99), '_best_before_date' => array('2027-01-01'), 'business_meta' => array('{"path":"C:\\content","label":"O\'Brien"}')),
     'terms' => array(),
     'parent_identity' => 'page:path:parent',
 );
@@ -111,6 +116,10 @@ $post = array(
 $result = twmcd_install_manifest_posts(array('posts' => array($post)));
 if (is_wp_error($result) || count($result) !== 1 || $unrelated_calls !== 2) {
     fwrite(STDERR, "FAIL: release could not update the locked post and its parent.\n");
+    exit(1);
+}
+if ($stored_business_meta !== $post['meta']['business_meta'][0]) {
+    fwrite(STDERR, "FAIL: release changed slashes in post metadata.\n");
     exit(1);
 }
 

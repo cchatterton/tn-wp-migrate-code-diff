@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.17
+Stable tag: 0.11.18
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,10 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.18 =
+* Preserve literal slashes and JSON values when installing post metadata from a Content release.
+* Show whether post fields, metadata, terms, or parent relationship differs in each Update in Destination row.
 
 = 0.11.17 =
 * Stop reporting repeated Content updates when source and destination post authors differ.

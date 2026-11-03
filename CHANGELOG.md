@@ -2,6 +2,12 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.18 - 2026-11-04
+
+- Preserve literal backslashes in decoded Content release metadata when WordPress saves it, including JSON and paths.
+- Show which part of each changed post differs: post fields, metadata, terms, or parent relationship. Comparison still exchanges hashes rather than raw content.
+- Add regression coverage for metadata slash preservation and difference classification.
+
 ## 0.11.17 - 2026-11-04
 
 - Stop reporting a Content update after installation solely because the destination keeps its own post author.

@@ -27,6 +27,12 @@
         return { same: labels.same, different: labels.different, source_only: labels.sourceOnly, destination_only: labels.destinationOnly }[status] || status;
     }
 
+    function differenceLabel(parts) {
+        if (!parts || !parts.length) { return ''; }
+        var labels = { fields: 'post fields', meta: 'metadata', terms: 'terms', parent_identity: 'parent' };
+        return '<br><small>Different: ' + escapeHtml(parts.map(function (part) { return labels[part] || part; }).join(', ')) + '</small>';
+    }
+
     function selectedIdentities() {
         return Array.prototype.map.call(document.querySelectorAll('.twmcd-post-selection:checked'), function (input) {
             return input.getAttribute('data-identity');
@@ -51,7 +57,7 @@
             return '<tr><th scope="row" class="check-column"><input class="twmcd-post-selection" type="checkbox" data-identity="' + escapeHtml(post.identity) + '" data-recommended="' + (post.default_selected ? '1' : '0') + '"'
                 + (checked ? ' checked' : '') + (disabled ? ' disabled' : '') + ' aria-label="Select ' + escapeHtml(post.title) + '"></th>'
                 + '<td><strong>' + escapeHtml(post.title || '(no title)') + '</strong></td>'
-                + '<td><span class="twmcd-status twmcd-status-' + escapeHtml(post.status) + '">' + escapeHtml(statusLabel(post.status)) + '</span></td>'
+                + '<td><span class="twmcd-status twmcd-status-' + escapeHtml(post.status) + '">' + escapeHtml(statusLabel(post.status)) + '</span>' + differenceLabel(post.difference_parts) + '</td>'
                 + '<td>' + escapeHtml(post.source_status || '—') + '</td><td>' + escapeHtml(post.destination_status || '—') + '</td>'
                 + '<td>' + (post.portable ? escapeHtml(post.identity) : 'Unmatched ID only') + '</td></tr>';
         }).join('');

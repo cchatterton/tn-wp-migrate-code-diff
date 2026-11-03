@@ -130,6 +130,20 @@ if (twmcd_post_content_fingerprint($source_export) === twmcd_post_content_finger
     fwrite(STDERR, "FAIL: genuine content changes were ignored.\n");
     exit(1);
 }
+$source_parts = twmcd_post_content_component_fingerprints($source_export);
+$destination_parts = twmcd_post_content_component_fingerprints($destination_export);
+if ($source_parts['fields'] === $destination_parts['fields'] || $source_parts['meta'] !== $destination_parts['meta']) {
+    fwrite(STDERR, "FAIL: comparison did not identify the changed post fields.\n");
+    exit(1);
+}
+$diagnostic_groups = twmcd_compare_posts_inventories(
+    array('posts' => array('card:path:accordion' => array('post_type' => 'card', 'title' => 'Accordion', 'portable' => true, 'source_id' => 10, 'status' => 'publish', 'fingerprint' => twmcd_post_content_fingerprint($source_export), 'components' => $source_parts))),
+    array('posts' => array('card:path:accordion' => array('post_type' => 'card', 'title' => 'Accordion', 'portable' => true, 'source_id' => 99, 'status' => 'publish', 'fingerprint' => twmcd_post_content_fingerprint($destination_export), 'components' => $destination_parts)))
+);
+if ($diagnostic_groups['card'][0]['difference_parts'] !== array('fields')) {
+    fwrite(STDERR, "FAIL: comparison did not show which part of the post differs.\n");
+    exit(1);
+}
 foreach (array('_wp_old_slug', '_wp_old_date') as $key) {
     if (!in_array($key, twmcd_local_post_meta_keys(), true)) {
         fwrite(STDERR, "FAIL: WordPress local history metadata was included in releases.\n");
