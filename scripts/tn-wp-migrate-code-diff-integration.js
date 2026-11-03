@@ -10,6 +10,8 @@
     var retryTimer = null;
     var pollAttempts = 0;
     var pollTimer = null;
+    var observedRoot = null;
+    var rootObserver = null;
 
     function boolValue(value) {
         return value === true || value === 1 || value === '1' || value === 'true';
@@ -313,6 +315,7 @@
     }
 
     function renderNotice() {
+        injectCompareTab();
         var snapshot = getSnapshot();
         var container = noticeContainer();
 
@@ -337,9 +340,6 @@
         placeNotice(notice);
 
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
-        var databaseButtonLabel = TWMCD_INTEGRATION.labels.databaseButton;
-        var optionsButtonLabel = TWMCD_INTEGRATION.labels.optionsButton;
-        var postsButtonLabel = TWMCD_INTEGRATION.labels.postsButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
         var actions = '';
@@ -363,16 +363,6 @@
         if (actionAvailable) {
             actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
                 + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
-            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="posts"'
-                + (preparing ? ' disabled' : '') + '>' + escapeHtml(postsButtonLabel) + '</button>';
-
-            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="database"'
-                + (preparing ? ' disabled' : '') + '>' + escapeHtml(databaseButtonLabel) + '</button>';
-            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
-                + '<button type="button" class="button-link twmcd-compare-mode" data-mode="options"'
-                + (preparing ? ' disabled' : '') + '>' + escapeHtml(optionsButtonLabel) + '</button>';
         }
 
         var retryLabel = retrying
@@ -390,17 +380,9 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
-        var modeButtons = notice.querySelectorAll('.twmcd-compare-mode');
         if (button && actionAvailable) {
             button.addEventListener('click', function () {
                 prepareComparison('code');
-            });
-        }
-        if (actionAvailable) {
-            Array.prototype.forEach.call(modeButtons, function (modeButton) {
-                modeButton.addEventListener('click', function () {
-                    prepareComparison(modeButton.getAttribute('data-mode'));
-                });
             });
         }
         var refreshButton = notice.querySelector('.twmcd-notice-refresh');
@@ -413,6 +395,59 @@
         var element = document.createElement('div');
         element.textContent = value == null ? '' : String(value);
         return element.innerHTML;
+    }
+
+    function injectCompareTab() {
+        var navigation = document.querySelector('#root .nav-wrap ul.nav');
+        if (!navigation) {
+            return;
+        }
+
+        var existingItem = navigation.querySelector('.twmcd-compare-nav-item');
+        if (existingItem) {
+            var existingLink = existingItem.querySelector('a');
+            var existingLabel = preparing === 'code'
+                ? TWMCD_INTEGRATION.labels.preparing
+                : TWMCD_INTEGRATION.labels.compareTab;
+            if (existingLink.textContent !== existingLabel) {
+                existingLink.textContent = existingLabel;
+            }
+            return;
+        }
+
+        var item = document.createElement('li');
+        item.className = 'twmcd-compare-nav-item';
+        var link = document.createElement('a');
+        link.href = TWMCD_INTEGRATION.migrateUrl;
+        link.textContent = preparing === 'code'
+            ? TWMCD_INTEGRATION.labels.preparing
+            : TWMCD_INTEGRATION.labels.compareTab;
+        link.addEventListener('click', function (event) {
+            var snapshot = getSnapshot();
+            if (!snapshot || !snapshot.has_direction || !snapshot.connection_ready || !snapshot.ready || preparing) {
+                return;
+            }
+
+            event.preventDefault();
+            prepareComparison('code');
+        });
+        item.appendChild(link);
+        navigation.appendChild(item);
+    }
+
+    function observeWpMigrateRoot() {
+        var root = document.getElementById('root');
+        if (!root || root === observedRoot) {
+            return;
+        }
+        if (rootObserver) {
+            rootObserver.disconnect();
+        }
+        rootObserver = new MutationObserver(function () {
+            injectCompareTab();
+        });
+        rootObserver.observe(root, { childList: true, subtree: true });
+        observedRoot = root;
     }
 
     function injectRecentProfilesReset() {
@@ -602,6 +637,8 @@
             store.subscribe(renderNotice);
             subscribedStore = store;
         }
+        observeWpMigrateRoot();
+        injectCompareTab();
         renderNotice();
         injectRecentProfilesReset();
     }

@@ -2,6 +2,15 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.12 - 2026-11-03
+
+- Add a persistent **Compare** tab immediately after WP Migrate's **What's New** navigation item, independent of the optional comparison-notice mount.
+- Start Code comparison from that tab when WP Migrate has a ready direction, connection, profile selection, and multisite scope; otherwise route to Migrate for configuration.
+- Reinsert the tab when WP Migrate remounts its React navigation.
+- Reduce the existing comparison notice to **Compare Code** only.
+- Keep Posts, Database, and Options comparison implementations and hidden routes in the plugin, but remove their visible entry points from the WP Migrate UX.
+- Add regression coverage for persistent navigation injection and Code-only UX exposure.
+
 ## 0.11.11 - 2026-10-05
 
 - Omit WP Migrate and this Release Management plugin from Code comparison because they provide the comparison transport rather than a deployable release difference.

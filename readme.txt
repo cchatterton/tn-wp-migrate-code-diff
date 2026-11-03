@@ -3,7 +3,7 @@ Contributors:
 Tags: techn
 Requires at least: 7.0
 Tested up to: 7.1.2
-Stable tag: 0.11.11
+Stable tag: 0.11.12
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -21,6 +21,11 @@ Compares connected WordPress code and content, and creates or installs selective
 3. Configure its existing feature settings as usual.
 
 == Changelog ==
+
+= 0.11.12 =
+* Add a persistent Compare tab beside What's New in WP Migrate navigation.
+* Open the Code comparison directly when the current connection is ready, or take the operator to Migrate to configure it.
+* Remove Posts, Database, and Options comparison links from the visible UX while retaining their internal code and routes.
 
 = 0.11.11 =
 * Hide WP Migrate and Release Management transport plugins from Code comparison.
