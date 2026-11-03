@@ -2,6 +2,16 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.15 - 2026-11-03
+
+- Make the exposed Code and Content comparison workflow Push-only.
+- Disable both ready-state comparison buttons when WP Migrate Action is Pull and replace the ready message with guidance to select Push.
+- Prevent the permanent **Compare** tab from starting a comparison while Action is Pull.
+- Submit a fixed Push intent from the comparison UX.
+- Reject missing, Pull, or otherwise invalid comparison intents in the authenticated server endpoint.
+- Store every newly prepared comparison context with Push direction.
+- Add regression coverage for both client- and server-side Push enforcement.
+
 ## 0.11.14 - 2026-11-03
 
 - Rename the Content comparison **Status** column to **Release Actions**.

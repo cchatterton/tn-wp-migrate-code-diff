@@ -343,6 +343,7 @@
         var contentButtonLabel = preparing === 'posts' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.contentButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
+        var pushRequired = false;
         var actions = '';
 
         if (snapshot && snapshot.connection_ready && retrying) {
@@ -356,17 +357,20 @@
                 message = !snapshot.profile_selection_ready
                     ? TWMCD_INTEGRATION.labels.waitingProfile
                     : TWMCD_INTEGRATION.labels.selectSubsite;
+            } else if (snapshot.intent !== 'push') {
+                message = TWMCD_INTEGRATION.labels.pushRequired;
+                pushRequired = true;
             } else {
                 message = TWMCD_INTEGRATION.labels.message;
                 actionAvailable = true;
             }
         }
-        if (actionAvailable) {
+        if (actionAvailable || pushRequired) {
             actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
-                + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
+                + (preparing || pushRequired ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
             actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
                 + '<button type="button" class="button-link twmcd-compare-content" data-mode="posts"'
-                + (preparing ? ' disabled' : '') + '>' + escapeHtml(contentButtonLabel) + '</button>';
+                + (preparing || pushRequired ? ' disabled' : '') + '>' + escapeHtml(contentButtonLabel) + '</button>';
         }
 
         var retryLabel = retrying
@@ -435,6 +439,12 @@
         link.addEventListener('click', function (event) {
             var snapshot = getSnapshot();
             if (!snapshot || !snapshot.has_direction || !snapshot.connection_ready || !snapshot.ready || preparing) {
+                return;
+            }
+
+            if (snapshot.intent !== 'push') {
+                event.preventDefault();
+                window.alert(TWMCD_INTEGRATION.labels.pushRequired);
                 return;
             }
 
@@ -537,6 +547,10 @@
         if (!snapshot || !snapshot.connection_ready || !snapshot.ready || preparing) {
             return;
         }
+        if (snapshot.intent !== 'push') {
+            window.alert(TWMCD_INTEGRATION.labels.pushRequired);
+            return;
+        }
 
         preparing = mode;
         renderNotice();
@@ -544,7 +558,7 @@
             action: 'twmcd_prepare_comparison',
             nonce: TWMCD_INTEGRATION.nonce,
             mode: mode,
-            intent: snapshot.intent,
+            intent: 'push',
             connection: snapshot.connection,
             context: JSON.stringify(snapshot.context)
         });

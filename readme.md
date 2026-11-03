@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.14
+Version: 0.11.15
 Status: MVP
 
 ## Purpose
@@ -18,7 +18,8 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Adds a live mode notice to WP Migrate after its direction and connection are configured.
 - Adds a persistent **Compare** tab beside **What's New** in WP Migrate. It opens Code comparison when the connection and multisite scope are ready, or returns to Migrate so they can be configured.
 - Shows **Compare Code** and **Compare Content** in the existing comparison notice when its WP Migrate mount is available. Content uses the established Posts, post-meta, terms, and taxonomy comparison workflow.
-- Inherits push/pull direction, connection details, and multisite conversion choices from WP Migrate's current on-screen state.
+- Inherits connection details and multisite conversion choices from WP Migrate's current on-screen state.
+- Requires WP Migrate Action to be **Push** before Code or Content comparison can start, keeping source, destination, multisite scope, saved selections, and release packaging aligned.
 - Uses the active saved WP Migrate profile's exact code package selection as the initial comparison selection.
 - Reports packages as Active, Inactive, or Not installed; detailed activation scope remains internal because remote multisite scope is not exact.
 - Selects active source-only plugins/themes, active source upgrades, and inactive destination-only plugins by default, while leaving destination-only themes, must-use plugins, source downgrades, inactive source packages, and active destination-only plugins unselected.
