@@ -225,6 +225,15 @@ function twmcd_normalize_post_environment_values($value, $replacements = null)
     return strtr($value, $replacements);
 }
 
+/** Post metadata controlled locally by the destination, not by a Content release. */
+function twmcd_local_post_meta_keys()
+{
+    return array(
+        '_edit_lock', '_edit_last', '_twmcd_content_uuid',
+        '_locked_by_user', '_best_before_date', '_best_before_action',
+    );
+}
+
 function twmcd_export_post_content($post_id)
 {
     $post = get_post($post_id);
@@ -243,7 +252,7 @@ function twmcd_export_post_content($post_id)
     }
 
     $meta = get_post_meta($post->ID);
-    foreach (array('_edit_lock', '_edit_last', '_twmcd_content_uuid') as $ignored_key) {
+    foreach (twmcd_local_post_meta_keys() as $ignored_key) {
         unset($meta[$ignored_key]);
     }
     foreach ($meta as $meta_key => $values) {

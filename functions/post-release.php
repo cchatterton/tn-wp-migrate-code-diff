@@ -256,6 +256,47 @@ function twmcd_replace_content_environment_values($value, $manifest)
     );
 }
 
+/**
+ * The site's Post Lock theme uses wp_die() in wp_insert_post_data. Temporarily
+ * remove only that callback while an authorised release writes a post.
+ */
+function twmcd_with_post_lock_bypass($operation)
+{
+    if (!current_user_can(twmcd_release_install_capability())) {
+        return new WP_Error(
+            'twmcd_release_capability',
+            __('You do not have permission to install this content release.', 'tn-wp-migrate-code-diff')
+        );
+    }
+
+    global $wp_filter;
+    $removed = array();
+    if (isset($wp_filter['wp_insert_post_data']) && $wp_filter['wp_insert_post_data'] instanceof WP_Hook) {
+        foreach ($wp_filter['wp_insert_post_data']->callbacks as $priority => $callbacks) {
+            foreach ($callbacks as $callback) {
+                $handler = $callback['function'];
+                if (is_array($handler) && isset($handler[0], $handler[1])
+                    && is_a($handler[0], 'WP_Post_Lock_Functionality')
+                    && 'prevent_post_edit' === $handler[1]) {
+                    $removed[] = array($handler, $priority, $callback['accepted_args']);
+                }
+            }
+        }
+    }
+
+    foreach ($removed as $callback) {
+        remove_filter('wp_insert_post_data', $callback[0], $callback[1]);
+    }
+
+    try {
+        return $operation();
+    } finally {
+        foreach ($removed as $callback) {
+            add_filter('wp_insert_post_data', $callback[0], $callback[1], $callback[2]);
+        }
+    }
+}
+
 function twmcd_install_manifest_posts($manifest)
 {
     if (!current_user_can('edit_posts')) {
@@ -315,21 +356,23 @@ function twmcd_install_manifest_posts($manifest)
             $author = !empty($post['author_login']) ? get_user_by('login', sanitize_user($post['author_login'])) : false;
             $fields['post_author'] = $author ? (int) $author->ID : get_current_user_id();
         }
-        $post_id = wp_insert_post(wp_slash($fields), true);
+        $post_id = twmcd_with_post_lock_bypass(function () use ($fields) {
+            return wp_insert_post(wp_slash($fields), true);
+        });
         if (is_wp_error($post_id)) {
             return $post_id;
         }
         $identity_map[$post['identity']] = (int) $post_id;
 
         foreach (array_keys(get_post_meta($post_id)) as $meta_key) {
-            if (!in_array($meta_key, array('_edit_lock', '_edit_last', '_twmcd_content_uuid'), true)) {
+            if (!in_array($meta_key, twmcd_local_post_meta_keys(), true)) {
                 delete_post_meta($post_id, $meta_key);
             }
         }
         foreach ($post['meta'] as $meta_key => $values) {
             $meta_key = sanitize_text_field((string) $meta_key);
             if (!$meta_key || strlen($meta_key) > 255 || preg_match('/[\x00-\x1F\x7F]/', $meta_key)
-                || in_array($meta_key, array('_edit_lock', '_edit_last', '_twmcd_content_uuid'), true)) {
+                || in_array($meta_key, twmcd_local_post_meta_keys(), true)) {
                 continue;
             }
             foreach ((array) $values as $value) {
@@ -386,10 +429,12 @@ function twmcd_install_manifest_posts($manifest)
             ? $identity_map[$post['parent_identity']]
             : twmcd_find_post_by_identity($post['parent_identity']);
         if ($parent_id) {
-            $parent_update = wp_update_post(
-                array('ID' => $identity_map[$post['identity']], 'post_parent' => $parent_id),
-                true
-            );
+            $parent_update = twmcd_with_post_lock_bypass(function () use ($identity_map, $post, $parent_id) {
+                return wp_update_post(
+                    array('ID' => $identity_map[$post['identity']], 'post_parent' => $parent_id),
+                    true
+                );
+            });
             if (is_wp_error($parent_update)) {
                 return $parent_update;
             }

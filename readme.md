@@ -1,7 +1,7 @@
 # WP Migrate - Release Management
 
 Author: Techn
-Version: 0.11.15
+Version: 0.11.16
 Status: MVP
 
 ## Purpose
@@ -39,6 +39,7 @@ Compare code packages, posts, database tables, and WordPress options between two
 - Presents Content differences as destination release actions: no change, update, add, or remove, while keeping the source and destination publication statuses visible separately.
 - Creates a separate offline Posts release ZIP from selected local source posts when the comparison direction is Push.
 - Installs and rolls back Posts releases through the same Upload Release workflow used by Code releases.
+- Allows authorised Content releases to update posts protected by the destination's Post Lock code while preserving the destination's lock and Best Before settings.
 - Records selected destination-only packages as explicit removal operations, allowing a manual release to add, replace, and remove code packages.
 - Provides its own destination-side **Settings > Upload Release** page, so the same plugin handles either migration direction.
 - Provides **Settings > Release Notes**, backed by a custom network-aware history table, with lazy-loaded monthly accordions and keyword search for manual release auditing.

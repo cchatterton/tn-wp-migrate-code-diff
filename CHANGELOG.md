@@ -2,6 +2,13 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.16 - 2026-11-03
+
+- Allow authorised Content releases to update posts protected by Post Lock without interrupting Upload Release.
+- Restore the Post Lock edit guard after each release write and preserve local lock and Best Before metadata.
+- Exclude local lock and Best Before metadata from Content comparison fingerprints.
+- Add regression coverage for locked content updates, parent updates, guard restoration, and release permissions.
+
 ## 0.11.15 - 2026-11-03
 
 - Make the exposed Code and Content comparison workflow Push-only.
