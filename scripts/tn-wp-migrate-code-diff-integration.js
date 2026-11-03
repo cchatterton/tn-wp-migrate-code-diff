@@ -340,6 +340,7 @@
         placeNotice(notice);
 
         var codeButtonLabel = preparing === 'code' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.button;
+        var contentButtonLabel = preparing === 'posts' ? TWMCD_INTEGRATION.labels.preparing : TWMCD_INTEGRATION.labels.contentButton;
         var message = TWMCD_INTEGRATION.labels.waitingStore;
         var actionAvailable = false;
         var actions = '';
@@ -363,6 +364,9 @@
         if (actionAvailable) {
             actions = '<button type="button" class="button-link twmcd-compare-now" data-mode="code"'
                 + (preparing ? ' disabled' : '') + '>' + escapeHtml(codeButtonLabel) + '</button>';
+            actions += '<span class="twmcd-mode-separator" aria-hidden="true">|</span>'
+                + '<button type="button" class="button-link twmcd-compare-content" data-mode="posts"'
+                + (preparing ? ' disabled' : '') + '>' + escapeHtml(contentButtonLabel) + '</button>';
         }
 
         var retryLabel = retrying
@@ -380,9 +384,15 @@
         notice.innerHTML = markup;
 
         var button = notice.querySelector('.twmcd-compare-now');
+        var contentButton = notice.querySelector('.twmcd-compare-content');
         if (button && actionAvailable) {
             button.addEventListener('click', function () {
                 prepareComparison('code');
+            });
+        }
+        if (contentButton && actionAvailable) {
+            contentButton.addEventListener('click', function () {
+                prepareComparison('posts');
             });
         }
         var refreshButton = notice.querySelector('.twmcd-notice-refresh');

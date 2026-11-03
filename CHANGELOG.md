@@ -2,6 +2,15 @@
 
 All notable changes to WP Migrate - Release Management are recorded here.
 
+## 0.11.13 - 2026-11-03
+
+- Restore **Compare Content** beside **Compare Code** in the ready-state WP Migrate notice.
+- Map Content comparison to the existing Posts comparison, packaging, install, and rollback workflow.
+- Present the report as **Content comparison** while retaining the established internal Posts implementation and release format.
+- Keep the permanent top navigation **Compare** tab Code-only.
+- Keep Database and Options comparison implementations available internally without exposing their entry points in the UX.
+- Extend regression coverage to require Content comparison and continue rejecting Database and Options actions from the visible notice.
+
 ## 0.11.12 - 2026-11-03
 
 - Add a persistent **Compare** tab immediately after WP Migrate's **What's New** navigation item, independent of the optional comparison-notice mount.

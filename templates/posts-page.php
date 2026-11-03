@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 ?>
 <div class="wrap twmcd-admin-wrap">
-    <h1><?php esc_html_e('Posts comparison', 'tn-wp-migrate-code-diff'); ?></h1>
+    <h1><?php esc_html_e('Content comparison', 'tn-wp-migrate-code-diff'); ?></h1>
     <p class="twmcd-page-actions">
         <a href="<?php echo esc_url($migrate_url); ?>">&larr; <?php esc_html_e('Back to WP Migrate', 'tn-wp-migrate-code-diff'); ?></a>
         <button id="twmcd-posts-refresh" class="button" type="button"><?php esc_html_e('Refresh comparison', 'tn-wp-migrate-code-diff'); ?></button>
@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
     </section>
 
     <div id="twmcd-posts-results" hidden>
-        <section id="twmcd-posts-summary" class="twmcd-summary" aria-label="<?php esc_attr_e('Posts comparison summary', 'tn-wp-migrate-code-diff'); ?>"></section>
+        <section id="twmcd-posts-summary" class="twmcd-summary" aria-label="<?php esc_attr_e('Content comparison summary', 'tn-wp-migrate-code-diff'); ?>"></section>
         <div id="twmcd-posts-groups"></div>
         <section class="twmcd-card" aria-labelledby="twmcd-posts-release-title">
             <h2 id="twmcd-posts-release-title"><?php esc_html_e('Create a Posts release package', 'tn-wp-migrate-code-diff'); ?></h2>
